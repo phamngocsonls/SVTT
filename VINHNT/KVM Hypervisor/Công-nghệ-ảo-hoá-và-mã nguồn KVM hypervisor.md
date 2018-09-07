@@ -21,7 +21,7 @@ date: 2018-09-02
 
 Ảo hoá là chạy nhiều máy chủ ảo trên hạ tầng 1 máy chủ vật lý. Trên mỗi máy ảo có hệ điều hành riêng giống như một máy chủ thật và được triển khai các môi trường, ứng dụng khác nhau để phù hợp với mục đích sử dụng.
 
-![](./Image/W1-công-nghệ-ảo-hoá.jpg)
+![](../Image/W1-công-nghệ-ảo-hoá.jpg)
 
 #### Lợi ích: 2 nhóm chính
 
@@ -50,7 +50,7 @@ date: 2018-09-02
 #### Phân loại: 2 loại chính
 - Loại 1: Bare-Metal Hypervisor Trong đó hypervisor tương tác trực tiếp với phần cứng của máy chủ để quản lý, phân phối và cấp phát tài nguyên. Bao gồm các giải pháp như: **VMware ESXi, Microsoft Hyper-V, Xen Server, KVM**
 
-![Bare-Metal Hypervisor](./Image/W1-Bare-Metal-Hypervisor.png)
+![Bare-Metal Hypervisor](../Image/W1-Bare-Metal-Hypervisor.png)
 
 - Loại 2: Đây là loại ảo hoá Hypervisor giao tiếp với phần cứng thông qua hệ điều hành. Hypervisor lúc này được xem như một ứng dụng hệ điều hành và các phương thức quản lý cấp phát tài nguyên phải thông qua hệ điều hành. Loại này bao gồm các giải pháp như: **VMware workstation, Oracle VirtualBox, Microsoft Virtual PC,...**
 
@@ -67,7 +67,7 @@ Loại 1 Hypervisor tương tác trực tiếp với phần cứng nên việc q
 - KVM được thiết kế để giao tiếp với các hạt nhân thông qua một kernel module có thể nạp được. 
 - Trong kiến trúc của KVM, Virtual machine được thực hiện như là quy trình xử lý thông thường của Linux, được lập lịch hoạt động như các scheduler tiêu chuẩn của linux. Trên thực tế, mỗi CPU ảo hoạt động như một tiến trình xử lý của Linux. Điều này cho phép KVM được hưởng lợi từ các tính năng của nhân Linux.
 
-![Kiến-trúc-KVM-Hypervisor](./Image/W1-Kiến-trúc-KVM-Hypervisor.png)
+![Kiến-trúc-KVM-Hypervisor](../Image/W1-Kiến-trúc-KVM-Hypervisor.png)
 
 <a name="22"></a>
 
@@ -102,7 +102,7 @@ Vì được coi như 1 tiến trình xử lý của Linux nên nó tận dụng
 
 ### 2.3 Cấu trúc ảo hoá KVM kết hợp QEMU
 
-![](./Image/W1-Cấu-trúc-KVM-QEMU.png)
+![](../Image/W1-Cấu-trúc-KVM-QEMU.png)
 
 Trong đó:
 - **User-facing tools:** Là công cụ quán lý máy ảo hỗ trợ KVM. Các công cụ có giao diện đồ hoạ (như virt-manager) hoặc giao diện dòng lệnh như (virsh) và virt-tool (các công cụ này được quản lý bởi thư viện libvirt)
@@ -121,7 +121,7 @@ Trong đó:
 ```
 lsmod | grep kvm
 ```
-![ảnh](./Image/W1-kiem-tra.png)
+![ảnh](../Image/W1-kiem-tra.png)
 
 - Sau khi kiểm tra hệ thống hỗ trợ ảo hoá KVM, tiến hành cài đặt các gói phần mêm để hỗ trợ ảo hoá và quản lý các máy ảo KVM/QEMU:
 
@@ -148,7 +148,7 @@ sudo adduser <user_name> libvirtd
 virsh -c qemu:///system list
 ```
 
-![ảnh](./Image/W1-thanh-cong.png)
+![ảnh](../Image/W1-thanh-cong.png)
 
 ## Tham khảo
 - [1.https://github.com/hocchudong/thuctap012017/blob/master/TamNT/Virtualization/docs/KVM/1.Tim_hieu_KVM.md](https://github.com/hocchudong/thuctap012017/blob/master/TamNT/Virtualization/docs/KVM/1.Tim_hieu_KVM.md)
