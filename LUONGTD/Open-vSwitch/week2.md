@@ -8,7 +8,7 @@
 ### [4.3. Datapath](#datapath)
 ---
 ## <a name="general"></a> 1. Kiến trúc tổng quan
-![Fig1.1: **OVS Architecture**](images/2-OVS-Architecture/ovs_arch.jpg)	
+![Fig1.1: OVS Architecture](images/2-OVS-Architecture/ovs_arch.jpg)	
 - Nhắc lại là OVS thường được sử dụng để kết nối các máy ảo (VM/container) trong một host. OVS quản lý cả các port vật lý (eth0, eth1) và các port ảo (ví dụ như các port của VMs).
 - Ba khối thành phần chính của OVS:
 	- __ovsswitchhd__: Là daemon chạy trên user space.
@@ -25,7 +25,7 @@
 	- **kernel**: thông qua **netlink** (tương tự như Unix socket domain)
 	- **system**: thông qua abstract interface là **netdev**
 - **ovs-vswitchd** triển khai miroring, bonding và VLANs
-![Fig2.1: **vswitchd - OVS main daemon**](images/2-OVS-Architecture/vswitchd.png)
+![Fig2.1: vswitchd - OVS main daemon](images/2-OVS-Architecture/vswitchd.png)
 
 ### 2.2. OVSDB
 - Nếu như những cấu hình tạm thời (transient configurations) ví dụ như flows được lưu trong **datapath** và **vswitchd** thì các cấu hình bền vững sẽ được lưu trong **ovsdb** và vẫn được lưu giữ sau khi khởi động lại hệ thống. Các cấu hình này bao gồm cấu hình về bridge, port, interface, địa chỉ của OpenFlow controller (nếu dùng),...
@@ -52,6 +52,7 @@
 ## <a name="code"></a> 4. OVS code walk through
 ### <a name="vswitchd"></a> 4.1. vswitchd
 #### 4.1.1. Overview
-Trước khi deep dive ta nhắc lại một vài điểm quan trọng của **vswitchd**
+Trước khi deep dive ta nhắc lại một vài điểm quan trọng của **vswitchd**.
+
 ### <a name="ovsdb"></a> 4.2. OVSDB 
 ### <a name="datapath"></a> 4.3. Datapath
