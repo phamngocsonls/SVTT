@@ -32,4 +32,4 @@ This isn't specific to Open vSwitch, it's enforced by the access point, so the s
 
 ## 0.7. Các công cụ chính tương tác với OVS
 
-```struct ofproto```
+https://github.com/openvswitch/ovs/blob/master/Documentation/topics/porting.rst
