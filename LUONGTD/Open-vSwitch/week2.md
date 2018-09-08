@@ -25,13 +25,13 @@
 	- **kernel**: thông qua **netlink** (tương tự như Unix socket domain)
 	- **system**: thông qua abstract interface là **netdev**
 - **ovs-vswitchd** triển khai miroring, bonding và VLANs
-![Fig2.1: vswitchd - OVS main daemon](images/2-OVS-Architecture/vswitchd.png)
+![Fig2.1: vswitchd - OVS main daemon](images/2-OVS-Architecture/vswitchd.jpg)
 
 ### 2.2. OVSDB
 - Nếu như những cấu hình tạm thời (transient configurations) ví dụ như flows được lưu trong **datapath** và **vswitchd** thì các cấu hình bền vững sẽ được lưu trong **ovsdb** và vẫn được lưu giữ sau khi khởi động lại hệ thống. Các cấu hình này bao gồm cấu hình về bridge, port, interface, địa chỉ của OpenFlow controller (nếu dùng),...
 - **ovsdb-server** cung cấp giao diện RPC (Remote Procedure Call) tới **ovsdb**. Nó hỗ trợ trình khách JSON-RPC kết nối tới thông qua passive TCP/IP hoặc Unix Domain sockets.
 - **obsdb-server** chạy như một backup server hoặc như một active server. Tuy nhiên chỉ có active server mới xử lý giao dịch làm thay đổi **ovsdb**.
-![Fig2.2: **ovsdb core table**](images/2-OVS-Architecture/ovsdb_tables.png)
+![Fig2.2: **ovsdb core table**](images/2-OVS-Architecture/ovsdb_tables.jpg)
 
 ### 2.3 Datapath (OVS Kernel Module)
 - Datapath là module chính chịu trách nhiệm chuyển tiếp gói tin (packets) trong OVS. Datapath được triển khai (implemented) trong kernelspace nhằm mục đích đạt hiệu năng cao. Nó caches lại các OpenFlow flows và thực thi các action trên các gói tin nhận được nếu các gói tin đó match với một flow đã tồn tại (specific flows). Nếu gói tin không khớp với bất cứ flow nào thì gói tin sẽ đưọc chuyển lên userspace program **ovs-vswitchd**. Nếu flow matching tại **vswitch** thành công thì nó sẽ gửi gói tin lại cho **kernel datapath** kèm theo các action tương ứng để xử lý gói tin đồng thời thực hiện cache lại flow đó vào datapath để datapath xử lý những gói tin cùng loại này đến tiếp sau. Hiệu năng cao đạt được ở đây là bởi thực tế hầu hết các gói tin sẽ match flow thành công tại datapath và do đó được xử lý trực tiếp tại kernelspace.
@@ -43,7 +43,7 @@
 
 ## <a name="handle"></a> 3. OVS Packet Handling
 Đầu tiên hãy xem một gói tin đi qua OVS như thế nào:
-![Fig2.2: **ovsdb core table**](images/2-OVS-Architecture/ovs_packet_flow.png)
+![Fig2.2: **ovsdb core table**](images/2-OVS-Architecture/ovs_packet_flow.jpg)
 - Ta nhắc lại rằng, OVS là một phần mềm switch hỗ trợ OpenFlow.
 - Openflow controller chịu trách nhiệm đưa ra các hướng dẫn (hay còn gọi là **flow**) cho datapath biết làm sao xử lý các loại gói khác nhau. Một **flow** mô tả hành động (hay còn gọi là **action**) mà datapath thực hiện để xử lý các gói tin của cùng một loại như thế nào. Các kiểu **action** bao gồm chuyển tới (forwarding) pỏt khác, thay đổi vlan tag,... Quá trình tìm kiếm flow khớp với gói tin được gọi là **flow matching**.
 - Nhằm mục đích đạt được hiệu năng tốt (như đã đề cập ở trên), một phần của flows được cache trong **datapath** và phần còn lại nằm ở **vswitchd**.
