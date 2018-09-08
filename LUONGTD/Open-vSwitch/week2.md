@@ -19,13 +19,8 @@
 ## <a name="component"></a> 2. Các thành phần của OpenvSwitch
 ### 2.1. vswitchd (OVS Daemon)
 - **ovs-vswitchd** là daemon của OpenvSwitch chạy trên userspace. Nó đọc cấu hình của OVS từ **ovsdb-server** thông qua kênh IPC (Inter Process Communication) và đẩy cấu hình xuống OSV bridge (là các instance của thư viện **ofproto**). Nó cũng đẩy trạng thái và thông tin thống kê từ các OVS bridge vào trong database.
-- **ovs-vswitchd** giao tiếp với:
-	- Môi trường ngoài (outside world): sử dụng giao thức OpenFlow
-	-  **ovsdb-server**: sử dụng giao thức OVSDB
-	- **kernel**: thông qua **netlink** (tương tự như Unix socket domain)
-	- **system**: thông qua abstract interface là **netdev**
-- **ovs-vswitchd** triển khai miroring, bonding và VLANs
-![Fig2.1: vswitchd - OVS main daemon](images/2-OVS-Architecture/vswitchd.png)
+
+!["Fig2.1: vswitchd - OVS main daemon"](images/2-OVS-Architecture/vswitchd.png)
 
 ### 2.2. OVSDB
 - Nếu như những cấu hình tạm thời (transient configurations) ví dụ như flows được lưu trong **datapath** và **vswitchd** thì các cấu hình bền vững sẽ được lưu trong **ovsdb** và vẫn được lưu giữ sau khi khởi động lại hệ thống. Các cấu hình này bao gồm cấu hình về bridge, port, interface, địa chỉ của OpenFlow controller (nếu dùng),...
@@ -55,5 +50,13 @@
 #### 4.1.1. Overview
 Trước khi deep dive ta nhắc lại một vài điểm quan trọng của **vswitchd**.
 
+![Fig1.1: OVS Architecture](images/2-OVS-Architecture/ovs_arch.jpg)	
+
+- **ovs-vswitchd** giao tiếp với:
+	- Môi trường ngoài (outside world): sử dụng giao thức OpenFlow
+	-  **ovsdb-server**: sử dụng giao thức OVSDB
+	- **kernel**: thông qua **netlink** (tương tự như Unix socket domain)
+	- **system**: thông qua abstract interface là **netdev**
+- **ovs-vswitchd** triển khai miroring, bonding và VLANs
 ### <a name="ovsdb"></a> 4.2. OVSDB 
 ### <a name="datapath"></a> 4.3. Datapath
