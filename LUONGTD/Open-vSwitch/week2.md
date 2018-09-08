@@ -25,12 +25,13 @@
 	- **kernel**: thông qua **netlink** (tương tự như Unix socket domain)
 	- **system**: thông qua abstract interface là **netdev**
 - **ovs-vswitchd** triển khai miroring, bonding và VLANs
-![Fig2.1: vswitchd - OVS main daemon](images/2-OVS-Architecture/vswitchd.jpg)
+![Fig2.1: vswitchd - OVS main daemon](images/2-OVS-Architecture/vswitchd.png)
 
 ### 2.2. OVSDB
 - Nếu như những cấu hình tạm thời (transient configurations) ví dụ như flows được lưu trong **datapath** và **vswitchd** thì các cấu hình bền vững sẽ được lưu trong **ovsdb** và vẫn được lưu giữ sau khi khởi động lại hệ thống. Các cấu hình này bao gồm cấu hình về bridge, port, interface, địa chỉ của OpenFlow controller (nếu dùng),...
 - **ovsdb-server** cung cấp giao diện RPC (Remote Procedure Call) tới **ovsdb**. Nó hỗ trợ trình khách JSON-RPC kết nối tới thông qua passive TCP/IP hoặc Unix Domain sockets.
 - **obsdb-server** chạy như một backup server hoặc như một active server. Tuy nhiên chỉ có active server mới xử lý giao dịch làm thay đổi **ovsdb**.
+
 ![Fig2.2: **ovsdb core table**](images/2-OVS-Architecture/ovsdb_tables.jpg)
 
 ### 2.3 Datapath (OVS Kernel Module)
