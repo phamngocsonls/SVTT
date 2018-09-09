@@ -143,6 +143,7 @@ Ví dụ, ta muốn thử nghiệm chạy OVS trên DPDK, để xử lý gói ti
 ![](images/2-OVS-Architecture/dpdk.png)
 
 ### 2.4. Call Flows
+Entrypoint của ```vswitchd``` nằm ở ```vswitchd/ovs-vswitchd.c```.
 Sơ đồ điều khiển logic của ```ovs-vswitchd``` được mô tả như sau:
 
 ![](images/2-OVS-Architecture/vswitch_flow_diagram.jpg)
@@ -150,12 +151,13 @@ Sơ đồ điều khiển logic của ```ovs-vswitchd``` được mô tả như 
 - Khi bắt đầu, nó khởi tạo bridge module, được thực hiện trong ```vswitchd/bridge.c```. Module bridge sẽ lấy một số tham số cấu hình từ **ovsdb**. 
 - ```ovs-vswitchd``` đi vào vòng lặp chính. Trong lần lặp đầu tiên của vòng lặp này, nó khởi tạo một số thư viện, bao gồm thư viện quan trọng nhất ```ofproto``` và ví dụ như DPDK (nếu được cấu hình). 
 Lưu ý rằng các tài nguyên này chỉ cần khởi tạo một lần. 
-- Mỗi datapath sẽ thực hiện công việc của mình bằng cách chạy ```ofproto_type_run ()```, nó sẽ gọi vào kiểu thực thi ```type_run ()``` cụ thể của kiểu dữ liệu đó. 
-- Mỗi bridge sẽ thực hiện công việc của nó bằng cách chạy ```ofproto_run ()```, nó sẽ gọi vào hàm ```run ()``` cụ thể của class ofproto. 
+- Mỗi datapath sẽ thực hiện công việc của mình bằng cách chạy ```ofproto_type_run()```, nó sẽ gọi vào kiểu thực thi ```type_run()``` cụ thể của kiểu dữ liệu đó. 
+- Mỗi bridge sẽ thực hiện công việc của nó bằng cách chạy ```ofproto_run()```, nó sẽ gọi vào hàm ```run()``` cụ thể của class ofproto. 
 - ```ovs-vswitchd``` sẽ xử lý các thông điệp IPC (JSON-RPC), từ dòng lệnh (```ovs-appctl```) và ```ovsdb-server```. 
-- ```netdev_run ()``` được gọi để xử lý tất cả các loại netdev khác nhau. 
+- ```netdev_run()``` được gọi để xử lý tất cả các loại netdev khác nhau. 
 - Sau khi tất cả các công việc trên được thực hiện, các mô-đun bridge, unixctl và netdev sẽ đi vào trạng thái block cho đến khi các tín hiệu mới kích hoạt. 
-Pseudo code tương ứng (trong ```vswitchd/ovs-vswitchd.c```) được hiển thị bên dưới:
+
+Pseudo code tương ứng được hiển thị bên dưới:
 
 ![](images/2-OVS-Architecture/example.png)
 
