@@ -107,7 +107,7 @@ Trong ví dụ này, ta sẽ tạo ra một bridge trên OpenvSwitch đóng vai 
 
 #### 5.1.2. Mininet
 - Mininet là một công cụ giả lập mạng, bao gồm tập hợp các host đầu cuối, các switch, router và các liên kết trên một Linux kernel. Mininet sử dụng công nghệ ảo hóa (ở mức đơn giản) để tạo nên hệ thống mạng hoàn chỉnh, chạy chung trên cùng một kernel, hệ thống và user code.
-- Các host ảo, switch, liên kết và các controller trên mininet là các thực thể thực sự, đưọc giả lập dưới dạng phần mềm thay vì phần cứng. Một host mininet có thể thực hiện ssh vào đó, chạy bất kì phần mềm nào đã cài trên hệ thống linux (môi trường mà mininet đang chạy). Các phần mềm này có thể gửi gói tin thông qua ethernet interface của mininet với tốc độ liên kết và trễ đặt trưóc.
+- Các host ảo, switch, liên kết và các controller trên mininet là các thực thể thực sự, được giả lập dưới dạng phần mềm thay vì phần cứng. Một host mininet có thể thực hiện ssh vào đó, chạy bất kì phần mềm nào đã cài trên hệ thống linux (môi trường mà mininet đang chạy). Các phần mềm này có thể gửi gói tin thông qua ethernet interface của mininet với tốc độ liên kết và trễ đặt trưóc.
 - Mininet cho phép tạo topo mạng nhanh chóng, tùy chỉnh được topo mạng, tùy chỉnh được việc chuyển tiếp gói tin, chạy được phần mềm thực sự như web server, TCP monitoring, Wireshark,... Mininet cũng dễ dàng sử dụng và không yêu cầu cấu hình gì đặc biệt về phần cứng để chạy. Mininet có thể cài trên laptop, server, VM, cloud (linux),...
 
 ### 5.2. Tiến hành ví dụ sử dụng OVS
