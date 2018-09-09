@@ -20,7 +20,7 @@ Ceph là một giải pháp mã nguồn mở để xây dựng hạ tầng lưu 
 #### Tính năng:
 - Không gặp phải "single point of failure"
 - Có khả năng mở rộng tới mức exabyte (1EB = 10^18 bytes)
-- Sử dụng thuật toán Controlled Replication Under Scalable Hashing (CRUSH) đảm bảo dữ liệu được phân tán như nhau tới các cụm và tất cả các node cụm có thể lấy lại dữ liệu một cách nhanh chóng mà không có bất kỳ một sự tắc nghẽn nào.
+- Sử dụng thuật toán [Controlled Replication Under Scalable Hashing](Week2-CRUSH-Algorithm.md) (CRUSH) đảm bảo dữ liệu được phân tán như nhau tới các cụm và tất cả các node cụm có thể lấy lại dữ liệu một cách nhanh chóng mà không có bất kỳ một sự tắc nghẽn nào.
 - Hoàn toàn miễn phí
 
 ### 2. Các thành phần của một Ceph storage cluster
@@ -38,4 +38,5 @@ Một Ceph storage cluster yêu cầu ít nhất một Ceph Monitor, Ceph Manage
 ## Tham khảo
 
 [1. http://docs.ceph.com/docs/master/start/intro/](http://docs.ceph.com/docs/master/start/intro/)
+
 [2. https://en.wikipedia.org/wiki/Ceph_(software)](https://en.wikipedia.org/wiki/Ceph_(software))
