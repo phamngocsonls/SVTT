@@ -38,8 +38,6 @@ openstack token issue
 ```
 
 ![Imgur](https://i.imgur.com/CiSX9hq.png)
-
-
 <a name="2"></a>
 
 # 2. Listing user
@@ -52,8 +50,6 @@ openstack user list
 ```
 
 ![Imgur](https://i.imgur.com/w2cKTXb.png)
-
-
 <a name="3"></a>
 
 # 3. Listing projects
@@ -67,7 +63,6 @@ openstack project list
 
 ![Imgur](https://i.imgur.com/dIGLrW1.png)
 
-
 ## Add project within domain
 
 - với domain `huong` vừa tạo, ta tiến hành add new project trong domain đó
@@ -75,10 +70,7 @@ openstack project list
 ```
 openstack project create huong --domain huong --description "add new project within domain huong"
 ```
-
 ![Imgur](https://i.imgur.com/UAG4XRT.png)
-
-
 <a name="4"></a>
 
 # 4. Listing groups
@@ -90,8 +82,6 @@ opensack group list
 ```
 
 ![Imgur](https://i.imgur.com/O1Eh1Tm.png)
-
-
 
 <a name="5"></a>
 
@@ -105,7 +95,6 @@ openstack role list
 
 ![Imgur](https://i.imgur.com/6R6RZAM.png)
 
-
 ## Tạo mới một role
 
 ```
@@ -114,7 +103,6 @@ openstack role create huong
 
 ![Imgur](https://i.imgur.com/Tl4p4vJ.png)
 
-
 ## Assign new role within user
 
 ```
@@ -122,7 +110,6 @@ openstack role add huong --project huong --project-domain huong --user huong --u
 ```
 
 ![Imgur](https://i.imgur.com/hW00jnr.png)
-
 
 <a name="6"></a>
 
@@ -135,8 +122,6 @@ openstack domain list
 ```
 
 ![Imgur](https://i.imgur.com/1muetgi.png)
-
-
 ## Create new domain
 
 ```
@@ -144,7 +129,6 @@ openstack domain create huong
 ```
 
 ![Imgur](https://i.imgur.com/DHzE2s3.png)
-
 
 <a name="7"></a>
 
@@ -155,9 +139,7 @@ openstack domain create huong
 ```
 openstack user create huong --domain Default --email huong.0496@gmail.com --description "test add user" --password huong
 ```
-
 ![Imgur](https://i.imgur.com/JkYWC5O.png)
-
 
 <a name="8"></a>
 
