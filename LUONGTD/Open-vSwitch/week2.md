@@ -72,7 +72,7 @@ Ta có thể thấy, module **vswitchd** được chia ra nhỏ hơn thành các
 - **netdev**: thư viện trừu tượng hóa các tương tác với các thiết bị mạng
 - **netdev-provider**: interface của hệ điều hành và phần cứng với các thiết bị mạng
 
-Như vậy, ta đã xác định được 4 thành phần chính của **vswitchd**. Ở những phần sau ta sẽ xác định các cấu trúc dữ liệu mô tả các thành phần đó.
+Như vậy, ta đã xác định được 4 thành phần chính của **vswitchd**. Ở những phần sau ta sẽ tìm hiểu cấu trúc dữ liệu mô tả các thành phần đó (hoặc các bộ phận của chúng).
 
 ### 2.1. ofproto
 ```struct ofproto``` trừu tượng hóa (abstract) OpenFlow switch. Một thực thể ofproto (ofproto instance) là một OpenFlow switch (bridge).
@@ -101,7 +101,7 @@ Mỗi thực thi (implementation) ofproto (ovs bridge) cần phải định ngh�
 
 Open vSwitch có một built-in ofproto-provider gọi là **ofproto-dpif**, nó được xây dựng trên đỉnh của thư viện **dpif**(thư viện **dpif** dùng để thao tác với datapath). Tương tự như **ofproto**, **dpif** cũng "ủy quyền" cho **dpif-provider** để thực hiện các chức năng quản lý. Cụ thể như sau: 
 
-![](images/2-OVS-Architecture/ofproto-providers.png)
+![](images/2-OVS-Architecture/ofproto_providers.png)
 
 Một datapath là một bảng (lưu lại các) flow, nó chỉ phục vụ các exact-match flows. Khi một gói tin đến trên một thiết bị mạng, datapath thực hiện quá trình tìm kiếm matching flow. Nó thực thi các action trên các gói tin nhận được nếu các gói tin đó match với một flow đã tồn tại (specific flows). Nếu gói tin không khớp với bất cứ flow nào thì gói tin sẽ đưọc chuyển lên **ofproto-dpif**, nơi lưu giữ bảng OpenFlow đầy đủ (còn nhớ ở mục 1.1, ta đã nói rằng trong trường hợp không xảy ra matching, gói tin sẽ được chuyển lên **vswitchd**, vậy, **ofproto-dpif** là bộ phận chính xác mà ta đã đề cập tới). Nếu flow matching tại bảng này thành công thì **ofproto-dpif** sẽ thực hiện action tương ứng và thêm flow entry mới vào bảng flow của **dpif**. ( Nếu flow matching không xảy ra, **ofproto-dpif** sẽ gửi gói tin cho **ofproto** để chuyển đến OpenFlow Controller.)
 Đến đây, ta có thể xây dựng lại sơ đồ kiến trúc đầy đủ hơn như sau:
@@ -137,6 +137,7 @@ Các loại netdev được định nghĩa gồm có:
 - dummy netdev (```lib/netdev-dummy.c```)
 - vport netdev (```lib/netdev-vport.c```)
 - dpdk netdev (```lib/netdev-dpdk.c```)
+
 Ví dụ, ta muốn thử nghiệm chạy OVS trên DPDK, để xử lý gói tin hiệu năng cao trong userspace. Trong giải pháp này, kernel module của OVS sẽ được thay thế bằng các thành phần tương ứng trong DPDK. Điều đó có nghĩa là một netdev DPDK phải được thực hiện như là netdev provider cho platform này. Nhìn vào source code trong ```lib/netdev-dpdk.c```, ta có thể kiểm chứng điều này, trong đoạn cuối của code khởi tạo dpdk, nó tiến hành "đăng kí" (register) các class netdev provider:
 
 ![](images/2-OVS-Architecture/dpdk.png)
