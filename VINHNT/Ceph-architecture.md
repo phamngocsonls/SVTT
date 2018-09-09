@@ -25,7 +25,7 @@ date: 2018-08-09
 
 Kiến trúc của Ceph Storage được thể hiện như hình dưới:
 
-![](../Image/W2-Technical-names-of-components-in-the-Ceph-Storage-Architecture.png)
+![](./Image/W2-Technical-names-of-components-in-the-Ceph-Storage-Architecture.png)
 
 Ceph cung cấp các dạng lưu trữ Object, block và file trong một hệ thống thống nhất. 
 
@@ -59,13 +59,13 @@ Ceph Storage cluster gồm có 2 thành phần chính là Object Storage Daemon 
 
 Dữ liệu sau khi qua librados sẽ được lưu dưới dạng Object. Mỗi Object tương ứng tới một file trong filesystem và chúng được lưu trữ trên một Object Storage Device. Một OSD thường được gắn với một đĩa lưu trữ vật lý. Và gọi chung là OSD.
 
-![](../Image/W2-vd-ceph-storage-cluster.png)
+![](./Image/W2-vd-ceph-storage-cluster.png)
 
 Một Object có Identifer (ID), Binary data và metadata bao gồm một tập các cặp tên biến. Object ID là duy nhất trong toàn cluster.
 
 Filesystem có các thuộc tính cung cấp các thông tin về trạng thái Object, metadata, snapshot và ACL cho Ceph OSD daemon, hỗ trợ việc quản lý dữ liệu. Filesystem có thể là btrfs, xfs hay ext4.
 
-![](../Image/W2-Object.png)
+![](./Image/W2-Object.png)
 
 <a name=""></a>
 
@@ -99,9 +99,9 @@ Sử dụng librados API chúng ta có thể tạo interface cho riêng mình đ
 
 Khi một Application muốn tương tác với Storage Cluster nó được link tới **librados** librados sẽ cung cấp các hàm cần thiết để app có thể tương tác với storage cluster.
 
-![](../Image/W2-librados-work.png)
+![](./Image/W2-librados-work.png)
 
-LIBRADOS giao tiếp với RADOS sử dụng một native protocol (một [socket](#socket) được thiết kế chỉ cho mục đích này).
+LIBRADOS giao tiếp với RADOS sử dụng một native protocol (một [socket](notes.md/#socket) được thiết kế chỉ cho mục đích này).
 Việc sử dụng một native protocol tạo kết nối giữa LIBRADOS và storage cluster rất nhanh và không giống với bất kỳ các Service Sockets hay Protocols nào khác.
 
 **Vai trò của LIBRADOS**:
@@ -115,8 +115,8 @@ Việc sử dụng một native protocol tạo kết nối giữa LIBRADOS và s
 
 ### 4. Ceph client
 Ceph client bao gồm 3 service interface:
-- **Block Device**: Ceph Block Device service cung cấp block devices với các tính năng có thể thay đổi kích thước, [thin-provisioned](#thin-provisinoed), [snapshot](#snapshot) và nhân bản. Ceph hỗ trợ cả **kernel object (KO)** và **QEMU hypervisor** (sử dụng trực tiếp thư viện librbd)
-- **Object store**: dịch vụ Ceph Object Storage cung cấp RESTfull APIs với interfaces tương thích với [Amazon S3](#amazons3) và [OpenStack Swift](#openstack-swift)
+- **Block Device**: Ceph Block Device service cung cấp block devices với các tính năng có thể thay đổi kích thước, [thin-provisioned](notes.md/#thin-provisinoed), [snapshot](notes.md/#snapshots) và nhân bản. Ceph hỗ trợ cả **kernel object (KO)** và **QEMU hypervisor** (sử dụng trực tiếp thư viện librbd)
+- **Object store**: dịch vụ Ceph Object Storage cung cấp RESTfull APIs với interfaces tương thích với [Amazon S3](notes.md/#amazons3) và [OpenStack Swift](notes.md/#openstack-swift)
 - **Filesystem**: Ceph Filesystem (CephFS) service cung cấp POSIX compliant filesystem nằm trên RADOS.
 
 <a name=""></a>
@@ -137,18 +137,18 @@ Giả sử có nhiều ổ nhỏ có kích thước 10M được trải ở nhi�
 
 librbd link LIBRADOS để kết nối vào trong RADOS cluster và cũng link với virtualization container. librbd cung cấp ổ đĩa ảo tới VM bằng việc kết nối nó với virtualization container.
 
-![](../Image/W2-RBD-work.png)
+![](./Image/W2-RBD-work.png)
 
 Lợi thế của kiến trúc này là dữ liệu hay image of a virtual machine không lưu trữ trên contener và do đó mang lại việc có thể di chuyển VM bằng việc dừng container và mang nó đến một container khác như hình bên dưới.
 
-![](../Image/W2-RBD-work-with-VM.png)
+![](./Image/W2-RBD-work-with-VM.png)
 
 Một cách khác để truy cập RBD là sử dụng Kernel Module KRBD như hình dưới. khi đó Block device như một thiết bị có sẵn cho ổ cứng và có thể mount để sử dụng.
 
-![](../Image/W2-RBD-work-with-KRBD.png)
+![](./Image/W2-RBD-work-with-KRBD.png)
 
 Túm lại RBD cung cấp các đặc tính:
-- Tạo điều kiện lưu trữ [disk image](#disk-image) trong Ceph Storage cluster.
+- Tạo điều kiện lưu trữ [disk image](notes.md/#disk-image) trong Ceph Storage cluster.
 - Có thể tách VM từ host node vì dữ liệu được lưu trên Ceph Storage Cluster.
 - Images được trải trong cluster ở các OSD khác nhau.
 - Hỗ trợ Linux kernel
@@ -165,7 +165,7 @@ Ceph Object Store hỗ trợ hai giao diện:
 - S3 compatible: Cung cấp chức năng Object Storage tương thích với một mạng con lớn của Amazon S3 RESTfull
 - Swift compatible: Cung cấp chức năng Object Storage tương thích với một mạng con lớn của OpenStack Swift API
 
-![](/Image/W2-Ceph-object-gateway.png)
+![](./Image/W2-Ceph-object-gateway.png)
 
 #### Hoạt động
 
@@ -187,7 +187,7 @@ Ceph Filesystem (CephFS) là một file system tương thích với chuẩn POSI
 
 Ceph Storage cluster có 2 loại chính là OSD và Monitors. Tuy nhiên trong kiến trúc này một loại mới được thêm và Cluster là metadata server.
 
-![](../Image/W2-metadata.png) 
+![](./Image/W2-metadata.png) 
 
 Khi mount CephFS file system ở client. Chúng ta cần phải nói chuyện với metadata server đầu tiên cho tất cả POSIX semantics như: permission, ownership, timestamps, hierarchy của các thư mục và file. Và khi semantics được cung cấp tới client bằng metadata server, OSD mới cung cấp dữ liệu.
 
@@ -200,13 +200,6 @@ Metadata server không xử lý dữ liệu. Nó chỉ lư các POSIX sematics c
 - chỉ yêu cầu cho shared filesystem.
 
 Ban đầu lưu cấu hình Ceph metadata server lưu tất cả các POSIX semantics cho tất cả các OSD. Khi số lượng metadata server tăng lên chúng tự phân chia tải với nhau, do đó không có **single point failure** 
-
-## Các khái niệm 
-
-<a name="RADOS"></a>
-
-RADOS (Reliable Autonomic Distributed Object Store) là dịch vụ lưu trữ object mã nguồn mở - một phần không thể thiếu trong hệ thống lưu trữ phân tán Ceph. RADOS có khả năng mở rộng đến hàng nghìn thiết bị phần cứng bằng việc sử dụng phần mềm quản lý chạy riêng biệt trên mỗi node lưu trữ. Cung cấp các đặc tính lưu trữ như: thin provisioning, snapshots và replication. Sử dụng thuật toán CRUSH để có thể sao chép và ánh xạ dữ liệu tới các node riêng lẻ.
-
 
 ## Tham khảo
 
