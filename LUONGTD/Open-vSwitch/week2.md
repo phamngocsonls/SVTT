@@ -2,9 +2,9 @@
 ## [1. Kiến trúc tổng quan](#general)
 ## [1.1. Các thành phần của OpenvSwitch](#component)
 ## [1.2. OVS Packet Handling](#handle)
-## [2. vswitchd](#vswitchd)
-## [3. OVSDB](#ovsdb)
-## [4. Datapath](#datapath)
+## [2. vswitchd](#vswitchd) // inprogress
+## [3. OVSDB](#ovsdb)	// TODO
+## [4. Datapath](#datapath)	//TODO
 ---
 ## <a name="general"></a> 1. Kiến trúc tổng quan
 ![Fig1.1: OVS Architecture](images/2-OVS-Architecture/ovs_arch.jpg)	
@@ -45,10 +45,9 @@ Các thành phần này tưong ứng nằm trong 3 khối cấu trúc chính đ�
 - Nhằm mục đích đạt được hiệu năng tốt (như đã đề cập ở trên), một phần của flows được cache trong **datapath** và phần còn lại nằm ở **vswitchd**.
 - Một gói tin đi vào OVS datapath sau khi nó đưọc nhận trên một card mạng (NIC - Network Interface Card). Nếu gói tin khớp với flow nào đó trong datapath thì datapath sẽ thực thi các action tương ứng mô tả trong flow entry. Nếu không (flow missing), datapath sẽ gửi gói tin lên ovs-vswitchd và tiến trình flow matching khác được xử lý tại đây. Sau khi ovs-vswitchd xác định làm sao để xử lý gói tin, nó gửi trả gói tin lại cho datapath cùng với yêu cầu xử lý. Đồng thời, vswitchd cũng yêu cầu datapath cache lại flow để xử lý các gói tin tương tự sau đó.
 
-Ở những phần tiếp theo ta sẽ phân tích lần lượt 3 khối cấu trúc của OVS. Chiến lược chung sẽ là dựa trên những kiến trúc và thông tin đã được cung cấp trong các Documentations của OVS trên github, xác định các bộ phận của từng khối. Tiếp đến, đọc code của project, xác định các cấu trúc dữ liệu đại diện cho một số bộ phận chính, phân tích các hàm sử dụng các các cấu trúc dữ liệu đó để thấy được tương tác giữa chúng.
-
+Ở những phần tiếp theo ta sẽ phân tích lần lượt 3 khối cấu trúc của OVS.
 ## <a name="vswitchd"></a> 2. vswitchd
-### 2.1. Overview
+### 2.0. Overview
 Đầu tiên, ta điểm qua một vài điểm quan trọng của **vswitchd**.
 
 ![Fig1.1: OVS Architecture](images/2-OVS-Architecture/ovs_arch.jpg)	
@@ -74,7 +73,7 @@ Ta có thể thấy, module **vswitchd** được chia ra nhỏ hơn thành các
 
 Như vậy, ta đã xác định được 4 thành phần chính của **vswitchd**. Ở những phần sau ta sẽ xác định các cấu trúc dữ liệu mô tả các thành phần đó.
 
-#### 2.1. ofproto
+### 2.1. ofproto
 ```struct ofproto``` trừu tượng hóa (abstract) OpenFlow switch. Một thực thể ofproto (ofproto instance) là một OpenFlow switch (bridge).
 Code của các cấu trúc dữ liệu nằm ở địa chỉ ```ofproto/ofproto-provider.h``` trong OVS project clone về từ github. Ta sẽ đi phân tích các cấu trúc dữ liệu quan trọng trong file **ofproto-provider.h**:
 (Xin phép được lược bớt một số dòng code chỉ để lại outline chính để quan sát đưọc kiến trúc tổng quan của cấu trúc dữ liệu.)
@@ -94,7 +93,7 @@ Code của các cấu trúc dữ liệu nằm ở địa chỉ ```ofproto/ofprot
 
 ![](images/2-OVS-Architecture/ofgroup.png)
 
-#### 2.2. ofproto-provider
+### 2.2. ofproto-provider
 Mỗi thực thi (implementation) ofproto (ovs bridge) cần phải định nghĩa một cấu trúc ofproto_class để tạo ra một **ofproto-provider**. **ofproto** sử dụng **ofproto-provider** để trực tiếp quản lý và điều khiển một OpenFlow switch. ```struct ofproto_class``` trong ```ofproto/ofproto-provider.h```, định nghĩa các interface để thực thi một ofproto-provider cho phần cứng hoặc phần mềm mới. 
 
 ![](images/2-OVS-Architecture/ofproto_class.png)
@@ -117,19 +116,29 @@ Cấu trúc dữ liệu chính:
 - quản lý các thiết bị mạng: **netdev**, **netdev-provider**
 Ta đã có được một một bức tranh khá hoàn chỉnh về cách quản lý datapath của **vswitchd**. Phần tiếp theo, ta sẽ tìm hiểu về chức năng quản lý các thiết bị mạng (**netdev** và **netdev-provider**).
 
-#### 2.2. netdev
+### 2.2. netdev
 **netdev** là một thư viện được định nghĩa trong ```lib/netdev-provider.h```, được thực thi trong ```lib/netdev.c```, **netdev** trừu tượng hóa (abstract) tương tác với các thiết bị mạng (qua các giao diện là Ethernet).
 Mỗi cổng trên một switch phải có một netdev tương ứng và phải hỗ trợ tối thiểu một vài thao tác, chẳng hạn như khả năng đọc MTU (Maximum Transmission Unit) của netdev, nhận được số lượng của hàng đợi RX và TX.
 
-#### 2.3. netdev-provider
+### 2.3. netdev-provider
 **netdev-provider** triển khai giao diện hệ điều hành và phần cứng cụ thể cho các "thiết bị mạng", ví dụ: eth0 trên Linux. OVS phải có khả năng mở mỗi cổng trên một switch như một netdev, vì vậy ta sẽ cần phải thực hiện một **netdev-provider** hoạt động với switch cứng và mềm.
 
 ![](images/2-OVS-Architecture/netdev-providers.png)
 
 ```struct netdev_class```, trong ```lib/netdev-provider.h```, định nghĩa các giao diện cần thiết để thực thi một netdev.
 
+![](images/2-OVS-Architecture/netdev_class.png)
 
+Các loại netdev được định nghĩa gồm có:
+- linux netdev (```lib/netdev-linux.c``` cho platform linux)
+- bsd netdev (```lib/netdev-bsd.c``` cho platform bsd)
+- windows netdev (```lib/netdev-window.c``` cho platform window)
+- dummy netdev (```lib/netdev-dummy.c```)
+- vport netdev (```lib/netdev-vport.c```)
+- dpdk netdev (```lib/netdev-dpdk.c```)
+Ví dụ, ta muốn thử nghiệm chạy OVS trên DPDK, để xử lý gói tin hiệu năng cao trong userspace. Trong giải pháp này, kernel module của OVS sẽ được thay thế bằng các thành phần tương ứng trong DPDK. Điều đó có nghĩa là một netdev DPDK phải được thực hiện như là netdev provider cho platform này. Nhìn vào source code trong ```lib/netdev-dpdk.c```, ta có thể kiểm chứng điều này, trong đoạn cuối của code khởi tạo dpdk, nó tiến hành "đăng kí" (register) các class netdev provider:
 
+![](images/2-OVS-Architecture/dpdk.png)
 
-## <a name="ovsdb"></a> 3. OVSDB code walk through
-## <a name="datapath"></a> 4. Datapath code walk through
+## <a name="ovsdb"></a> 3. OVSDB		// TODO
+## <a name="datapath"></a> 4. Datapath 	// TODO
