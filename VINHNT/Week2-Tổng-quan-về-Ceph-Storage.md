@@ -15,7 +15,7 @@ date: 2018-09-08
 
 ### 1. Ceph - Hệ thống lưu trữ phân tán có thể mở rộng
 
-Ceph là một giải pháp mã nguồn mở để xây dựng hạ tầng lưu trữ phân tán, ổn định, hiệu năng cao. Triển khai [object storage](notes.md/#object-storage) trên một cụm máy tính phân tán thống nhất và cung cấp các dạng lưu trữ object-, block- và file-based storage có khả năng mở rộng được.
+Ceph là một giải pháp mã nguồn mở để xây dựng hạ tầng lưu trữ phân tán, ổn định, hiệu năng cao. Triển khai [object storage](Notes.md/#object-storage) trên một cụm máy tính phân tán thống nhất và cung cấp các dạng lưu trữ object-, block- và file-based storage có khả năng mở rộng được.
 
 #### Tính năng:
 - Không gặp phải "single point of failure"
@@ -27,12 +27,12 @@ Ceph là một giải pháp mã nguồn mở để xây dựng hạ tầng lưu 
 
 <a name="2"></a>
 
-Một Ceph storage cluster yêu cầu ít nhất một Ceph Monitor, Ceph Manager và Ceph OSD (Object Storage [Daemon](notes.md/#daemon)) và Ceph Metadata Server cũng được yêu cầu khi chay Ceph Filesystem clients.
+Một Ceph storage cluster yêu cầu ít nhất một Ceph Monitor, Ceph Manager và Ceph OSD (Object Storage [Daemon](Notes.md/#daemon)) và Ceph Metadata Server cũng được yêu cầu khi chay Ceph Filesystem clients.
 
 1. **Monitors**: một Ceph Monitor (ceph-mon) duy trì bản đồ trạng thái các cụm, bao gồm monitor map, manager map, OSD map, và CRUSH map. Các bản đồ này là trạng thái cụm quan trọng cần thiết cho các Ceph daemons liên kết toạ độ với nhau. Monitor cũng chịu trách nhiệm cho việc quản lý sự uỷ quyền giữa các daemons và clients. Thường có ít nhất 3 monitors được yêu cầu cho dự trữ và sẵn sàng dụng cao.
 2. **Managers**: (Ceph manager daemon - ceph-mgr) theo dõi các thông số thời gian chạy và trạng thái hiện tại của Ceph cluster, bao gồm: việc sử dụng bộ nhớ, các thông số hiệu suất hiện tại, và tải hệ thống. Thông thường cần ít nhất 2 managers cho tính sẵn sàng cao.
 3. **Ceph OSDs**: (Object Storage Daemon, ceph-osd) Một Ceph OSD lưu trữ, xử lý, phục hồi, tái cân bằng, và cung cấp một vài monitoring information to Ceph Monitors và Managers bằng việc kiểm tra một tín hiệu (heartbeat) từ Ceph OSD Daemon khác. Cần 3 ceph OSD cho dự trữ và tính sẵn sàng cao.
-4. MDSs: (MDS, ceph-mds) lưu trữ metadata trên danh nghĩa của Ceph Filesystem (Ceph block devices và Ceph Object Storage không sử dụng MDS). Ceph Metadata Servers cho phép người dùng [POSIX](notes.md/#POSIX) file system thực thi các câu lệnh cơ bản (vd: ls, find,...) mà không đặt gánh nặng lên Ceph Storage Cluster.
+4. **MDSs**: (MDS, ceph-mds) lưu trữ metadata trên danh nghĩa của Ceph Filesystem (Ceph block devices và Ceph Object Storage không sử dụng MDS). Ceph Metadata Servers cho phép người dùng [POSIX](Notes.md/#POSIX) file system thực thi các câu lệnh cơ bản (vd: ls, find,...) mà không đặt gánh nặng lên Ceph Storage Cluster.
 
 
 ## Tham khảo

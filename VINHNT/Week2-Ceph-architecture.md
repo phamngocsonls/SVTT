@@ -73,11 +73,11 @@ Filesystem có các thuộc tính cung cấp các thông tin về trạng thái 
 
 Ceph monitor chịu trách nhiệm giám sát tình trạng của toàn hệ thống. Nó hoạt động như các daemon duy trì sự kết nối trong cluster bằng cách chứa các thông tin cơ bản về cluster, tình trạng các node lưu trữ và thông tin cấu hình cluster. Ceph monitor thực hiện điều này bằng cách duy trì các cluster map. Các cluster map này bao gồm monitor, OSD, PG, CRUSH và MDS map.
 
-1. Monitor map: Map này lưu trữ thông tin về các node monitor gồm Ceph cluster ID, Monitor hostname, địa chỉ IP và số port. Nó cũng giữ epoch (phiên map tại một thời điểm) hiện tại để tạo map và thông tin về lần thay đổi map cuối cùng.
-2. OSD map: Map này lưu trữ các trường như cluster ID, epoch cho việc tạo map OSD và lần thay đổi cuối. và thông tin liên quan đến pool như tên, ID, loại, mức nhân bản và PG. Nó cũng lưu các thông tin OSD như tình trạng, trọng số, thông tin host OSD.
-3. PG map: lưu trữ các phiên bản của PG (thành phần quản lý các Object trong Ceph), timestamp, bản OSD map cuối cùng, tỉ lệ đầy và gần đầy dung lượng. Nó cũng lưu các ID của PG, object count, tình trạng hoạt đọng và srub (hoạt động kiểm tra tính nhất quán của lưu trữ).
-4. CRUSH map: Map này lưu các thong tin của thiết bị lưu trữ trong Cluster, các quy tắc cho từng vùng lưu trữ.
-5. MDS map: Lưu thông tin về thời gian tạo và chỉnh sửa, dữ liệu và metadata pool ID, Cluster MDS count, tình trạng hoạt động của MDS, epoch của MDS map hiện tại.
+1. **Monitor map**: Map này lưu trữ thông tin về các node monitor gồm Ceph cluster ID, Monitor hostname, địa chỉ IP và số port. Nó cũng giữ epoch (phiên map tại một thời điểm) hiện tại để tạo map và thông tin về lần thay đổi map cuối cùng.
+2. **OSD map**: Map này lưu trữ các trường như cluster ID, epoch cho việc tạo map OSD và lần thay đổi cuối. và thông tin liên quan đến pool như tên, ID, loại, mức nhân bản và PG. Nó cũng lưu các thông tin OSD như tình trạng, trọng số, thông tin host OSD.
+3. **PG map**: lưu trữ các phiên bản của PG (thành phần quản lý các Object trong Ceph), timestamp, bản OSD map cuối cùng, tỉ lệ đầy và gần đầy dung lượng. Nó cũng lưu các ID của PG, object count, tình trạng hoạt đọng và srub (hoạt động kiểm tra tính nhất quán của lưu trữ).
+4. **CRUSH map**: Map này lưu các thong tin của thiết bị lưu trữ trong Cluster, các quy tắc cho từng vùng lưu trữ.
+5. **MDS map**: Lưu thông tin về thời gian tạo và chỉnh sửa, dữ liệu và metadata pool ID, Cluster MDS count, tình trạng hoạt động của MDS, epoch của MDS map hiện tại.
 
 Ceph monitor không lưu trữ dữ liệu, thay vào đó nó gửi các bản update cluster map cho client và các node khác trong cluster. Client và các node khác định kỳ check các cluster map và gửi báo cáo về monitor node.
 
@@ -101,7 +101,7 @@ Khi một Application muốn tương tác với Storage Cluster nó được lin
 
 ![](./Image/W2-librados-work.png)
 
-LIBRADOS giao tiếp với RADOS sử dụng một native protocol (một [socket](notes.md/#socket) được thiết kế chỉ cho mục đích này).
+LIBRADOS giao tiếp với RADOS sử dụng một native protocol (một [socket](Notes.md/#socket) được thiết kế chỉ cho mục đích này).
 Việc sử dụng một native protocol tạo kết nối giữa LIBRADOS và storage cluster rất nhanh và không giống với bất kỳ các Service Sockets hay Protocols nào khác.
 
 **Vai trò của LIBRADOS**:
@@ -115,8 +115,8 @@ Việc sử dụng một native protocol tạo kết nối giữa LIBRADOS và s
 
 ### 4. Ceph client
 Ceph client bao gồm 3 service interface:
-- **Block Device**: Ceph Block Device service cung cấp block devices với các tính năng có thể thay đổi kích thước, [thin-provisioned](notes.md/#thin-provisinoed), [snapshot](notes.md/#snapshots) và nhân bản. Ceph hỗ trợ cả **kernel object (KO)** và **QEMU hypervisor** (sử dụng trực tiếp thư viện librbd)
-- **Object store**: dịch vụ Ceph Object Storage cung cấp RESTfull APIs với interfaces tương thích với [Amazon S3](notes.md/#amazons3) và [OpenStack Swift](notes.md/#openstack-swift)
+- **Block Device**: Ceph Block Device service cung cấp block devices với các tính năng có thể thay đổi kích thước, [thin-provisioned](Notes.md/#thin-provisinoed), [snapshot](Notes.md/#snapshots) và nhân bản. Ceph hỗ trợ cả **kernel object (KO)** và **QEMU hypervisor** (sử dụng trực tiếp thư viện librbd)
+- **Object store**: dịch vụ Ceph Object Storage cung cấp RESTfull APIs với interfaces tương thích với [Amazon S3](Notes.md/#amazons3) và [OpenStack Swift](Notes.md/#openstack-swift)
 - **Filesystem**: Ceph Filesystem (CephFS) service cung cấp POSIX compliant filesystem nằm trên RADOS.
 
 <a name=""></a>
@@ -148,7 +148,7 @@ Một cách khác để truy cập RBD là sử dụng Kernel Module KRBD như h
 ![](./Image/W2-RBD-work-with-KRBD.png)
 
 Túm lại RBD cung cấp các đặc tính:
-- Tạo điều kiện lưu trữ [disk image](notes.md/#disk-image) trong Ceph Storage cluster.
+- Tạo điều kiện lưu trữ [disk image](Notes.md/#disk-image) trong Ceph Storage cluster.
 - Có thể tách VM từ host node vì dữ liệu được lưu trên Ceph Storage Cluster.
 - Images được trải trong cluster ở các OSD khác nhau.
 - Hỗ trợ Linux kernel
