@@ -47,7 +47,7 @@ Các thành phần này tưong ứng nằm trong 3 khối cấu trúc chính đ�
 
 Ở những phần tiếp theo ta sẽ phân tích lần lượt 3 khối cấu trúc của OVS. Chiến lược chung sẽ là dựa trên những kiến trúc và thông tin đã được cung cấp trong các Documentations của OVS trên github, xác định các bộ phận của từng khối. Tiếp đến, đọc code của project, xác định các cấu trúc dữ liệu đại diện cho một số bộ phận chính, phân tích các hàm sử dụng các các cấu trúc dữ liệu đó để thấy được tương tác giữa chúng.
 
-## <a name="code"></a> 2. vswitchd code walk through
+## <a name="vswitchd"></a> 2. vswitchd code walk through
 ### 2.1. Overview
 Đầu tiên, ta điểm qua một vài điểm quan trọng của **vswitchd**.
 
@@ -126,10 +126,7 @@ Mỗi cổng trên một switch phải có một netdev tương ứng và phải
 
 ![](images/2-OVS-Architecture/netdev-providers.png)
 
-```c 
-struct netdev_class
-```
-, trong ```lib/netdev-provider.h```, định nghĩa các giao diện cần thiết để thực thi một netdev.
+```struct netdev_class```, trong ```lib/netdev-provider.h```, định nghĩa các giao diện cần thiết để thực thi một netdev.
 
 
 
