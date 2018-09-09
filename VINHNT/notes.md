@@ -12,7 +12,7 @@ Block-storage là một kiến trúc lưu trữ dữ liệu máy tính mà quả
 
 Filesystem cũng là một kiến trúc lưu trữ dữ liệu máy tính nhưng quản lý dữ liệu như một hệ thống cấp bậc các thư mục.
 
-<a href="daemon"></a>
+<a name="daemon"></a>
 
 Daemon trong linux là một tiến trình chạy nền không chịu kiểm soát trực tiếp từ người dùng và có thể bật tắt mà không ảnh hưởng đến giao diện người dùng.
 
