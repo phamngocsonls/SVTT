@@ -45,6 +45,6 @@ Filesystem cũng là một kiến trúc lưu trữ dữ liệu máy tính nhưng
 
 <a name="openstack-swift"></a> 
 
-<a href="disk-image"></a>
+<a name="disk-image"></a>
 
 **Disk image** là một file máy tính bao gồm nội dung và cấu trúc của một ổ đĩa hoặc một thiết bị lưu trữ dữ liệu.
