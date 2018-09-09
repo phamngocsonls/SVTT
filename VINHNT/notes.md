@@ -4,7 +4,7 @@ title: Ghi chép các khái niệm
 
 ## Các khái niệm
 
-<a href="object-storage"></a>
+<a name="object-storage"></a>
 
 Object-storage (object-based storage) là một kiến trúc lưu trữ dữ liệu máy tính mà quản lý dữ liệu như là các objects.
 
