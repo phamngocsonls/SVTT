@@ -15,7 +15,7 @@
 
 
 # Khởi tạo môi trường
-
+```
 export OS_PROJECT_DOMAIN_NAME=Default
 export OS_USER_DOMAIN_NAME=Default
 export OS_PROJECT_NAME=admin
@@ -24,7 +24,7 @@ export OS_PASSWORD=123test
 export OS_AUTH_URL=http://172.16.69.131/identity
 export OS_IDENITY_API_VERSION=2
 export OS_IMAGE_API_VERSION=2
-
+```
 
 
 <a name="1"></a>
