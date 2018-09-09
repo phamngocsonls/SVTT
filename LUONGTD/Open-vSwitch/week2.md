@@ -40,6 +40,7 @@ Các thành phần này tưong ứng nằm trong 3 khối cấu trúc chính đ�
 ### <a name="handle"></a> 1.2. OVS Packet Handling
 Đầu tiên hãy xem một gói tin đi qua OVS như thế nào:
 ![Fig2.2: **ovsdb core table**](images/2-OVS-Architecture/ovs_packet_flow.jpg)
+
 - Ta nhắc lại rằng, OVS là một phần mềm switch hỗ trợ OpenFlow.
 - Openflow controller chịu trách nhiệm đưa ra các hướng dẫn (hay còn gọi là **flow**) cho datapath biết làm sao xử lý các loại gói khác nhau. Một **flow** mô tả hành động (hay còn gọi là **action**) mà datapath thực hiện để xử lý các gói tin của cùng một loại như thế nào. Các kiểu **action** bao gồm chuyển tới (forwarding) pỏt khác, thay đổi vlan tag,... Quá trình tìm kiếm flow khớp với gói tin được gọi là **flow matching**.
 - Nhằm mục đích đạt được hiệu năng tốt (như đã đề cập ở trên), một phần của flows được cache trong **datapath** và phần còn lại nằm ở **vswitchd**.
@@ -100,7 +101,7 @@ Mỗi thực thi (implementation) ofproto (ovs bridge) cần phải định ngh�
 
 Open vSwitch có một built-in ofproto-provider gọi là **ofproto-dpif**, nó được xây dựng trên đỉnh của thư viện **dpif**(thư viện **dpif** dùng để thao tác với datapath). Tương tự như **ofproto**, **dpif** cũng "ủy quyền" cho **dpif-provider** để thực hiện các chức năng quản lý. Cụ thể như sau: 
 
-![](images/2-OVS-Architecture/vswitchd-internal.png)
+![](images/2-OVS-Architecture/ofproto-providers.png)
 
 Một datapath là một bảng (lưu lại các) flow, nó chỉ phục vụ các exact-match flows. Khi một gói tin đến trên một thiết bị mạng, datapath thực hiện quá trình tìm kiếm matching flow. Nó thực thi các action trên các gói tin nhận được nếu các gói tin đó match với một flow đã tồn tại (specific flows). Nếu gói tin không khớp với bất cứ flow nào thì gói tin sẽ đưọc chuyển lên **ofproto-dpif**, nơi lưu giữ bảng OpenFlow đầy đủ (còn nhớ ở mục 1.1, ta đã nói rằng trong trường hợp không xảy ra matching, gói tin sẽ được chuyển lên **vswitchd**, vậy, **ofproto-dpif** là bộ phận chính xác mà ta đã đề cập tới). Nếu flow matching tại bảng này thành công thì **ofproto-dpif** sẽ thực hiện action tương ứng và thêm flow entry mới vào bảng flow của **dpif**. ( Nếu flow matching không xảy ra, **ofproto-dpif** sẽ gửi gói tin cho **ofproto** để chuyển đến OpenFlow Controller.)
 Đến đây, ta có thể xây dựng lại sơ đồ kiến trúc đầy đủ hơn như sau:
@@ -123,7 +124,7 @@ Mỗi cổng trên một switch phải có một netdev tương ứng và phải
 ### 2.3. netdev-provider
 **netdev-provider** triển khai giao diện hệ điều hành và phần cứng cụ thể cho các "thiết bị mạng", ví dụ: eth0 trên Linux. OVS phải có khả năng mở mỗi cổng trên một switch như một netdev, vì vậy ta sẽ cần phải thực hiện một **netdev-provider** hoạt động với switch cứng và mềm.
 
-![](images/2-OVS-Architecture/netdev-providers.png)
+![](images/2-OVS-Architecture/netdev_providers.png)
 
 ```struct netdev_class```, trong ```lib/netdev-provider.h```, định nghĩa các giao diện cần thiết để thực thi một netdev.
 
