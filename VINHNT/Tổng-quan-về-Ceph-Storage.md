@@ -27,7 +27,7 @@ Ceph là một giải pháp mã nguồn mở để xây dựng hạ tầng lưu 
 
 <a name="2"></a>
 
-Một Ceph storage cluster yêu cầu ít nhất một Ceph Monitor, Ceph Manager và Ceph OSD (Object Storage [Daemon](/nodes.md/#daemon)) và Ceph Metadata Server cũng được yêu cầu khi chay Ceph Filesystem clients.
+Một Ceph storage cluster yêu cầu ít nhất một Ceph Monitor, Ceph Manager và Ceph OSD (Object Storage [Daemon](/VINHNT/nodes.md/#daemon)) và Ceph Metadata Server cũng được yêu cầu khi chay Ceph Filesystem clients.
 
 1. **Monitors**: một Ceph Monitor (ceph-mon) duy trì bản đồ trạng thái các cụm, bao gồm monitor map, manager map, OSD map, và CRUSH map. Các bản đồ này là trạng thái cụm quan trọng cần thiết cho các Ceph daemons liên kết toạ độ với nhau. Monitor cũng chịu trách nhiệm cho việc quản lý sự uỷ quyền giữa các daemons và clients. Thường có ít nhất 3 monitors được yêu cầu cho dự trữ và sẵn sàng dụng cao.
 2. **Managers**: (Ceph manager daemon - ceph-mgr) theo dõi các thông số thời gian chạy và trạng thái hiện tại của Ceph cluster, bao gồm: việc sử dụng bộ nhớ, các thông số hiệu suất hiện tại, và tải hệ thống. Thông thường cần ít nhất 2 managers cho tính sẵn sàng cao.

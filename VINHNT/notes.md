@@ -16,6 +16,6 @@ Filesystem cũng là một kiến trúc lưu trữ dữ liệu máy tính nhưng
 
 Daemon trong linux là một tiến trình chạy nền không chịu kiểm soát trực tiếp từ người dùng và có thể bật tắt mà không ảnh hưởng đến giao diện người dùng.
 
-<a href="POSIX"></a>
+<a name="POSIX"></a>
 
 POSIX (The Portable Operating System Interface) duy trì khả năng tương thích giữa các hệ điều hành. POSIX định nghĩa các API cùng với các command shells và tiện ích cho khả năng tương tác với các biến thể của Unix và các hệ điều hành khác.
