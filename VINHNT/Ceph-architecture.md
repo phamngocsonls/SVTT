@@ -203,5 +203,5 @@ Ban đầu lưu cấu hình Ceph metadata server lưu tất cả các POSIX sema
 
 ## Tham khảo
 
-[1. https://www.supportsages.com/ceph-part-3-technical-architecture-and-components/](https://www.supportsages.com/ceph-part-3-technical-architecture-and-components/)
+[1. https://www.supportsages.com/ceph-part-3-technical-architecture-and-components/](https://www.supportsages.com/ceph-part-3-technical-architecture-and-components/) 
 [2. http://docs.ceph.com/docs/master/architecture/](http://docs.ceph.com/docs/master/architecture/)
