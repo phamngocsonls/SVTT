@@ -51,32 +51,23 @@ Sơ đồ sau mô tả trạng thái của Image trong quá trình Upload:
 ![Imgur](https://i.imgur.com/n1WqbPX.png)
 
 
-- queued
-Image identifier được reversed for an imaged in the Glance registry. Không có image data nào được upload lên Glance, image size được set zero khi khởi tạo
+- **queued:** Image identifier được reversed for an imaged in the Glance registry. Không có image data nào được upload lên Glance, image size được set zero khi khởi tạo
 
-- saving
-Image raw data đang trong trạng thái upload lên Glance. Khi image được registered, no gọi đến phương thức POST/images và có *x-image-meta-location* header present
+- **saving:** Image raw data đang trong trạng thái upload lên Glance. Khi image được registered, no gọi đến phương thức POST/images và có *x-image-meta-location* header present
 
-- uploading
-Chỉ thị rằng import data-put call được thực hiện. Khi ở trang thái này, phương thức PUT/file is disallowed
+- **uploading:** Chỉ thị rằng import data-put call được thực hiện. Khi ở trang thái này, phương thức PUT/file is disallowed
 
-- importing
-Image đã được import nhưng chưa sẵn sàng sử dụng
+- **importing:** Image đã được import nhưng chưa sẵn sàng sử dụng
 
-- active 
-Image đã được upload thành công lên Glance.
+- **active:** Image đã được upload thành công lên Glance.
 
-- deactivated
-Việc access to image data is not allowed to any non-admin user
+- **deactivated:** Việc access to image data is not allowed to any non-admin user
 
-- killed
-Hiển thị lỗi xảy ra trong quá tình upload image, image không sẵn sàng sử dụng
+- **killed:** Hiển thị lỗi xảy ra trong quá tình upload image, image không sẵn sàng sử dụng
 
-- deleted
-Glance giữ lại thông tin về image, image không sẵn sàng được sử dụng, nó sẽ bị removed tự động vào 1 thời gian sau
+- **deleted:** Glance giữ lại thông tin về image, image không sẵn sàng được sử dụng, nó sẽ bị removed tự động vào 1 thời gian sau
 
-- pending_delete
-Giống như *deleted* state nhưng Glance sẽ không removed image dât, các image ở trạng thai này sẽ không thể phục hồi được
+- **pending_delete:** Giống như *deleted* state nhưng Glance sẽ không removed image dât, các image ở trạng thai này sẽ không thể phục hồi được
 
 
 <a name=""4>></a>
@@ -85,20 +76,14 @@ Giống như *deleted* state nhưng Glance sẽ không removed image dât, các 
 
 The disk format of a virtual machine image is the forrmat of the underlying disk image
 
-- raw
-Disk image format in an unstructured
+- **raw:** Disk image format in an unstructured
 
-- vhd
-VHD disk format được sử dụng trong ảo hóa VMWare, Xen, Microsoft, VirtualBox
+- **vhd:** VHD disk format được sử dụng trong ảo hóa VMWare, Xen, Microsoft, VirtualBox
 
-- vhdx
-Phiên bản nâng cao của `vhd`, hỗ trợ larger disk sizes
+- **vhdx:** Phiên bản nâng cao của `vhd`, hỗ trợ larger disk sizes
 
-- vdi
-Disk format support by VirtualBox virtual machine và QEMU emulator
+- **vdi:** Disk format support by VirtualBox virtual machine và QEMU emulator
 
-- iso
-An format for the data contents of an typical disc
+- **iso:** An format for the data contents of an typical disc
 
-- qcow2
-A disk format supported by QEMU
+- **qcow2:** A disk format supported by QEMU
