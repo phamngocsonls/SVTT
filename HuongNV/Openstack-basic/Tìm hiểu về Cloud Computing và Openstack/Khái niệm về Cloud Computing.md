@@ -1,13 +1,14 @@
-**Tìm hiểu cơ bản về Cloud Computing**
+# Tìm hiểu cơ bản về Cloud Computing
 
-##Mục lục
+## Mục lục
 
 * [1. Cloud Computing là gì?](#1)
 * [2. Phân loại Cloud vá các dịch vụ tương ứng](#2)
 
 <a name="1"></a>
 
-**1. Cloud Computing là gì?**
+
+# 1. Cloud Computing là gì?
 
 Điện toán đám mây (Cloud Computing) theo định nghĩa của IBM là việc cung cấp các tài nguyên máy tính cho người dùng tùy theo mục đích sử dụng thông qua kết nối **Internet**. Nguồn tài nguyên đó có thể là bất kể thứ gì liên quan tới điện toán và máy tính, ví dụ như phần mềm, phần cứng, hạ tậng mạng cho đến các máy chủ và mạng lưới máy chủ cỡ lớn.
 
@@ -15,24 +16,22 @@
 
 <a name="2"></a>
 
-**2. Phân loại Cloud và các dịch vụ tương ứng**
+# 2. Phân loại Cloud và các dịch vụ tương ứng
 
-* Các mô hình Cloud triển khai
+##  Các mô hình Cloud triển khai
 
     * Public Cloud: Là các dịch vụ được bên thứ 3 cung cấp. Chúng tồn tại ngoài tường lửa của công ty và được nhà cung cấp dịch vụ quản lý. Nó được xây dựng nhằm phục đích sử dụng công cộng, người dùng sẽ đăng kí với nhà cung cấp và sử dụng dịch vụ.
 
     * Private Cloud: Là các dịch vụ điện toán đám mây được cung cấp trong các doanh nghiệp. Những *đám mây* này tồn tại bên trong tường lửa của công ty và được các doanh nghiệp trực tiếp quản lý. Đây là xu thế tất yếu cho các doanh nghiệp nhằm tối ưu hạ tầng công nghệ thông tin.
 
-   ![Imgur](https://i.imgur.com/mT06UCO.png)
-
-    * Hybrid Cloud: Là sự kết hợp của *private cloud* và *public cloud*. Nó cho ta khai thác điểm mạnh của từng mô hình cũng như đưa ra phương thức sử dụng tối ưu cho người sử dụng. Những **đấm mây** này thường do doanh nghiệp tạo ra và việc quản lý sẽ được phân chia giữa doanh nghiệp và nhà cung cấp dịch vụ.
+    * Hybrid Cloud: Là sự kết hợp của *private cloud* và *public cloud*. Nó cho ta khai thác điểm mạnh của từng mô hình cũng như đưa ra phương thức sử dụng tối ưu cho người sử dụng. Những **đám mây** này thường do doanh nghiệp tạo ra và việc quản lý sẽ được phân chia giữa doanh nghiệp và nhà cung cấp dịch vụ.
 
     <img src="https://i.imgur.com/GUCC6ld.jpg">
 
     * Comminity Cloud: Là mô hình được xây dựng dưới sự hợp tác của các công ty và nhà cung cấp dịch vụ xây dựng nên.
 
 
-* Các mô hình dịch vụ
+## Các mô hình dịch vụ
 
     1. **IaaS(Infrastructure as a Service)**: Dịch vụ hạ tầng, nó cung cấp cho mọi người hạ tầng thô, thường là các máy ảo như là một dịch vụ.
         *Những đặc tính của IaaS*
@@ -52,7 +51,7 @@ Một cái nhìn tổng quan về 3 mô hình dịch vụ như sau:
 <img src="https://i.imgur.com/7yrNO1w.jpg">
 
 
-* 5 đặc tính của Cloud Computing
+## 5 đặc tính của Cloud Computing
 
     * Rapid elasticity: Đây là đặc tính nổi bật của Cloud Computing. Nó có khả năng co giãn, mở rộng hoặc thu nhỏ hệ thống theo yêu cầu của người sử dụng.
     * On-demand self-service: Khả năng đáp ứng yêu cầu của người dùng đều được xử lý qua Internet.
