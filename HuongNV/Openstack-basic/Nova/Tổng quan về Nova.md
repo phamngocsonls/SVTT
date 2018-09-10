@@ -5,6 +5,8 @@
 * [1. Nova overview](#1)
 * [2. Nova achitecture](#2)
 * [3. Virtual machine creation workflow](#3)
+    * [3.1 Các thành phần tham gia trong quá trình khởi tạo Virtual machine](#31)
+    * [3.2 Luồng request flow trong quá trình khởi tạo Virtual machine](#32)
 
 
 
@@ -76,5 +78,58 @@ Ví dụ, database chứa một số thông tin như: migrate_version, migration
 
 <a name="3"></a>
 
-# Virtual machine creation workflow
+# 3. Virtual machine creation workflow
 
+Sơ đồ dưới đây miểu tả Request Flow for Provisioning Insstance in Openstack
+
+
+![Imgur](https://i.imgur.com/xR8Lmyj.png)
+
+
+<a name="31"></a>
+
+## 3.1 Các thành phần tham gia trong quá trình khởi tạo Virtual machine
+
+* **CLI**: command line dòng lệnh trong Openstack Compute
+* **Dashboard**: cung cấp giao diện web cho người sử dụng
+* **Compute**: truy xuất virtual disk images(Glance), attach flow flavor và metadata tới end user API
+* **Network**: cung cấp virtual networking cho các VM trong Compute có theeg giao tiếp với nhau và đi ra ngoài Internet
+* **Block Storage**: cung cấp persistent storage volume cho Compute servcies
+* **Image**: lưu giữ virtual disk file
+* **Identity**: cung cấp tính xác thực và ủy quyền cho tất cả các dịch vụ trong Openstack
+* **Message Queue(RabbitMQ)**: thực hiện các giao tiếp giữa các components trong Openstack như Nova, Neutron, Cinder
+
+
+
+<a name="32"></a>
+
+## 3.2 Luồng request flow trong quá trình khởi tạo Virtual machine
+
+1. **Dashboard or CLI**: nhận thông tin người dùng và thực hiện REST call chuyển tới Keystone để xác thực
+2. **Keystone**: xác thực thông tin người dùng, tạo ra và gửi token tới end user để có thể request tới các thành phần khác bằng REST call
+3. **Dashboard or CLI**: chuyển đổi request cụ thể như `launch instance` or `nova-boot`  tới `nova-api`
+4. **nova-api**: nhận request và gửi lời request kèm theo tính xác thực của token và quyền hạn của người dùng đó tới keystone
+5. **Keystone**: xác thực token và gửi các updated auth headers với roles avf quyền hạn permissions
+6. **nova-api**: tương tác với `nova-database`
+7. database tạo ra entry lưu thông tin về new instance
+8. **nova-api**: gửi `rpc.call` request tới `nova-scheduler` để cập nhật instance với host ID cụ thể
+9. **nova-scheduler**: lấy các request từ `queue`
+10. **nova-scheduler**: thao tác với `nova-database` để tìm host muốn launch instance
+11. trả về tin updated với ID của host Compute
+12. **nova-scheduler**: gửi `rpc.cast` request tới `nova-compute` để có thể launch instance trên host ID đã xác định
+13. **nova-compute**: lấy các request từ queue
+14. **nova-compute**: gửi `rpc.call` request tới `nova-conductor` để lấy thông tin về instance như host ID, flavor (RAM, CPU, Disk)
+15. **nova-conductor**: lấy các request từ queue
+16. **nova-conductor**: thao tác với `nova-database`
+17. trả về instance information
+18. **nova-compute**: lấy thông tin về instance từ queue
+19. **nova-compute**: thực hiện REST call kèm theo auth-token tới `glance-api` để lấy Image URL với Image ID và upload Image từ image store
+20. **glance-api**: xác thực với keystone
+21. **nova-compute**: get the image metadata
+22. **nova-compute**: thực hiện REST call kèm theo auth-token tới `Network API` để cung cấp và config network cho instance
+23. **quantum-server**: xác thực auth-token với keystone
+24. **nova-compute**: lấy thông tin về network
+25. **nova-compute**: REST call được gọi đến gửi auth-token tới `Volume API` nhằm attach volumes tới instance
+26. **cinder-api**: chứng thực auth-token với keystone
+27. **nova-compute**: lấy thông tin từ block storage
+28. **nova-compute**: tạo data cho hypervisor drivervà tạo máy ảo virtual machine trên Hypervisor(qua libvirt or api)
