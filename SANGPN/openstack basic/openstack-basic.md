@@ -123,8 +123,39 @@ OpenStack là một phần mềm mã nguồn mở, dùng để triển khai Clou
 - PKI: PKI (Public Key Infrastructure) Token bản chất dựa trên chữ ký điện tử. Keystone sẽ dùng private key cho việc ký nhận và các Openstack API sẽ có public key để xác nhận thông tin đó.
 
 #### 1.3.3. Luồng xác thực và phân quyền khi user sử dụng dịch vụ (ví dụ khi user tạo 1 máy ảo).
+![](https://i.imgur.com/684Wq5Z.png)
+1. User gửi thông tin chứng thực đến Keystone (Username và Password).
+2. Keystone kiểm tra thông tin. Nếu đúng, nó sẽ gửi về user một token.
+3. User gửi token và yêu cầu đến Nova.
+4. Nova và Keystone tương tác với nhau để xác nhận token có hợp lệ hay không, user có những quyền hạn gì...
+5. Nếu token hợp lệ và đủ quyền thì Nova gửi token và yêu cầu Image đến Glance.
+6. Glance gửi token về Keystone để xác thực và kiểm tra xem user này có quyền với Image này hay không. Keystone sẽ trả lời lại cho Nova.
+7. Nova gửi token và yêu cầu mạng đến Neutron.
+8. Neutron gửi token đến Keystone. Keystone sẽ trả lời cho Neutron là user này có đủ quyền hạn hay không.
+9. Neutron trả lời cho Nova.
+10.Nova trả lời cho user.
 
- ![](https://ilearnstack.files.wordpress.com/2013/04/request-flow1.png)
+## 2. Compute (Nova):
+
+### 2.1. Chức năng chính:
+
+-	Nova hỗ trợ tạo các máy ảo, máy chủ từ xa và hỗ trợ giới hạn cho các container hệ thống.
+-	Là phần chính của hệ thống IaaS. Nó được thiết kế để quản lý và tự động hóa các nhóm tài nguyên máy tính và có thể làm việc với các công nghệ ảo hóa rộng rãi, cũng như các cấu hình máy tính hiệu suất cao. KVM, VMware và Xen là những lựa chọn có sẵn cho công nghệ hypervisor…
+
+### 2.2. Các dịch vụ thành phần:
+
+![](https://docs.openstack.org/nova/queens/_images/architecture.svg)
+
+-	Nova-api: là một RESTful API web service, nhận các yêu cầu HTTP, chuyển đổi các lệnh và giao tiếp với các thành phần khác thông qua hàng đợi oslo.messaging hoặc HTTP.
+-	Nova-compute: quản lý giao tiếp với hypervisor và các máy ảo.
+- Nova-scheduler: Lấy một yêu cầu về máy ảo ở hàng đợi và quyết định máy chủ sẽ chạy nó.
+-	Nova-conductor: cung cấp các dịch vụ cho nova-compute, là trung gian giữa nova-compute và dữ liệu.
+- Nova database: sql database cho lưu trữ dữ liệu.
+-	Nova-network: quản lý chuyển tiếp IP, cầu nối và các VLAN.
+
+### 2.3. Tìm hiểu luồng quản lý máy ảo: tạo, xóa.
+
+![](https://ilearnstack.files.wordpress.com/2013/04/request-flow1.png)
 
 1. Dashboard/CLI lấy thông tin chứng thực người dùng và gọi REST tới Keystone để xác thực.
 2. Keystone xác thực thông tin người dung và tạo ra một token xác thực gửi trở lại, để dùng cho việc gửi yêu cầu đến các dịch vụ khác qua REST.
@@ -154,26 +185,6 @@ OpenStack là một phần mềm mã nguồn mở, dùng để triển khai Clou
 26. Cinder-api xác thực token xác thực với keystone.
 27. Nova-compute lấy thông tin block storage cấp cho máy ảo.
 28. Nova-compute tạo dữ liệu cho hypervisor driver và thực thi yêu cầu tạo máy ảo trên Hypervisor (thông qua libvirt hoặc api).
-
-## 2. Compute (Nova):
-
-### 2.1. Chức năng chính:
-
--	Nova hỗ trợ tạo các máy ảo, máy chủ từ xa và hỗ trợ giới hạn cho các container hệ thống.
--	Là phần chính của hệ thống IaaS. Nó được thiết kế để quản lý và tự động hóa các nhóm tài nguyên máy tính và có thể làm việc với các công nghệ ảo hóa rộng rãi, cũng như các cấu hình máy tính hiệu suất cao. KVM, VMware và Xen là những lựa chọn có sẵn cho công nghệ hypervisor…
-
-### 2.2. Các dịch vụ thành phần:
-
-![](https://docs.openstack.org/nova/queens/_images/architecture.svg)
-
--	Nova-api: là một RESTful API web service, nhận các yêu cầu HTTP, chuyển đổi các lệnh và giao tiếp với các thành phần khác thông qua hàng đợi oslo.messaging hoặc HTTP.
--	Nova-compute: quản lý giao tiếp với hypervisor và các máy ảo.
-- Nova-scheduler: Lấy một yêu cầu về máy ảo ở hàng đợi và quyết định máy chủ sẽ chạy nó.
--	Nova-conductor: cung cấp các dịch vụ cho nova-compute, là trung gian giữa nova-compute và dữ liệu.
-- Nova database: sql database cho lưu trữ dữ liệu.
--	Nova-network: quản lý chuyển tiếp IP, cầu nối và các VLAN.
-
-### 2.3. Tìm hiểu luồng quản lý máy ảo: tạo, xóa.
 
 ## 3. Networking (Neutron):
 
