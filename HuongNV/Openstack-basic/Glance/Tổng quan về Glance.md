@@ -70,7 +70,7 @@ Sơ đồ sau mô tả trạng thái của Image trong quá trình Upload:
 - **pending_delete:** Giống như *deleted* state nhưng Glance sẽ không removed image dât, các image ở trạng thai này sẽ không thể phục hồi được
 
 
-<a name=""4>></a>
+<a name="4"></a>
 
 # 4. Disk format
 
