@@ -139,7 +139,7 @@ Dưới đây là một bản khảo sát về mức độ sử dụng của cá
 
 <a name="4"></a>
 
-# 4. Ferner Token
+# 4. Fernet Token
 
 - Fernet token là mã token mới nhất. Nó có độ dài 255 kí tự, kích thước lớn hơn UUID toke và nhỏ hơn PKI token.
 - Fernet token chuwqas một số thông tin như: user identifier, a project identifier, token expiration và một số thông tin khác.
