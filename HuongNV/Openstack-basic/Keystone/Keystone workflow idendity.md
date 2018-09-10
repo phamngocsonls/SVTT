@@ -1,5 +1,4 @@
 
-
 Workflow chart dưới đây chỉ ra cơ chế authentication khi user muốn create 1 Virtual machine:
 
 ![Imgur](https://i.imgur.com/jhA7OfL.png)
