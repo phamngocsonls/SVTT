@@ -2,7 +2,7 @@
 
 ## Mục lục
 
-* [1. Overview](#1)
+* [1. Giới thiệu](#1)
     * [1.1. QEMU(KVM)](#11)
     * [1.2. Libvirt](#12)
 * [2. Nova, Libvirt, QEMU trong việc quản lý máy ảo](#2)
@@ -85,16 +85,16 @@ Quản lý các VMs trong 2 file:
 
 ## 2.3 Reboot
 - Là quá trình restart lại instance
-- Có 2 laoij reboot qua API: hard và soft reboot
-    * Soft reboot phụ thuộc vào guest Ó và ACPI qua QEMU
+- Có 2 loại reboot qua API: hard và soft reboot
+    * Soft reboot phụ thuộc vào guest OS và ACPI qua QEMU
     * Hard reboot tương ứng ở mức hypervisor
     * Sử dụng command line: `nova reboot` or `nova reboot-hard`
 - Hard reboot is the sledge-o-matic of just fix it operations
 
 ### Hard Reboot Workflow
 * Destroy domain
-    * tương đương với virsh destroy
-    * không destroy data, chỉ destroy QEMU process
+    * Tương đương với virsh destroy
+    * Không destroy data, chỉ destroy QEMU process
 * Thiết lập lại all volume connections
 * Định nghĩa lại XML file
 * Kiểm tra, tìm kiếm và cài đặt lại các file còn thiếu
@@ -106,25 +106,25 @@ Quản lý các VMs trong 2 file:
 
 ## 2.4 Suspend
 
-- tương đương với: virsh managed-save
+- Tương đương với: virsh managed-save
 - Một số vấn đề tại trạng thái này như:
-    - lưu giữ trạng thái bộ nhớ tiêu thụ trên disk giống như memory của instance
-    - disk space không được hiển thị rõ qua quota
+    - Lưu giữ trạng thái bộ nhớ tiêu thụ trên disk giống như memory của instance
+    - Disk space không được hiển thị rõ qua quota
     
 
 <a name="25"></a>
 
 ## 2.5 Live Migration
 
-- có 2 loại live migartion với largely different code paths: normal và block migrations
-- `normal migration` yêu cầu về source và target của hypervisor cũng như có thể truy cập tới instance data như các shared storage, NAS
-- `block migration` không yêu cầu gì đặc biêt, instance disk được migrate như 1 tiến trình process
+- Có 2 loại live migartion với largely different code paths: normal và block migrations
+- `normal migration`: Yêu cầu về source và target của hypervisor cũng như có thể truy cập tới instance data như các shared storage, NAS
+- `block migration` Không yêu cầu gì đặc biêt, instance disk được migrate như 1 tiến trình process
 
 ### Live Migration Workflow
-- kiểm tra hệ thống storage backend có phù hợp với loại migate không
+- Kiểm tra hệ thống storage backend có phù hợp với loại migate không
 - Tại destination host:
-    - tạo volume connections
-    - nếu là block migration, cần tạo instance directory, theiets lập các file còn thiêu từ Glance image và tạo 1 empty instance disk
+    - Tạo volume connections
+    - Nếu là block migration, cần tạo instance directory, theiets lập các file còn thiêu từ Glance image và tạo 1 empty instance disk
 - Tại source host, khởi tạo quá trình migrate
 - Khi quá trình migrate hoàn tất, tạo lại XML file và định nghĩa lại VMs
 
@@ -135,25 +135,25 @@ Quản lý các VMs trong 2 file:
 
 - Migrate khác với live migrate ở chỗ chỉ thực hiện được khi tắt máy ảo, tức là Libvirt không chạy
 - Nó yêu cầu SSH key đối với các user đang chạy nova-compute với mọi hypervisor
-- resize không cho phép chia lại ổ đĩa vì nó k an toàn
+- Resize không cho phép chia lại ổ đĩa vì nó k an toàn
 
 ### Resize/Migrate Workflow
 
-- shutdown instance, tương đương với virsh destroy, ngắt kết nối tới volume
-- di chuyển tất cả các thư mục hiện tại của instance (instance_dir -> instance_dir_resize)
-- nếu sử dụng QCOW2, cần convert image snag flat. quá trình này tốn thời gian
-- với shared storage, chueyenr new instance_dir vào hoặc có thể copy toàn bộ qua SCP
+- Shutdown instance, tương đương với virsh destroy, ngắt kết nối tới volume
+- Di chuyển tất cả các thư mục hiện tại của instance (instance_dir -> instance_dir_resize)
+- Nếu sử dụng QCOW2, cần convert image snag flat. quá trình này tốn thời gian
+- Với shared storage, chuyển new instance_dir vào hoặc có thể copy toàn bộ qua SCP
 
 
 <a name="27"></a>
 
 ## 2.7 Snapshots 
 
-- có 2 loại snapshot là: live snapshot và cold snapshot
+- Có 2 loại snapshot là: live snapshot và cold snapshot
 - Live snapshot không yêu cầu config gì cả, Nova sẽ thực hiện tự động
 
 ### Live snapshot workflow
-- kiểm tra hypervisor có đảm bảo live snapshot không
+- Kiểm tra hypervisor có đảm bảo live snapshot không
 - Instance phải ở trạng thái running
 - Tạo empty QCOW2 image trong thư mục tạm thời
 - Qua libvirt, thiết lập sao chép từ instance hiện tại sang empty disk đã tạo ở trên

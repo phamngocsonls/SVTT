@@ -3,8 +3,8 @@
 ## Mục lục
 
 * [1. Sử dụng Neutron command line](#1)
-    * [1.1 List network](#11)
-    * [1.2 Show netửok information](#12)
+    * [1.1 Listing network](#11)
+    * [1.2 Show network information](#12)
     * [1.3 Update network](#13)
     * [1.4 Listing port](#14)
     * [1.5 Show port information](#15)
@@ -16,8 +16,8 @@
 
 <a name="11"></a>
 
-# 1.1 List network
-- Sử dụng Neutron CLI:
+# 1.1 Listing network
+Sử dụng Neutron CLI:
 ```
 usage: neutron net-list [-h] [-f {csv,html,json,table,value,yaml}] [-c COLUMN]
                         [--max-width <integer>] [--print-empty] [--noindent]
@@ -35,7 +35,7 @@ usage: neutron net-list [-h] [-f {csv,html,json,table,value,yaml}] [-c COLUMN]
 <a name="12"></a>
 
 # 1.2 Show network information
-- Sử dụng:
+Sử dụng:
 ```
 usage: neutron net-show [-h] [-f {html,json,shell,table,value,yaml}]
                         [-c COLUMN] [--max-width <integer>] [--print-empty]
@@ -49,7 +49,7 @@ usage: neutron net-show [-h] [-f {html,json,shell,table,value,yaml}]
 
 # 1.3 Update network
 
-- Sử dụng:
+Sử dụng:
 ```
 usage: neutron net-update [-h] [--request-format {json}] [--name NAME]
                           [--description DESCRIPTION]
@@ -61,7 +61,7 @@ usage: neutron net-update [-h] [--request-format {json}] [--name NAME]
 <a name="14"></a>
 
 # 1.4 Listing port
-- Sử dụng:
+Sử dụng:
 ```
 usage: neutron port-list [-h] [-f {csv,html,json,table,value,yaml}]
                          [-c COLUMN] [--max-width <integer>] [--print-empty]
@@ -74,7 +74,7 @@ usage: neutron port-list [-h] [-f {csv,html,json,table,value,yaml}]
 <a name="15"></a>
 
 # 1.5  Show port information 
-- Sử dụng:
+Sử dụng:
 ```
 usage: neutron port-show [-h] [-f {html,json,shell,table,value,yaml}]
                          [-c COLUMN] [--max-width <integer>] [--print-empty]
@@ -82,13 +82,13 @@ usage: neutron port-show [-h] [-f {html,json,shell,table,value,yaml}]
                          [--request-format {json}] [-D] [-F FIELD]
                          PORT
 ```
-- Ví dụ: Hiển thị các thông số về port như: trạng thái port-security, security-groups
+Ví dụ: Hiển thị các thông số về port như: trạng thái port-security, security-groups
 ![Imgur](https://i.imgur.com/QnzWF27.png)
 
 <a name="16"></a>
 
 # 1.6 Update port information 
--Sử dụng:
+Sử dụng:
 ```
 usage: neutron port-update [-h] [--request-format {json}] [--name NAME]
                            [--description DESCRIPTION]
@@ -104,13 +104,13 @@ usage: neutron port-update [-h] [--request-format {json}] [--name NAME]
                            [--dns-name DNS_NAME | --no-dns-name]
                            PORT
 ```
-- Ví dụ: Thực hiện enabled port-security đi, mặc định thuộc tính này sẽ luôn False(đây là một tính năng rất quan trong trong Neutron)
+Ví dụ: Thực hiện enabled port-security đi, mặc định thuộc tính này sẽ luôn False(đây là một tính năng rất quan trong trong Neutron)
 ![Imgur](https://i.imgur.com/JOT7MO9.png)
 
 <a name="17"></a>
 
 # 1.7 Listing security-group
-- Security group là 1 tính năng rất quan trọng trong Neutron, mục đích của nó nahwmf kiểm soát traffic ra vào VMs
+- Security group là 1 tính năng rất quan trọng trong Neutron, mục đích của nó nhằm kiểm soát traffic ra vào VMs
 - Sử dụng:
 ```
 usage: neutron security-group-list [-h] [-f {csv,html,json,table,value,yaml}]
@@ -121,12 +121,12 @@ usage: neutron security-group-list [-h] [-f {csv,html,json,table,value,yaml}]
                                    [-P SIZE] [--sort-key FIELD]
                                    [--sort-dir {asc,desc}]
 ```
-- Ví dụ liệt kê tất cả security-group
+Ví dụ liệt kê tất cả security-group
 ![Imgur](https://i.imgur.com/fftmeF4.png)
 
 <a name="2"></a>
 
-# Sử dụng Dashboard
+# 2. Sử dụng Dashboard
 - Sử dụng Dashboard cực kì dễ thao tác với Neutron
 - Liệt kê các Network có trong project:
 ![Imgur](https://i.imgur.com/IZzZG6u.png)

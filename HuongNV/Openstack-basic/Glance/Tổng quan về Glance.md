@@ -2,7 +2,7 @@
 
 ## Mục lục
 
-* [1. Glance Overview](#1)
+* [1. Giới thiệu về Glance](#1)
 * [2. Glance Achitecture](#2)
 * [3. Glance Image Status]()
 * [4. Disk format](#4)
@@ -11,7 +11,7 @@
 
 <a name="1"></a>
 
-**1. Glance Overview**
+# 1. Giới thiệu về Glance
 
 - Glance là 1 thành phần quản lý image trong Openstack, nó là một component simple và very stable trong Openstack. Mục đích của Glance là lưu giữ image, khi cần ta sẽ có thể create VM 1 cách dễ dàng.
 - Khi uplpad image trong Glance, nó sẽ chỉ rõ vị trí lưu trữ image cụ thể, mark the location, attributes và permissions in database. Khi sử dụng Nova để create VM, nó sẽ check location, permission và pull down image from Glance
@@ -19,10 +19,9 @@
 ![Imgur](https://i.imgur.com/T19T2vS.png)
 
 
-
 <a name="2"></a>
 
-**2. Glance Architecture**
+# 2. Glance Architecture
 
 - Openstack Glance has a client-server architecture that provides a REST API to the user through requests to the server
 - A Glance Domain Controller manages hoạt động của internal server that is divided into layers. Từng tasks cụ thể được thực hiển bởi mỗi layer
@@ -44,62 +43,47 @@
 
 <a name="3"></a>
 
-**3. Glance Image Status**
+# 3. Glance Image Status
 
-- Sơ đồ sau mô tả trạng thái của Imgae trong quá trình Upload:
+Sơ đồ sau mô tả trạng thái của Image trong quá trình Upload:
 
 
 ![Imgur](https://i.imgur.com/n1WqbPX.png)
 
 
-* queued
-Image identifier được reversed for an imaged in the Glance registry. Không có image data nào được upload lên Glance, image size được set zero khi khởi tạo
+- **queued:** Image identifier được reversed for an imaged in the Glance registry. Không có image data nào được upload lên Glance, image size được set zero khi khởi tạo
 
-* saving
-image raw data đang trong trạng thái upload lên Glance. Khi image được registered, no gọi đến phương thức POST/images và có *x-image-meta-location* header present
+- **saving:** Image raw data đang trong trạng thái upload lên Glance. Khi image được registered, no gọi đến phương thức POST/images và có *x-image-meta-location* header present
 
-* uploading
-Chỉ thị rằng import data-put call được thực hiện. Khi ở trang thái này, phương thức PUT/file is disallowed
+- **uploading:** Chỉ thị rằng import data-put call được thực hiện. Khi ở trang thái này, phương thức PUT/file is disallowed
 
-* importing
-Image đã được import nhưng chưa sẵn sàng sử dụng
+- **importing:** Image đã được import nhưng chưa sẵn sàng sử dụng
 
-* active 
-image đã được upload thành công lên Glance.
+- **active:** Image đã được upload thành công lên Glance.
 
-* deactivated
-việc access to image data is not allowed to any non-admin user
+- **deactivated:** Việc access to image data is not allowed to any non-admin user
 
-* killed
-hiển thị lỗi xảy ra trong quá tình upload image, image không sẵn sàng sử dụng
+- **killed:** Hiển thị lỗi xảy ra trong quá tình upload image, image không sẵn sàng sử dụng
 
-* deleted
-Glance giữ lại thông tin về image, image không sẵn sàng được sử dụng, nó sẽ bị removed tự động vào 1 thời gian sau
+- **deleted:** Glance giữ lại thông tin về image, image không sẵn sàng được sử dụng, nó sẽ bị removed tự động vào 1 thời gian sau
 
-* pending_delete
-giống như *deleted* state nhưng Glance sẽ không removed image dât, các image ở trạng thai này sẽ không thể phục hồi được
+- **pending_delete:** Giống như *deleted* state nhưng Glance sẽ không removed image dât, các image ở trạng thai này sẽ không thể phục hồi được
 
 
-<a name=""4>></a>
+<a name="4"></a>
 
-**4. Disk format**
+# 4. Disk format
 
 The disk format of a virtual machine image is the forrmat of the underlying disk image
 
-* raw
-disk image format in an unstructured
+- **raw:** Disk image format in an unstructured
 
-* vhd
-VHD disk format được sử dụng trong ảo hóa VMWare, Xen, Microsoft, VirtualBox
+- **vhd:** VHD disk format được sử dụng trong ảo hóa VMWare, Xen, Microsoft, VirtualBox
 
-* vhdx
-phiên bản nâng cao của `vhd`, hỗ trợ larger disk sizes
+- **vhdx:** Phiên bản nâng cao của `vhd`, hỗ trợ larger disk sizes
 
-* vdi
-disk format support by VirtualBox virtual machine và QEMU emulator
+- **vdi:** Disk format support by VirtualBox virtual machine và QEMU emulator
 
-* iso
-an format for the data contents of an typical disc
+- **iso:** An format for the data contents of an typical disc
 
-* qcow2
-a disk format supported by QEMU
+- **qcow2:** A disk format supported by QEMU

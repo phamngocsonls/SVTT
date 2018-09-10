@@ -65,7 +65,7 @@ openstack project list
 
 ## Add project within domain
 
-- với domain `huong` vừa tạo, ta tiến hành add new project trong domain đó
+- Với domain `huong` vừa tạo, ta tiến hành add new project trong domain đó
 
 ```
 openstack project create huong --domain huong --description "add new project within domain huong"

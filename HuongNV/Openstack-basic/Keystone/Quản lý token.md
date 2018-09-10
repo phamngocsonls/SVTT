@@ -14,7 +14,7 @@
 
 <a name="1"></a>
 
-**1. History Tokens of Format**
+# 1. History Tokens of Format
 
 Keystone cung cấp một vài định dạng `token` và người dùng có thể thắc mắc tại sao lại có nhiệu định dạng về token đến như vậy. Để đi tìm câu trả lời, chúng ta sẽ đi tìm hiểu một chút về lịch sử token format. Trong những ngày đầu, Keystone cung cấp `UUID` token. UUID hỗ trợ tối đa 32 kí tự nhằm hỗ trợ cho việc xác thực user cũng như phân quyền người dùng. Lợi ích lớn nhất là nó mạng lợi là rất nhỏ gọn và dễ sử dụng. Nhược điểm của mã token này là không mang kèo theo đủ thông tin để có thể ủy quyền trong cục bộ. Các services trong Openstack luôn phải gửi kèm theo token tới Keystone server để có thể xác định quyền hạn của chúng và nó gấy thắt nút cổ chai trong môi trường Openstack cloud.
 
@@ -34,30 +34,29 @@ Dưới đây là một bản khảo sát về mức độ sử dụng của cá
 
 <a name="2"></a>
 
-**2. UUID tokens**
+# 2. UUID tokens
 
 * Mã token đầu tiên của Keystone là UUID. UUID là một mã ngẫu nhiên 32 kí tự, được sử dụng bởi dịch vụ identity service. Phương thức hexdigest() được sử dụng, đảm bảo các mã token này hiển thị dưới dạng thập lạng phân. 
-* cURL command rất dễ sử dụng khi UUID token được sử dụng trong môi trường idenitity.
 * Mã UUID token thường được lưu tại một database backend để có thể dử dụng cho lần xác thực tiếp theo.
 * UUID token có thể thu hồi dễ dàng với bản tin DELETE reuqest kèm theo đó là token ID. Các mã token này sẽ không bị removed khỏi database backend và được đánh dâu là mã token này đã được thu hồi.
 
-Ví dụ dơn giản về UUID token như sau: `468da447bd1c4821bbc5def0498fd441`, một chuỗi dài 32 kí tự
+## Ví dụ dơn giản về UUID token như sau: `468da447bd1c4821bbc5def0498fd441`, một chuỗi dài 32 kí tự
 
 ![Imgur](https://i.imgur.com/rySD53n.png)
 
 - UUID token nhỏ gọn, dễ dàng sử dụng trong cURL command. Nhược điểm là Keystone sẽ trở thành nút thắt cổ chai khi một lượng lớn communication xảy ra trong quá trình yêu cầu Keystone xác thực.
 
 
-<a name="3"></a>
 
 <a name="2.1"></a>
 
-**2.1 Token Generation Workflow**
+## 2.1 Token Generation Workflow
 
 ![Imgur](https://i.imgur.com/zxGaHMX.png)
 
+<a name="3"></a>
 
-**3. PKI tokens**
+# 3. PKI tokens
 
 - Loại token thứ 2 mà Keystone hỗ trợ đó là PKI token. PKI token chứa rất nhiều thông tin trong đó như: token được tạo khi nào, khi nào hết hạn, user identicafication, project, domain, role information for user, a service catalog. Những thông tin này được hiển thị dưới dạng JSON prayload.
 - Ví dụ về một PKI token như sau:
@@ -124,16 +123,10 @@ Ví dụ dơn giản về UUID token như sau: `468da447bd1c4821bbc5def0498fd441
     }
 }
 ```
-
-- Một so sánh nhỏ sự khác biệt giữa PKI và PKIz:
-
-![Imgur](https://i.imgur.com/voI5ZbZ.png)
-
-
 <a name="3.1"></a>
 
 
-**3.1 Token Generation Workflow**
+## 3.1 Token Generation Workflow
 
 ![Imgur](https://i.imgur.com/puM05pC.png)
 
@@ -141,11 +134,12 @@ Ví dụ dơn giản về UUID token như sau: `468da447bd1c4821bbc5def0498fd441
 - So sánh PKI và PKIz:
 
 ![Imgur](https://i.imgur.com/RPLfT4m.png)
+![Imgur](https://i.imgur.com/voI5ZbZ.png)
 
 
 <a name="4"></a>
 
-**4. Ferner Token**
+# 4. Fernet Token
 
 - Fernet token là mã token mới nhất. Nó có độ dài 255 kí tự, kích thước lớn hơn UUID toke và nhỏ hơn PKI token.
 - Fernet token chuwqas một số thông tin như: user identifier, a project identifier, token expiration và một số thông tin khác.
@@ -162,31 +156,26 @@ gAAAAABU7roWGiCuOvgFcckec-0ytpGnMZDBLG9hA7Hr9qfvdZDHjsak39YN98HXxoYLIqVm19Egku5Y
 
 <a name="4.1"></a>
 
-**4.1 Fernet key**
+## 4.1 Fernet key
 
 - Fernet key được dùng để mã hóa và giải mã token.
 - Mỗi key sẽ được chia làm 2 phần: phần thứ nhất 128 bit dùng để mã hóa AES và 128 bit SHA256 dùng cho việc HMAC singing key.
 - Có 3 loại key đó là: Primary key, Secondary key và Staged key
+    * Primary key:
+        * Nó được dùng để mã hóa và giải mã token. 
+        * Khóa này luôn được đặt tên là chỉ mục cao nhất trong kho lưu trữ
 
-* Primary key:
+    * Sencondary key:
+        * Secondary là 1 kháo chính nhưng đã bị giáng cấp so với Primary key.
+        * Nó chỉ có thể giả mã token
 
-    * Chỉ có khóa chính duy nhất trong key repository. Nó được dùng để mã hóa và giải mã token. 
-    * Khóa này luôn được đặt tên là chỉ mục cao nhất trong kho lưu trữ
-
-* Sencondary key:
-
-    * Secondary là 1 kháo chính nhưng đã bị giáng cấp so với Primary key.
-    * Nó chỉ có thể giả mã token
-
-* Staged key:
-
-    * Là loại key đặc biệt, cũng giống như Secondary key, chỉ có thể giải ãm token.
-    * Staged key sẽ trờ thành Primary key tiếp theo và Staged key luôn được đặt tên là `0` ở trong key repository
-
+    * Staged key:
+        * Là loại key đặc biệt, cũng giống như Secondary key, chỉ có thể giải ãm token.
+        * Staged key sẽ trờ thành Primary key tiếp theo và Staged key luôn được đặt tên là `0` ở trong key repository
 
 <a name="4.2"></a>
 
-**4.2 Where put key repository**
+## 4.2 Where put key repository
 
 Key repository được chỉ định cụ thể vị trí lưu trong keystone configuration. Keystone chỉ hỗ trợ lưu trữ key duy nhất dưới dạng `file-backed`
 
