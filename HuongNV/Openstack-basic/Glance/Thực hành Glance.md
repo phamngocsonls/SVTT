@@ -103,6 +103,7 @@ Sử dụng:
 ```
 glance image-delete <image-ID>
 ```
-[Imgur](https://i.imgur.com/UgbP2ze.png)
-```
+
+![Imgur](https://i.imgur.com/UgbP2ze.png)
+
 
