@@ -18,7 +18,7 @@
 
 <a name="11"></a>
 
-# 1.1 List image
+## 1.1 List image
 
 Liệt kêt tất cả các image:
 
@@ -29,9 +29,9 @@ glance image-list
 
 <a name="12"></a>
 
-# 1.2 Show information image
+## 1.2 Show information image
 
-- Command line:
+Sử dụng:
 ```
 glance image-show [--human-readable] [--max-column-width <integer>] <image_ID>
 ```
@@ -41,9 +41,9 @@ glance image-show [--human-readable] [--max-column-width <integer>] <image_ID>
 
 <a name="13"></a>
 
-# 1.3 Deactivate image
+## 1.3 Deactivate image
 
-- Sử dụng:
+Sử dụng:
 ```
 glance image-deactivate <image-ID>
 ```
@@ -51,9 +51,9 @@ glance image-deactivate <image-ID>
 
 <a name="14"></a>
 
-# 1.4 Reactivate image
+## 1.4 Reactivate image
 
-- Sử dụng:
+Sử dụng:
 ```
 glance image-reactivate <image-ID>
 ```
@@ -61,9 +61,9 @@ glance image-reactivate <image-ID>
 
 <a name="15"></a>
 
-# 1.5 Update image
+## 1.5 Update image
 
-- Sử dụng:
+Sử dụng:
 ```
 usage: glance image-update [--architecture <ARCHITECTURE>]
                            [--protected [True|False]] [--name <NAME>]
@@ -88,18 +88,18 @@ usage: glance image-update [--architecture <ARCHITECTURE>]
 
 <a name="16"></a>
 
-# 1.6 Upload image
+## 1.6 Upload image
 
-- Sử dụng:
+Sử dụng:
 ```
 glance image-upload [--file <FILE>] [--size <IMAGE_SIZE>] [--progress] <IMAGE_ID>
 ```
 
 <a name="17"></a>
 
-# 1.7 Delete image
+## 1.7 Delete image
 
-- Sử dụng:
+Sử dụng:
 ```
 glance image-delete <image-ID>
 ```
