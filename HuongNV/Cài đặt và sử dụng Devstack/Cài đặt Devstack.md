@@ -6,14 +6,14 @@
 - Devstack là 1 extensible scripts dùng để triển khai một hệ thống Openstack một cách đơn giản và nhanh chóng, các service thường được cài đặt AIO(All in one) 
 - Devstack là môi trường lý tưởng cho việc testing và deploy các chức năng cho hệ thống Openstack
 
-## Yêu cầu tối thiểu
+## Yêu cầu cấu hình
 
-Hướng dẫn này cài trên VmWare, cấu hình máy ảo của bản thân như sau:
+Hướng dẫn này cài đặt trên VmWare, cấu hình máy ảo của bản thân như sau:
 
 - RAM: 4GB
 - Hard Disk: 60GB
 - Network: IP address: `172.16.69.131` chế độ NAT
-.- Cài trên ubuntu server 16.04
+- Cài trên ubuntu server 16.04
 
 
 ## Cài đặt
@@ -26,7 +26,7 @@ apt-get update -y && apt-get upgrade -y && apt-get disk-upgrade -y && init 6
 
 ### Add Stack User
 
-- Devstack nên được chạy với 1 user khác root, ta sẽ add thêm user với name là `stack`
+Devstack nên được chạy với 1 user khác root, ta sẽ add thêm user với name là `stack`
 
 ```
 sudo useradd -s /bin/bash -d /opt/stack -m stack
@@ -34,7 +34,7 @@ apt-get -y install sudo
 apt-get -y install git
 ```
 
-- `stack` user thao tác nhiều với hệ thống nên ta thiết lập cấu hình để không cần nhập password root khi chạy lệnh sudo
+ `stack` user thao tác nhiều với hệ thống nên ta thiết lập cấu hình để không cần nhập password root khi chạy lệnh sudo
 
 ```
 echo "stack ALL=(ALL) NOPASSWD: ALL" | sudo tee /etc/sudoers.d/stack
@@ -43,17 +43,17 @@ sudo su - stack
 
 `sudo su - stack`: chuyển sang user stack
 
-- Tại đây, ta tạo một thư mục mới `cd /opt/stack`
+Tại đây, ta tạo một thư mục mới `cd /opt/stack`
 
-- Tiến hành tải Devstack về
+Tiến hành tải Devstack về
 
 ```
 git clone https://git.openstack.org/openstack-dev/devstack
 cd devstack
 ```
 
-- Tại thư mục `devstack`, tạo file `local.conf` để cấu hình các dịch vụ sẽ cài trong devstack
-- Sau đây là nội dung của file local.conf mà bản thân đã sử dụng
+Tại thư mục `devstack`, tạo file `local.conf` để cấu hình các dịch vụ sẽ cài trong devstack
+Sau đây là nội dung của file local.conf mà bản thân đã sử dụng
 
 ```
 [[local|localrc]]
