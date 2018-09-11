@@ -111,6 +111,7 @@ Một datapath là một bảng (lưu lại các) flow, nó chỉ phục vụ c�
 Như vậy, một OVS birdge quản lý 2 loại tài nguyên:
 - forwarding plane mà nó quản lý (datapath)
 - các thiết bị mạng (cả thiết bị vật lý và thiết bị ảo) gắn với nó (netdev) 
+
 Cấu trúc dữ liệu chính:
 - triển khai OVS bridge: **ofproto**, **ofproto-provider**
 - quản lý datapath: **dpif**, **dpif-provider**
