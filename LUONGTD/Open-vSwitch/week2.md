@@ -161,5 +161,7 @@ Pseudo code tương ứng được hiển thị bên dưới:
 
 ![](images/2-OVS-Architecture/example.png)
 
+Ta sẽ tìm hiểu một số procedures quan trọng.
+
 ## <a name="ovsdb"></a> 3. OVSDB		// TODO
 ## <a name="datapath"></a> 4. Datapath 	// TODO
