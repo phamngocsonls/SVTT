@@ -116,7 +116,9 @@ Cấu trúc dữ liệu chính:
 - triển khai OVS bridge: **ofproto**, **ofproto-provider**
 - quản lý datapath: **dpif**, **dpif-provider**
 - quản lý các thiết bị mạng: **netdev**, **netdev-provider**
-Ta đã có được một một bức tranh khá hoàn chỉnh về cách quản lý datapath của **vswitchd**. Phần tiếp theo, ta sẽ tìm hiểu về chức năng quản lý các thiết bị mạng (**netdev** và **netdev-provider**).
+Ta đã có được một một bức tranh khá hoàn chỉnh về cách quản lý datapath của **vswitchd**. 
+
+Phần tiếp theo, ta sẽ tìm hiểu về chức năng quản lý các thiết bị mạng (**netdev** và **netdev-provider**).
 
 ### 2.2. netdev
 **netdev** là một thư viện được định nghĩa trong ```lib/netdev-provider.h```, được thực thi trong ```lib/netdev.c```, **netdev** trừu tượng hóa (abstract) tương tác với các thiết bị mạng (qua các giao diện là Ethernet).
