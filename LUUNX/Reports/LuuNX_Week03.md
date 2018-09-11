@@ -1,8 +1,8 @@
 # Tìm Hiểu KVM
 * Tuần 3
 * Người Thực Hiện: Nguyễn Xuân Lưu
-* Tìm hiểu sách Modern Operating System 4th
-## 1. Introduce
+
+## 1. Bổ Trợ Kiến Thức Operating System
 
 Mỗi hệ thống máy tính có chứa rất nhiều thành phần phần cứng như bộ vi xử lý, bộ nhớ chính, card mạng, màn hình, ổ đĩa, ... Nếu những lập trình viên khi lập trình phải hiểu tất cả các thành phần phần cứng thì sẽ không thể nào có chương trình phần cứng nào xuất hiện. Vì vậy, để giải quyết vấn đề trên, khái niệm hệ điều hành (operating system) ra đời. Hệ điều hành là một lớp phần mềm trung gian giữa các phần cứng và phần mềm ứng dụng, nó cung cấp cài tài nguyên cần thiết cho các phần mềm chạy trên nó hoạt động.
 <image>
@@ -18,3 +18,9 @@ Hệ điều hành cung cấp các tài nguyên trừu tượng. Một hệ th�
 <img>
 
 Hệ điều hành sẽ quản lý tài nguyên phần cứng. Nếu là hệ điều hành đơn nhiệm đơn người dùng việc quản lý tài nguyên sẽ đơn giản. Tuy nhiên, một hệ thống có nhiều phần mềm chạy, nhiều người dùng cùng đăng nhập hoạt động, việc quản lý ưu tiên, phân phối tài nguyên sẽ phải đến tay hệ điều hành. Cách thức hệ điều hành xử lý công việc này là phân kênh. Kiểu phân kênh thứ nhất là phân kênh theo thời gian. Mỗi chương trình sẽ chạy trong một đoạn thời gian ngắn. Kiểu thứ hai là phân kênh theo không gian. Mỗi chương trình sẽ chạy trên một phần của phần cứng vật lý trong cùng một thời điểm.
+
+## 2. Ring -1 trong công nghệ Hardware-assited Virtualization
+
+
+
+## 3. Tiêu Chuẩn POSIX
