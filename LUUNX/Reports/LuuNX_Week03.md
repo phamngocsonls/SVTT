@@ -23,7 +23,7 @@ Hệ điều hành sẽ quản lý tài nguyên phần cứng. Nếu là hệ đ
 
 Như đã trình bày từ trước, công nghệ Hardware-assisted Virtualization sẽ hỗ trợ các hypervisor hoạt động ở mức Ring -1 và quản lý các máy ảo chạy ở mức Ring 0. Trong khuôn khổ tìm hiểu này, chúng ta đi phân tích về sự khác biệt và sự liên kết giữa mức Ring -1 và mức Ring 0.
 
-Đầu tiên, về công nghệ Intel Virtualization Technology (VT-x), Các vi xử lý intel hỗ trợ công nghệ VT-x sẽ cung cấp một chế độ mở rộng là VMX operation. Có hai loại VMX operation là VMX root operation và VMX nonroot operation. Thông thường, hypervisor sẽ chạy ở chế độ VMX root và VM  sẽ chạy ở chế độ VMX non-root. Sự chuyển đỗi giữa hai chế độ này gọi là VMX transitions. Chuyển đỗi từ VMX root sang VMX non-root gọi là VM entry. Sự chuyển đỗi từ VMX non-root về VMX root gọi là VM exit. 
+Đầu tiên, về công nghệ Intel Virtualization Technology (VT-x), Các vi xử lý intel hỗ trợ công nghệ VT-x sẽ cung cấp một chế độ mở rộng là VMX operation. VMX viết tắt của Virtual Machine Extension. Có hai loại VMX operation là VMX root operation và VMX nonroot operation. Thông thường, hypervisor sẽ chạy ở chế độ VMX root và VM  sẽ chạy ở chế độ VMX non-root. Sự chuyển đỗi giữa hai chế độ này gọi là VMX transitions. Chuyển đỗi từ VMX root sang VMX non-root gọi là VM entry. Sự chuyển đỗi từ VMX non-root về VMX root gọi là VM exit. 
 
 Vi xử lý hoạt động ở chế độ VMX root gần giống như khi hoạt động ở chế độ thông thường. Điểm khác biệt cơ bản và ở chế độ VMX root, tập lệnh VMX có thể được sử dụng, còn ở chế độ thông thường thì không. Ngoài ra, khi ở chế độ VMX, vi xử lý sẽ cố định và không cho truy cập một số giá trị của thanh ghi CR (Control Register). Điều này sẽ liên quan đến việc xác định các trạng thái của chế độ VMX.
 
@@ -35,7 +35,7 @@ Vòng đời của một hypervisor và VM sẽ được giới thiệu như sau
 
 <img>
 
-
+Thứ hai, về công nghệ AMD Virtualization (AMD-V). Các vi xử lý AMD hỗ trợ ảo hóa sẽ cung cấp một chế độ gọi là SVM. SVM viết tắt của Secure Virtual Machine. Khi hypervisor khởi chạy máy ảo. Nó sẽ cung cấp một chế độ gọi là Guest Mode. Ở chế độ này, tương tự công nghệ của Intel, các máy ảo có thể truy cập các lệnh với CPU. Chế độ này sẽ hạn chế một số lệnh và có các sự kiện để quay trở lại chế độn thông thường của vi xử lý dưới sự quản lý của hypervisor. Các chuyển đỗi trạng thái trong quá trình hoạt động của SVM là VMRUN, VMSAVE, VMLOAD. 
 
 
 ## 3. Tiêu Chuẩn POSIX
