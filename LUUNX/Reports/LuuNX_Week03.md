@@ -19,8 +19,17 @@ Hệ điều hành cung cấp các tài nguyên trừu tượng. Một hệ th�
 
 Hệ điều hành sẽ quản lý tài nguyên phần cứng. Nếu là hệ điều hành đơn nhiệm đơn người dùng việc quản lý tài nguyên sẽ đơn giản. Tuy nhiên, một hệ thống có nhiều phần mềm chạy, nhiều người dùng cùng đăng nhập hoạt động, việc quản lý ưu tiên, phân phối tài nguyên sẽ phải đến tay hệ điều hành. Cách thức hệ điều hành xử lý công việc này là phân kênh. Kiểu phân kênh thứ nhất là phân kênh theo thời gian. Mỗi chương trình sẽ chạy trong một đoạn thời gian ngắn. Kiểu thứ hai là phân kênh theo không gian. Mỗi chương trình sẽ chạy trên một phần của phần cứng vật lý trong cùng một thời điểm.
 
-## 2. Ring -1 trong công nghệ Hardware-assited Virtualization
+## 2. Ring -1 trong công nghệ Hardware-assisted Virtualization
 
+Như đã trình bày từ trước, công nghệ Hardware-assisted Virtualization sẽ hỗ trợ các hypervisor hoạt động ở mức Ring -1 và quản lý các máy ảo chạy ở mức Ring 0. Trong khuôn khổ tìm hiểu này, chúng ta đi phân tích về sự khác biệt và sự liên kết giữa mức Ring -1 và mức Ring 0.
+
+Đầu tiên, về công nghệ Intel Virtualization Technology (VT-x), Các vi xử lý intel hỗ trợ công nghệ VT-x sẽ cung cấp một chế độ mở rộng là VMX operation. Có hai loại VMX operation là VMX root operation và VMX nonroot operation. Thông thường, hypervisor sẽ chạy ở chế độ VMX root và VM  sẽ chạy ở chế độ VMX non-root. Sự chuyển đỗi giữa hai chế độ này gọi là VMX transitions. Chuyển đỗi từ VMX root sang VMX non-root gọi là VM entry. Sự chuyển đỗi từ VMX non-root về VMX root gọi là VM exit. 
+
+Vi xử lý hoạt động ở chế độ VMX root gần giống như khi hoạt động ở chế độ thông thường. Điểm khác biệt cơ bản và ở chế độ VMX root, tập lệnh VMX có thể được sử dụng, còn ở chế độ thông thường thì không. Ngoài ra, khi ở chế độ VMX, vi xử lý sẽ cố định và không cho truy cập một số giá trị của thanh ghi CR (Control Register). Điều này sẽ liên quan đến việc xác định các trạng thái của chế độ VMX.
+
+Vi xử lý hoạt động ở chế độ VMX non-root sẽ có những sự giới hạn và chỉnh sửa để phù hợp với sự ảo hóa. Thay vì những hoạt động thông thường, các lệnh đặc biệt và các sự kiện sẽ gây ra sự kiện VM exit tới hypersior. Bởi vì sự xuất hiện của VM exit thay cho cách cư xử thông thường, hoạt động của VM ở chế độ VMX non-root có sự giới hạn. Chính sự giới hạn này cho phép hypervisor điều khiển được sự hoạt động của các VM.
+
+Tựu chung, đối với dòng vi xử lý Intel, Ring -1 là chế độ VMX root dành cho hypervisor hoạt động. Ring 0 là chế độ VMX non root dành cho các VM hoạt động.
 
 
 ## 3. Tiêu Chuẩn POSIX
