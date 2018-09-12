@@ -31,5 +31,11 @@ Vi xử lý hoạt động ở chế độ VMX non-root sẽ có những sự gi
 
 Tựu chung, đối với dòng vi xử lý Intel, Ring -1 là chế độ VMX root dành cho hypervisor hoạt động. Ring 0 là chế độ VMX non root dành cho các VM hoạt động.
 
+Vòng đời của một hypervisor và VM sẽ được giới thiệu như sau. Khởi chạy chế độ VMX bằng lệnh VMXON. Sử dụng VM entry, một hypervisor có thể truy cập vào một máy ảo cụ thể. Cụ thể, Hypervisor dùng các lệnh VMLAUNCH và VMRESUME để thực hiện VM entry. VM exit sẽ giúp hypervisor thoát khỏi một VM để thực hiện quyền quản trị. Thông thường, hypervisor tự sẽ quyết định việc thoát khỏi chế độ VMX bởi lệnh VMXOFF.
+
+<img>
+
+
+
 
 ## 3. Tiêu Chuẩn POSIX
