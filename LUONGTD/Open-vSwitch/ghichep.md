@@ -1,3 +1,70 @@
+# General
+## [A. Linux Basic](#linuxbasic)
+---
+## <a name="linuxbasic"><>/a A. Linux Basic
+### 1. Linux Architecture
+
+![](images/ghichep/linux_architecture.jpg)
+
+Kiến trúc hệ thống Linux bao gồm 4 tầng chính:
+- Tầng **Application**: vòng tròn ngoài cùng, bao gồm các chương trình người dùng, compiler và các tiện ích hệ thống (vi, cd, grep, date,...)
+- Tầng **Shell**: Shell là một chương trình thông dịch, có tác dụng dịch các user request thành các chương trình thực thi dưới kernel và trả về kết quả cho user. Shell nhận request từ stdin, xuất kết quả ra stdout và stderr, thể hiện qua màn hình terminal vì thế còn gọi là **CLI-Command Line Interfaces**. Như trên hình có **vi**, **cd**, **grep** hay **date** là các chương trình shell.
+- Tầng **Kernel**: Là tầng làm nhiệm vụ quản lý các tác vụ, quản lý bộ nhớ, quản lý hệ thống file, quản lý hardware,...
+
+![](images/ghichep/linux_kernel.jpg) 
+
+- Tầng **hardware**: gồm tất cả các thành phần phần cứng như CPU, GPU, Memory, I/O,...
+
+### 2. User space and Kernel space
+- Tầng Application và Shell được gọi chung là user space, vì nó tương tác trực tiếp với user
+- Tầng Kernel được gọi là Kernel space
+
+### 3. Các thành phần Software
+Hệ thống nhúng Linux có 3 thành phần software chính được biểu diễn như sau:
+
+![](images/ghichep/software.png)
+
+1. **Bootloader**: Bootloader được đặt ở phân vùng đầu tiên của MBR - Master Boot Record, có tác dụng khởi chạy một số thành phần phần cứng, load và chạy Kernel. Các thông số cài đặt cách mà Bootloader khởi chạy kernel được đặt trong Boot parameters.
+
+![](images/ghichep/soft2.png)
+
+Với máy tính Linux thì Bootloader thường thấy nhất là GRUB.
+
+![](images/ghichep/software1.png)
+
+2. **Kernel**: Kernel là nhân hệ điều hành, có tác dụng quản lý tác vụ, lập lịch, quản lý memory, quản lý hardware, ...
+- Các thành phần kernel bao gồm:
+	- uImage hoặc zImage (tùy kiểu nén): gồm nhân hệ điều hành và các thành phần gọi là module được build và tích hợp vào kernel (gọi là build-in, các module này được khởi tạo cùng kernel)
+	- Các module khác không được tích hợp sẫn vào kernel, chỉ được load khi user muốn
+Module là các khối thực hiện một chức năng nào đó, hoặc có thể là một driver của một thiết bị ngoại vi nào đó.
+Kernel Linux được thiết kế theo dạng module nên user có thể tự phát triển các module và tích hợp sâu vào hệ thống.
+
+3. **Root Filesystem**
+Root File System - Rootfs là hệ thống file, thể hiện một cách trực quan nhất với người dùng. Tất cả các file, các thư mục bạn duyệt qua đều nằm trong Rootfs.
+Cấu trúc hệ thống Rootfs trên PC:
+
+![](images/ghichep/hierarchy.jpg)
+
+### 4. Library
+Thư viện là thành phần quan trọng đối với bất kì hệ điều hành nào, chúng là một tập hợp các function được viết sẵn để tái sử dụng trong nhiều chương trình khác nhau. 
+
+![](images/ghichep/gnu-lib.jpg)
+
+Trong Root File System, lib được đưa vào các thư mục:
+- /lib
+- /usr/lib
+- /usr/local/lib
+1. **Phân loại**:
+**Static Libraries**:
+- Có đuôi mở rộng .a
+- Các function trong lib được đưa vào trực tiếp trong app source (gọi là linked) trong lúc compile source, vì thế khi chạy app (run time) có thể  chạy độc lập mà không cần thiết một liên kết nào đến lib nữa.
+
+**Shared Libraries**:
+- Có đuôi mở rộng là .so
+- Được chia nhỏ thành hai loại nữa là:
+	- Dynamic linking: Các function không được đưa trực tiếp vào app source mà chỉ là tham chiếu, khi chạy app thì cần có một môi trường liên kết đến lib để app có thể tìm kiếm và khởi chạy các function đó trong lib theo thời gian.
+	- Dynamic loading:  
+
 # Handout for week1
 ---
 ## 0.0 OVS:

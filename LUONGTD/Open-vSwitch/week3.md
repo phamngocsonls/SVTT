@@ -14,10 +14,19 @@ Phần này sẽ trình bày về một số procedure và submodule của **vsw
 
 ![](images/2-OVS-Architecture/bridge_cmd.png)
 
-Ở phần cuối của ```bridge_init()```, một số submodule của vswitchd được khởi tạo, gồm có: **LACP**, **BOND**, **CFM**, **NUMA**, **STP**, **LLDP**, **RSTP** và ```ifnotifiers```. 
+Ở phần cuối của hàm ```bridge_init()```, một số submodule của vswitchd được khởi tạo, gồm có: **LACP**, **BOND**, **CFM**, **NUMA**, **STP**, **LLDP**, **RSTP** và ```ifnotifiers```. 
 Cấu trúc bên trong của ```ovs-vswitchd``` được thể hiện như sau:
 
 ![](images/2-OVS-Architecture/vswitchd_internal.png)
+
+### 1.2. ofproto library init
+ofproto duy trì một mảng class đã được đăng ký (registed) ```ofproto_classes``` trong ```ofproto/ofproto.c```:
+
+![](images/2-OVS-Architecture/ofproto_classes.png)
+
+Trong hàm ```ofproto_init()```, built-in ofproto class ```ofproto_dpif_class``` sẽ được đăng ký (registerd), 
+
+![](images/2-OVS-Architecture/ofproto_dpif_class.png)
 
 ## <a name="ovsdb"></a> 2. OVSDB
 
