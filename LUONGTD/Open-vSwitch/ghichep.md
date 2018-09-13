@@ -1,5 +1,6 @@
 # General
 ## [A. Linux Basic](#linuxbasic)
+## [B. System](#system)
 ---
 ## <a name="linuxbasic"><>/a A. Linux Basic
 ### 1. Linux Architecture
@@ -59,11 +60,17 @@ Trong Root File System, lib được đưa vào các thư mục:
 - Có đuôi mở rộng .a
 - Các function trong lib được đưa vào trực tiếp trong app source (gọi là linked) trong lúc compile source, vì thế khi chạy app (run time) có thể  chạy độc lập mà không cần thiết một liên kết nào đến lib nữa.
 
+![](images/ghichep/lib-type.gif)
+
+
+
 **Shared Libraries**:
 - Có đuôi mở rộng là .so
 - Được chia nhỏ thành hai loại nữa là:
 	- Dynamic linking: Các function không được đưa trực tiếp vào app source mà chỉ là tham chiếu, khi chạy app thì cần có một môi trường liên kết đến lib để app có thể tìm kiếm và khởi chạy các function đó trong lib theo thời gian.
-	- Dynamic loading:  
+	- Dynamic loading: Lib được load/unload và linked trong lúc app chạy, khi compile không cần có sự tham chiếu/liên kết nào đến lib như static hay dynamic linking, có nghĩa nó hoạt động giống như plug-in của các trình duyệt.
+
+
 
 # Handout for week1
 ---

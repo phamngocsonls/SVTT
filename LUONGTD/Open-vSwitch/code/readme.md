@@ -1,1 +1,0 @@
-## directory chứa code đã được lược bỏ phần lớn để nhìn cấu trúc cho đơn giản, không dùng để compile
