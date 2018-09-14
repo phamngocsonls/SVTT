@@ -55,6 +55,8 @@ VMCS data tổ chức dưới dạng 6 phần:
 
 Mỗi VMCS vừa có thể là một ordinary VMCS hoặc là một shadow VMCS. Điều này được xác định bởi shadow-indicator bit (bit số 32 của phần VMCS revision identifier trong VMCS Region). Sự khác biệt cơ bản của hai loại VMCS này là ở khả năng hoạt động và chỉnh sửa của nó. Thứ nhất, một ordinary VMCS có thể thực hiện VM entry nhưng không thể đọc hay ghi từ VM non-root mode. Dĩ nhiên nó có thể được đọc ghi ở VM root mode. Ngược lại một shadow VMCS có thể đọc ghi ở VM non-root mode nhưng không thể thực hiện VM entry với nó. Cuối cùng, việc chuyển một VMCS ở dạng ordinary sang shadow hay ngược lại có thể thực hiện bởi hypervisor ở VM root mode. Lưu ý, để thực hiện chuyển đỗi, VMCS phải ở trạng thái not active.
 
+
+
 Thứ hai, về công nghệ AMD Virtualization (AMD-V). Các vi xử lý AMD hỗ trợ ảo hóa sẽ cung cấp một chế độ gọi là SVM. SVM viết tắt của Secure Virtual Machine. Khi hypervisor khởi chạy máy ảo. Nó sẽ cung cấp một chế độ gọi là Guest Mode. Ở chế độ này, tương tự công nghệ của Intel, các máy ảo có thể truy cập các lệnh với CPU. Chế độ này sẽ hạn chế một số lệnh và có các sự kiện để quay trở lại chế độn thông thường của vi xử lý dưới sự quản lý của hypervisor. Các chuyển đỗi trạng thái trong quá trình hoạt động của SVM là VMRUN, VMSAVE, VMLOAD. 
 
 
