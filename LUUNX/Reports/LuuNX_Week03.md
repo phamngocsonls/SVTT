@@ -21,7 +21,7 @@ Hệ điều hành sẽ quản lý tài nguyên phần cứng. Nếu là hệ đ
 
 ## 2. Ring -1 trong công nghệ Hardware-assisted Virtualization
 
-Như đã trình bày từ trước, công nghệ Hardware-assisted Virtualization sẽ hỗ trợ các hypervisor hoạt động ở mức Ring -1 và quản lý các máy ảo chạy ở mức Ring 0. Trong khuôn khổ tìm hiểu này, chúng ta đi phân tích về sự khác biệt và sự liên kết giữa mức Ring -1 và mức Ring 0.
+Như đã trình bày từ trước, công nghệ Hardware-assisted Virtualization sẽ hỗ trợ các hypervisor hoạt động ở mức Ring -1 và quản lý các máy ảo chạy ở mức Ring 0. Trong khuôn khổ tìm hiểu này, chúng ta đi phân tích về sự khác biệt và sự liên kết giữa mức Ring -1 và mức Ring 0 ở dòng vi xử lý intel.
 
 Đầu tiên, về công nghệ Intel Virtualization Technology (VT-x), Các vi xử lý intel hỗ trợ công nghệ VT-x sẽ cung cấp một chế độ mở rộng là VMX operation. VMX viết tắt của Virtual Machine Extension. Có hai loại VMX operation là VMX root operation và VMX nonroot operation. Thông thường, hypervisor sẽ chạy ở chế độ VMX root và VM sẽ chạy ở chế độ VMX non-root. Sự chuyển đỗi giữa hai chế độ này gọi là VMX transitions. Chuyển đỗi từ VMX root sang VMX non-root gọi là VM entry. Sự chuyển đỗi từ VMX non-root về VMX root gọi là VM exit. 
 
