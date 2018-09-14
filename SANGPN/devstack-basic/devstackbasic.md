@@ -292,3 +292,20 @@ Ví dụ:
 
 
 ### 2.4. Nova:
+
+#### 2.4.1. Thêm VM:
+-	Xem danh sách các Image, flavor hiện có:
+![](https://i.imgur.com/tP5KO9I.png)
+-	Tạo SSH Key:
+o	ssh-keygen -q -f -ssh-key Sau đó nhập password 2 lần.
+o	nova keypair-add novakey --pub-key ssh-key.pub
+-	Xem danh sách các network và tạo Instance:
+![](https://i.imgur.com/qwSWRVE.png)
+![](https://i.imgur.com/oKmvSiJ.png)
+Ngoài ra ta có thể thêm Instance bằng Dashboard trong Project/Compute/Instances, chọn Launch Instance và chọn các thông số cho Instance.
+- Note: Quá trình tạo Instance của em bị lỗi, tạo xong Instance thì status là error. Có thể do trong quá trình cài đặt devstack bị thiếu file gì đó, em sẽ thử cài lại xem sao =((
+![](https://i.imgur.com/HtfR9Tt.png)
+#### 2.4.2. Sửa, xóa VM:
+-	Chúng ta có thể chỉnh sửa Instance trong phần Actions  Edit Instance hoặc chọn mũi tên.
+-	Xóa Instance: Cũng trong phần Action, chọn mũi tên và chọn Delete Instance.
+

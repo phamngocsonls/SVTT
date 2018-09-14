@@ -260,7 +260,25 @@ OpenStack là một phần mềm mã nguồn mở, dùng để triển khai Clou
 -	Glance-registry: lưu trữ, thực thi và thu thập metadata về các image.
 -	Database: là cơ sở dữ liệu lưu trữ image metadata.
 -	Storage repository: tích hợp với các thành phần OpenStack khác nhau bên ngoài như hệ thống tệp thông thường, Amazon S3 và HTTP cho kho lưu trữ hình ảnh…
-### 5.3. Luồng tạo Images:
+## 5.3. Luồng tạo Images:
+Glance Image Status: Sau đây là các trạng thái của Image khi upload:
+![](https://i.imgur.com/27Ldmq9.png)
+-	queued: Không có dữ liệu hình ảnh nào được tải lên Glance và kích thước hình ảnh không được thiết lập rõ ràng về 0 khi tạo.
+-	saving: Raw data của Image đang được tải lên Glance.
+-	uploading: Biểu thị rằng một cuộc gọi nhập dữ liệu đã được thực hiện (import data-put call).
+-	importing: Cuộc gọi nhập dữ lệu đã được thực hiện nhưng hình ảnh chưa sẵn sàng để sử dụng.
+-	active: Image đã được tải lên và sẵn sàng ở Glance.
+-	deactivated: quyền truy cập vào dữ liệu Image không được cho phép đối với bất kỳ người dùng không phải quản trị viên nào.
+-	killed: Đã xảy ra lỗi khi tải lên dữ liệu của Image và không thể đọc được.
+-	deleted: Glance đã giữ lại thông tin về Image, nhưng nó không còn có sẵn để sử dụng.
+-	pending_delete: Tương tự như deleted. Tuy nhiên Image trong trạng thái này không thể khôi phục được.
+Tạo Image:
++	Tạo Image-status object.
++	Lấy dữ liệu từ nơi được chỉ định.
++	Xác minh dữ liệu.
++	Nếu thành công, tạo Image.
++	Ghi lại kết quả trong  image-import object, đặt trạng thái thích hợp và đặt expiration date. 
+
 ## 6. Dashboard (Horizon):
 ### 6.1. Chức năng chính:
 -	Cung cấp cho quản trị viên và người dùng một giao diện đồ họa dựa trên web để truy cập, cung cấp và tự động triển khai các tài nguyên dựa trên đám mây.
