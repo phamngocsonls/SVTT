@@ -39,6 +39,8 @@ Trong mô hình dưới, ta bắt đầu tìm hiểu về công nghệ Hardware 
 
 Đầu tiên, về công nghệ Intel Virtualization Technology (VT-x), Các vi xử lý intel hỗ trợ công nghệ VT-x sẽ cung cấp một chế độ mở rộng là VMX operation. VMX viết tắt của Virtual Machine Extension. Có hai loại VMX operation là VMX root operation và VMX nonroot operation. Thông thường, hypervisor sẽ chạy ở chế độ VMX root và VM sẽ chạy ở chế độ VMX non-root. Sự chuyển đỗi giữa hai chế độ này gọi là VMX transitions. Chuyển đỗi từ VMX root sang VMX non-root gọi là VM entry. Sự chuyển đỗi từ VMX non-root về VMX root gọi là VM exit. 
 
+![.](src-image/w3_5.PNG)
+
 Vi xử lý hoạt động ở chế độ VMX root gần giống như khi hoạt động ở chế độ thông thường. Điểm khác biệt cơ bản và ở chế độ VMX root, tập lệnh VMX có thể được sử dụng, còn ở chế độ thông thường thì không. Ngoài ra, khi ở chế độ VMX, vi xử lý sẽ cố định và không cho truy cập một số giá trị của các thanh ghi CR (Control Register). Điều này sẽ liên quan đến việc xác định các trạng thái của chế độ VMX.
 
 Vi xử lý hoạt động ở chế độ VMX non-root sẽ có những sự giới hạn và chỉnh sửa để phù hợp với sự ảo hóa. Thay vì những hoạt động thông thường, các lệnh đặc biệt và các sự kiện sẽ gây ra sự kiện VM exit tới hypersior. Bởi vì sự xuất hiện của VM exit thay cho cách cư xử thông thường, hoạt động của VM ở chế độ VMX non-root có sự giới hạn. Chính sự giới hạn này cho phép hypervisor điều khiển được sự hoạt động của các VM.
@@ -47,13 +49,13 @@ Tựu chung, đối với dòng vi xử lý Intel, Ring -1 là chế độ VMX r
 
 Vòng đời của một hypervisor và VM sẽ được giới thiệu như sau. Khởi chạy chế độ VMX bằng lệnh VMXON. Sử dụng VM entry, một hypervisor có thể truy cập vào một máy ảo cụ thể. Cụ thể, Hypervisor dùng các lệnh VMLAUNCH và VMRESUME để thực hiện VM entry. VM exit sẽ giúp hypervisor thoát khỏi một VM để thực hiện quyền quản trị. Thông thường, hypervisor tự sẽ quyết định việc thoát khỏi chế độ VMX bởi lệnh VMXOFF.
 
-<img>
+![.](src-image/w3_6.PNG)
 
 Chế độ VMX non-root và VMX transistion (VM entry và VM exit) được điều khiển bằng một cấu trúc dữ liệu gọi là virtual-machine control structure (VMCS). Truy cập vào VMCS được quản lý thông qua VMCS pointer. Giá trị của VMCS pointer là địa chỉ 64-bit của VMCS. VMCS pointer được đọc và viết khi sử dụng các lệnh VMPTRST và VMPTRLD. Hypervisor cấu hình VMCS sử dụng VMREAD, VMWRITE và VMCLEAR. Một hypervisor có thể sử dụng một VMCS khác nhau cho mỗi VM được nó hỗ trợ. Nếu một VM có nhiều virtual processor, hypervisor có thể sử dụng một VMCS khác nhau cho mỗi virtual processor.
 
 Mỗi VMCS tương ứng với một virtual cpu của VM. Có 3 trạng thái cần quan tâm của một VMCS. Thứ nhất, VMCS đã active hay chưa. Thứ hai, VMCS là current hay not current. Chỉ có current VMCS mới có thể chạy các lệnh VMLAUCH, VMREAD, VMRESUME, VMWRITE. Cuối cùng, VMCS đó đang có trạng thái launched hay clear. Điều này ảnh hưởng tới VM entry. Chỉ có VMCS ở trạng thái clear mới cho phép lệnh VMLAUNCH. Ngược lại, chỉ có VMCS ở trạng thái launched mới cho phép lệnh VMRESUME. Các trạng thái cụ thể của một VMCS được minh họa trong hình sau
 
-<image>
+![.](src-image/w3_7.PNG)
   
 Cụ thể, ở đây ta có hai đối tượng VMCS X và VMCS Y. Lệnh VMPTRLD cho phép chuyển một VMCS tới trạng thái active, current, đồng thời nó cũng làm các VMCS khác chuyển hết về trạng thái not current. Lệnh VMCLEAR chuyển một VMCS tới trạng thái inactive, not current và clear. Cuối cùng, lệnh VMLAUNCH chuyển trạng thái clear thành launched.
 
@@ -71,7 +73,4 @@ Mỗi VMCS vừa có thể là một ordinary VMCS hoặc là một shadow VMCS.
 
 
 
-Thứ hai, về công nghệ AMD Virtualization (AMD-V). Các vi xử lý AMD hỗ trợ ảo hóa sẽ cung cấp một chế độ gọi là SVM. SVM viết tắt của Secure Virtual Machine. Khi hypervisor khởi chạy máy ảo. Nó sẽ cung cấp một chế độ gọi là Guest Mode. Ở chế độ này, tương tự công nghệ của Intel, các máy ảo có thể truy cập các lệnh với CPU. Chế độ này sẽ hạn chế một số lệnh và có các sự kiện để quay trở lại chế độn thông thường của vi xử lý dưới sự quản lý của hypervisor. Các chuyển đỗi trạng thái trong quá trình hoạt động của SVM là VMRUN, VMSAVE, VMLOAD. 
 
-
-## 3. Tiêu Chuẩn POSIX
