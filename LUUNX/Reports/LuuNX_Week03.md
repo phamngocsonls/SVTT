@@ -53,13 +53,19 @@ Vòng đời của một hypervisor và VM sẽ được giới thiệu như sau
 
 Chế độ VMX non-root và VMX transistion (VM entry và VM exit) được điều khiển bằng một cấu trúc dữ liệu gọi là virtual-machine control structure (VMCS). Truy cập vào VMCS được quản lý thông qua VMCS pointer. Giá trị của VMCS pointer là địa chỉ 64-bit của VMCS. VMCS pointer được đọc và viết khi sử dụng các lệnh VMPTRST và VMPTRLD. Hypervisor cấu hình VMCS sử dụng VMREAD, VMWRITE và VMCLEAR. Một hypervisor có thể sử dụng một VMCS khác nhau cho mỗi VM được nó hỗ trợ. Nếu một VM có nhiều virtual processor, hypervisor có thể sử dụng một VMCS khác nhau cho mỗi virtual processor.
 
+
+![.](src-image/w3_8.PNG)
+
 Mỗi VMCS tương ứng với một virtual cpu của VM. Có 3 trạng thái cần quan tâm của một VMCS. Thứ nhất, VMCS đã active hay chưa. Thứ hai, VMCS là current hay not current. Chỉ có current VMCS mới có thể chạy các lệnh VMLAUCH, VMREAD, VMRESUME, VMWRITE. Cuối cùng, VMCS đó đang có trạng thái launched hay clear. Điều này ảnh hưởng tới VM entry. Chỉ có VMCS ở trạng thái clear mới cho phép lệnh VMLAUNCH. Ngược lại, chỉ có VMCS ở trạng thái launched mới cho phép lệnh VMRESUME. Các trạng thái cụ thể của một VMCS được minh họa trong hình sau
 
 ![.](src-image/w3_7.PNG)
   
 Cụ thể, ở đây ta có hai đối tượng VMCS X và VMCS Y. Lệnh VMPTRLD cho phép chuyển một VMCS tới trạng thái active, current, đồng thời nó cũng làm các VMCS khác chuyển hết về trạng thái not current. Lệnh VMCLEAR chuyển một VMCS tới trạng thái inactive, not current và clear. Cuối cùng, lệnh VMLAUNCH chuyển trạng thái clear thành launched.
 
+
 Truy cập vào VMCS được quản lý thông qua VMCS pointer. Giá trị của VMCS pointer là địa chỉ 64-bit của VMCS. Vùng nhớ của VMCS có kích thước 4 Kbyte và được gọi là VMCS region. Vùng nhớ này gồm 3 phần. Phần đầu là 4 bytes đầu tiên bao gồm 31 bit gọi là VMCS revision identifier và bit thứ 32 gọi là shadow-indicator. Vi xử lý sử dụng VMCS data khác nhau sẽ có VMCS revision identifier khác nhau. Vùng VMCS revision identifier tránh việc dùng VMCS region được định dạng cho một vi xử lý cho một vi xử lý dùng VMCS data định dạng khác. VMCS revision identifier sẽ được hypervisor viết vào trước khi được sử dụng như một VMCS region. Khi lệnh VMPTRLD được chạy với VMCS revision identifier không tương thích với vi xử lý, nó sẽ thất bại. Chế độ shadow VMCS sẽ được phân tích sau. Phần thứ hai là 4 bytes tiếp theo gọi là VMX-abort indicator. Giá trị các bit của vùng này cũng không được điều khiển bởi vi xử lý mà bởi hypervisor. Các bit này sẽ có giá trị khác không khi VMCS bị kết thúc bất thường. Phần còn lại của vùng nhớ VMCS region được sử dụng cho VMCS data. VMCS data bao gồm các phần dữ liệu điều khiển VMX non-root và VMX transistion.
+
+
 
 VMCS data tổ chức dưới dạng 6 phần:
 * Guest-state area: Trạng thái của vi xử lý được lưu vào phần này khi VM exit xảy ra và được đọc từ phần này khi VM entry xảy ra
