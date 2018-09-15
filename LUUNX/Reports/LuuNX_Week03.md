@@ -8,7 +8,7 @@
 
 Mỗi hệ thống máy tính có chứa rất nhiều thành phần phần cứng như bộ vi xử lý, bộ nhớ chính, card mạng, màn hình, ổ đĩa, ... Nếu những lập trình viên khi lập trình phải hiểu tất cả các thành phần phần cứng thì sẽ không thể nào có chương trình phần cứng nào xuất hiện. Vì vậy, để giải quyết vấn đề trên, khái niệm hệ điều hành (operating system) ra đời. Hệ điều hành là một lớp phần mềm trung gian giữa các phần cứng và phần mềm ứng dụng, nó cung cấp cài tài nguyên cần thiết cho các phần mềm chạy trên nó hoạt động.
 
-![](src-image/w3_1.png)
+![.](src-image/w3_1.PNG)
   
 Hầu hết hệ thống máy tính hiện tại đều có hai chế độ hoạt động: kernel mode và user mode. Hệ điều hành là một phần mềm chạy ở kernel mode. Với kernel mode, hệ điều hành có toàn quyền truy cập và quản lý phần cứng. Ngược lại, các phần mềm chạy dựa trên hệ điều hành sẽ chạy ở user mode. Với user mode, các phần mềm sẽ không thế truy cập và thao tác trực tiếp phần cứng, chúng cần xin được sự hỗ trợ từ hệ điều hành.
 
@@ -19,15 +19,21 @@ Nhiệm vụ của của hệ điều hành gồm 2 công việc. Thứ nhất, 
 
 Hệ điều hành cung cấp các tài nguyên trừu tượng. Một hệ thống máy tính thì chứa nhiều thành phần phần cứng. Các thành phần này yêu cầu điều khiển bằng ngôn ngữ máy, rất phức tạp. Việc hiểu và sử dụng ngôn ngữ máy của một thiết bị phần cứng sẽ cũng chẳng có ý nghĩa gì nếu thiết bị đó được nâng cấp hoặc thay thế. Giải pháp là hệ điều hành sẽ trừu tượng hóa phần cứng thành các đối tượng dễ thao tác để người phát triển phần mềm ứng dụng sử dụng. Ví dụ điển hình nhất là file. file là đối tượng được trữu tượng hóa từ phần cứng SATA disk. Sẽ thật tồi tệ nếu làm việc trực tiếp trên SATA disk.
 
-<image>
+![.](src-image/w3_2.png)
 
 Hệ điều hành sẽ quản lý tài nguyên phần cứng. Nếu là hệ điều hành đơn nhiệm đơn người dùng việc quản lý tài nguyên sẽ đơn giản. Tuy nhiên, một hệ thống có nhiều phần mềm chạy, nhiều người dùng cùng đăng nhập hoạt động, việc quản lý ưu tiên, phân phối tài nguyên sẽ phải đến tay hệ điều hành. Cách thức hệ điều hành xử lý công việc này là phân kênh. Kiểu phân kênh thứ nhất là phân kênh theo thời gian. Mỗi chương trình sẽ chạy trong một đoạn thời gian ngắn. Kiểu thứ hai là phân kênh theo không gian. Mỗi chương trình sẽ chạy trên một phần của phần cứng vật lý trong cùng một thời điểm.
 
-## 2. công nghệ Hardware-assisted Virtualization
+## 1.2 Ring 1 và Ring 2 trong Hierachical Protection Domains
 
-Như đã trình bày từ trước, công nghệ Hardware-assisted Virtualization sẽ hỗ trợ các hypervisor hoạt động ở mức Ring -1 và quản lý các máy ảo chạy ở mức Ring 0. Trong mô hình dưới, ta bắt đầu tìm hiểu về công nghệ Hardware assisted Virtualization, nền tảng cho KVM hoạt động và cũng là đối tượng tương tác chính với kvm.ko .
+## 2. Công Nghệ Hardware-assisted Virtualization
 
-<img>
+Như đã trình bày từ trước, công nghệ Hardware-assisted Virtualization sẽ hỗ trợ các hypervisor hoạt động ở mức Ring -1 và quản lý các máy ảo chạy ở mức Ring 0. 
+
+![.](src-image/w3_3.PNG)
+
+Trong mô hình dưới, ta bắt đầu tìm hiểu về công nghệ Hardware assisted Virtualization, nền tảng cho KVM hoạt động và cũng là đối tượng tương tác chính với kvm.ko .
+
+![.](src-image/w3_4.PNG)
 
 ### 2.1 Intel Virtualization Technology
 
