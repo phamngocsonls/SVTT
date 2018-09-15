@@ -25,6 +25,15 @@ Hệ điều hành sẽ quản lý tài nguyên phần cứng. Nếu là hệ đ
 
 ## 1.2 Ring 1 và Ring 2 trong Hierachical Protection Domains
 
+Trong tìm hiểu tuần số 2, Ring 1 và Ring 2 chưa được trình bày rõ ràng. Trong tuần này, vấn đề này sẽ được trình bày rõ như sau.
+Về mô hình Hierachical Protection Domains ( hay Protection Ring), cụ thể, hệ điều hành sẽ cung cấp 4 Ring từ 0 đến 3. Ring càng thấp thì quyền càng cao. Nó thể hiện mức độ tin cậy hệ điều hành gán cho các tiến trình bên trong Ring đó. Một object trong một Ring có thể truy cập tới tất cả các đối tượng trong những Ring có quyền thấp hơn nó. Nếu nó muốn làm điều ngược lại, truy cập vào những Ring có quyền cao hơn, nó sẽ gửi request đến hệ điều hành nhờ hệ điều hành thực thi giúp. Điều này thực hiện thông qua System Call. Về 4 Ring sẽ được trình bày như sau:
+*  Ring 0   Operating system kernel
+*  Ring 1   Remaining parts of the operating system
+*  Ring 2   I/O drivers and utilities
+*  Ring 3   Applications and user activity
+
+Ring 0 chứa lõi (kernel) của hệ điều hành. Ring 1 chứa các phần còn lại của hệ điều hành. Ring 2 chứa các drivers IO và các tiện ích hệ thống. Ring 3 chứa ứng dụng người dùng. Hiện nay, các hệ điều hành phổ biến như Linux hay Windows chỉ sử dụng Ring 0 và Ring 3. 
+
 ## 2. Công Nghệ Hardware-assisted Virtualization
 
 Như đã trình bày từ trước, công nghệ Hardware-assisted Virtualization sẽ hỗ trợ các hypervisor hoạt động ở mức Ring -1 và quản lý các máy ảo chạy ở mức Ring 0. 
