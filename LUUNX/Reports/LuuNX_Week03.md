@@ -2,7 +2,10 @@
 * Tuần 3
 * Người Thực Hiện: Nguyễn Xuân Lưu
 
-## 1. Bổ Trợ Kiến Thức Operating System
+## [1. Bổ Trợ Kiến Thức Operating System](#1)
+## [2. Công Nghệ Hardware-assisted Virtualization](#2)
+
+## <a name="1"></a>1. Bổ Trợ Kiến Thức Operating System
 
 * Sách Modern Operating Systems 4th
 
@@ -34,7 +37,7 @@ Về mô hình Hierachical Protection Domains ( hay Protection Ring), cụ thể
 
 Ring 0 chứa lõi (kernel) của hệ điều hành. Ring 1 chứa các phần còn lại của hệ điều hành. Ring 2 chứa các drivers IO và các tiện ích hệ thống. Ring 3 chứa ứng dụng người dùng. Hiện nay, các hệ điều hành phổ biến như Linux hay Windows chỉ sử dụng Ring 0 và Ring 3. 
 
-## 2. Công Nghệ Hardware-assisted Virtualization
+## <a name="2"></a>2. Công Nghệ Hardware-assisted Virtualization
 
 Như đã trình bày từ trước, công nghệ Hardware-assisted Virtualization sẽ hỗ trợ các hypervisor hoạt động ở mức Ring -1 và quản lý các máy ảo chạy ở mức Ring 0. 
 
