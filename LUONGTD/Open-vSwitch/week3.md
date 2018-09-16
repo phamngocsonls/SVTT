@@ -1,6 +1,6 @@
 # Kiến trúc của OpenvSwitch (continue)
 ## [0. Bổ túc Control Plane, Data Plane](#botuc)
-## [1. vswitchd](#vswitchd)
+## [1. vswitchd (continue)](#vswitchd)
 ## [2. Datapath](#datapath)
 ---
 ## <a name="botuc"></a> 0. Control Plane, Data Plane (Forwarding Plane)
@@ -37,8 +37,33 @@ Data Plane có trách nhiệm phân tích packet header (hoặc cell, SONET) tro
 ## <a name="vswitchd"></a> 1. vswitchd (continue)
 Phần này sẽ trình bày về một số procedure và submodule của **vswtichd**:
 ### 1.1. bridge module init
+```c
+/* Initializes the bridge module, configuring it to obtain its configuration
+ * from an OVSDB server accessed over 'remote', which should be a string in a
+ * form acceptable to ovsdb_idl_create(). */
+void
+bridge_init(const char *remote)
+{
+    /* step.1. Create connection to database. */
+    idl = ovsdb_idl_create(remote, &ovsrec_idl_class, true, true);
 
-![](images/2-OVS-Architecture/bridge_init.png)
+    /* step.2. Register unixctl commands. (ovs-appctl <command>) */
+    unixctl_command_register("qos/show-types", "interface", 1, 1)
+    ...
+    unixctl_command_register("bridge/dump-flows", "bridge", 1, 1,)
+
+    /* step.3. init submodules */
+    lacp_init(); // register command lacp/show <port>
+    bond_init(); // register bond commands
+    cfm_init();
+    bfd_init();
+    ovs_numa_init();
+    stp_init();
+    lldp_init();
+    rstp_init();
+    ifnotifier = if_notifier_create(if_change_cb, NULL);
+}
+```
 
 - Đầu tiên, ```ovs-vswitchd``` tạo kết nối với ```ovsdb-server``` sử dụng một module gọi là **OVSDB IDL**. **IDL** là viết tắt của **Interface Definition Language**. **OVSDB** lưu trữ trong bộ nhớ (in-memory) một bản sao của database. Nó chuyển RPC request đến một OVSDB database server và phân tích response, chuyển raw JSON thành cấu trúc dữ liệu mà client có thể đọc dễ dàng hơn.
 - ```unixctl_command_register()``` sẽ đăng kí (register) một unixctl command, command này cho phép kiểm soát ```ovs-switchd``` trên CLI. Mỗi submodule gọi phương thức này để đăng kí (register) và đưa chúng ra bên ngoài. Như đã đề cập bên trên, command line tool để tương tác với vswitchd là ```ovs-appctl```, ta có thể kiểm chứng những command đã được đăng ký đó:
@@ -57,7 +82,22 @@ ofproto duy trì một mảng class đã được đăng ký (registed) ```ofpro
 
 Trong hàm ```ofproto_init()```, built-in ofproto class ```ofproto_dpif_class``` sẽ được đăng ký (registerd). ```ofproto_dpif_class``` đã được khai báo tại ```ofproto/ofproto-dpif.c```: 
 
-![](images/2-OVS-Architecture/ofproto_dpif_class.png)
+```c
+const struct ofproto_class ofproto_dpif_class = {
+    init,
+    ...
+    port_alloc,
+    port_construct,
+    port_destruct,
+    port_dealloc,
+    port_modified,
+    port_query_by_name,
+    port_add,
+    port_del,
+    ...
+    ct_flush,                   /* ct_flush */
+};
+```
 
 Phương thức ```init()``` của ```ofproto_dpif_class``` sẽ đăng ký các lệnh ```unixctl``` của nó:
 ```c
