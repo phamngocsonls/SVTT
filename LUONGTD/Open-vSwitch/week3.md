@@ -1,9 +1,9 @@
 # Kiến trúc của OpenvSwitch (continue)
-## [0. Bổ túc Control Plane, Data Plane](#botuc)
+## [0. Bổ túc về Control Plane & Data Plane](#botuc)
 ## [1. vswitchd (continue)](#vswitchd)
 ## [2. Datapath](#datapath)
 ---
-## <a name="botuc"></a> 0. Control Plane, Data Plane (Forwarding Plane)
+## <a name="botuc"></a> 0. Control Plane & Data Plane (Forwarding Plane)
 Mỗi process của một router hay switch có thể được gán với hoạt động ở một trong ba mặt phẳng trừu tượng (conceptual plane):
 - Forwarding Plane: Chuyển các gói tin (packet) từ input đến output
 - Control Plane: Xác định cách chuyển tiếp gói tin
