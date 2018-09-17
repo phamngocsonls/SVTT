@@ -111,11 +111,14 @@ Một datapath là một bảng (lưu lại các) flow, nó chỉ phục vụ c�
 Như vậy, một OVS birdge quản lý 2 loại tài nguyên:
 - forwarding plane mà nó quản lý (datapath)
 - các thiết bị mạng (cả thiết bị vật lý và thiết bị ảo) gắn với nó (netdev) 
+
 Cấu trúc dữ liệu chính:
 - triển khai OVS bridge: **ofproto**, **ofproto-provider**
 - quản lý datapath: **dpif**, **dpif-provider**
 - quản lý các thiết bị mạng: **netdev**, **netdev-provider**
-Ta đã có được một một bức tranh khá hoàn chỉnh về cách quản lý datapath của **vswitchd**. Phần tiếp theo, ta sẽ tìm hiểu về chức năng quản lý các thiết bị mạng (**netdev** và **netdev-provider**).
+Ta đã có được một một bức tranh khá hoàn chỉnh về cách quản lý datapath của **vswitchd**. 
+
+Phần tiếp theo, ta sẽ tìm hiểu về chức năng quản lý các thiết bị mạng (**netdev** và **netdev-provider**).
 
 ### 2.2. netdev
 **netdev** là một thư viện được định nghĩa trong ```lib/netdev-provider.h```, được thực thi trong ```lib/netdev.c```, **netdev** trừu tượng hóa (abstract) tương tác với các thiết bị mạng (qua các giao diện là Ethernet).
@@ -160,6 +163,8 @@ Lưu ý rằng các tài nguyên này chỉ cần khởi tạo một lần.
 Pseudo code tương ứng được hiển thị bên dưới:
 
 ![](images/2-OVS-Architecture/example.png)
+
+Ta sẽ tìm hiểu một số procedures quan trọng.
 
 ## <a name="ovsdb"></a> 3. OVSDB		// TODO
 ## <a name="datapath"></a> 4. Datapath 	// TODO
