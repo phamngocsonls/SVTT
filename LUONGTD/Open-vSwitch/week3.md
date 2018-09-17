@@ -8,10 +8,13 @@ Mỗi process của một router hay switch có thể được gán với hoạt
 - Forwarding Plane: Chuyển các gói tin (packet) từ input đến output
 - Control Plane: Xác định cách chuyển tiếp gói tin
 - Management Plane: Phương pháp cấu hình Control Plane (CLI, SNMP,...)
+
 Ví dụ: ta có thể SSH vào CLI của một router (management plane) và cấu hình EIGRP để trao đổi thông tin định tuyến với những router khác (control plane). Những thông tin này được cài đặt vào bảng CEF địa phương của nó (forwarding plane).	
 
 Cụ thể:
+
 **Control Plane**
+
 Control Plane có chức năng cấu hình hệ thống, quản lý và trao đổi thông tin bảng định tuyến (những hoạt động không thường xuyên xảy ra lắm). Bộ điều khiển định tuyến (route controller) trao đổi thông tin cấu trúc liên kết (topology information) với các bộ định tuyến khác và xây dựng một bảng định tuyến dựa trên một giao thức định tuyến, ví dụ: RIP (Routing Information Protocol), OSPF (Open Shortest Path Forwarding), or BGP (Border Gateway Protocol). Nó cũng có thể tạo một bảng chuyển tiếp (forwarding table) cho máy chuyển tiếp (forwarding engine). Bởi vì chức năng điều khiển (control function) không được thực hiện trên từng gói tin, chúng sẽ không có ràng buộc nghiêm ngặt về tốc độ và nói chung được thực thi (implement) bằng phần mềm.  
 Control Plane cung cấp những gì mà Data/Forward Plane cần để xây dựng forwarding table và cập nhật các thay đổi topology khi chúng xảy ra. Control Plane có thể được gọi là "slow path" trong legacy route khi chuyển đổi nhiều kiến trúc chuyển mạch gói (packet switching architechture). 
 
@@ -29,6 +32,7 @@ Những chức năng được thực hiện trong một routing engine/route pro
 - Stacking nhà phân phối và nền tảng, phân cụm, ...
 
 **Data Plane (Forwarding Plane)**
+
 Data Plane có trách nhiệm phân tích packet header (hoặc cell, SONET) trong ASIC (Application-Specific Intergrated Circuit). Nó quản lý QoS, lọc, đóng gói, Queuing,... Data Plane phải thực hiện những hoạt động trên trong "Fast Path" để đáp ứng được nhu cầu hiệu suất trong các data center và core network. Forwarding Plane phải tìm kiếm tiền tố (prefix) và được gọi nhiều lần trong một giây vì thế cần có ASICs tìm kiếm nhanh.
 
 ![](images/ghichep/OVS-Path.jpg)
