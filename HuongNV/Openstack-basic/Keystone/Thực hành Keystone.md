@@ -31,13 +31,18 @@ export OS_IMAGE_API_VERSION=2
 
 # 1. Getting token
 
-Để lấy thông tin về token, sử sụng Openstack Client:
+- Để lấy thông tin về token, sử sụng Openstack Client:
 
 ```
 openstack token issue
 ```
 
+- Thông tin về token bao gồm:
+    - Thời gian hết hạn của token
+    - Mã token
+    - Thông tin user_id mà toekn gán tới
 ![Imgur](https://i.imgur.com/CiSX9hq.png)
+
 <a name="2"></a>
 
 # 2. Listing user
