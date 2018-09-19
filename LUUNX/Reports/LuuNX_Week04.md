@@ -108,6 +108,10 @@ Việc lựa chọn bộ nhớ cho máy ảo kết thúc, ấn forward chuyển 
 
 ![.](src-image/w4_8.png)
 
+Việc cài đặt hệ điều hành hoàn tất và có thể sử dụng bình thường
+
+![.](src-image/w4_9.png)
+
 
 ### 1.2 Tạo Máy Ảo
 
