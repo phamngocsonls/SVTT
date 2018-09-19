@@ -80,7 +80,33 @@ Phương pháp cài đặt đầu tiên là thông qua file cài đặt. Chọn 
 
 ![.](src-image/w4_4.png)
 
+Tại đây ta sẽ lựa chọn file iso hoặc ổ đĩa CD chứa bản cài hệ điều hành. Lưu ý, nếu lựa chọn cài hệ điều hành cho máy ảo từ file iso tải xuống trong ổ cứng. Khi chọn Browse.., ở màn hình bên dưới cần chọn Browse Local để tìm đến file iso trong ổ cứng.
 
+![.](src-image/w4_5.png)
+
+File ISO cho các hệ điều hành mã nguồn mở phổ biến có thể tải từ các nguồn:
+
+Official Ubuntu images: https://www.ubuntu.com/download/alternative-downloads
+
+Official CentOS images: https://centos.org/download/
+
+Official Debian images: https://www.debian.org/CD/
+
+Official Fedora images: https://getfedora.org/
+
+Official openSUSE images: https://software.opensuse.org/
+
+Sau khi lựa chọn file iso thành công, virt-manager sẽ tự động phát hiện hệ điều hành, công việc tiếp theo là ấn forward để chuyển sang màn hình cài đặt CPU và RAM. Việc lựa chọn kích thước RAM ảo và số lượng CPU ảo phải dựa vào yêu cầu sử dụng và tài nguyên sẵn có của hệ thống.
+
+![.](src-image/w4_6.png)
+
+Sau khi cài đặt CPU và RAM, ấn forward sẽ chuyển sang màn hình cài đặt kích thước bộ nhớ.
+
+![.](src-image/w4_7.png)
+
+Việc lựa chọn bộ nhớ cho máy ảo kết thúc, ấn forward chuyển sang màn hình cài đặt cuối cùng. Ở đây, ta cần đặt tên cho máy ảo và thay đỗi thiết lập mạng nếu cần. Cuối cùng, ấn finish để hoàn tất việc thiết lập máy ảo.
+
+![.](src-image/w4_8.png)
 
 
 ### 1.2 Tạo Máy Ảo
