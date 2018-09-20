@@ -127,7 +127,7 @@ Các bước tiếp theo sẽ tương tự phương pháp cài đặt đầu ti�
 
 ![.](src-image/w4_10.png)
 
-**Network Boot (PXE)***
+**Network Boot (PXE)**
 
 Phương pháp cài đặt này sử dụng một server Preboot eXecution Environment (PXE) để cài đặt hệ điều hành cho máy ảo. server PXE phải thuộc cùng subnet với hệ thống hiện tại. Do giới hạn về thiết bị, em hiện chưa tìm hiểu thêm.
 
@@ -150,9 +150,36 @@ Các tác vụ chính sau khi cài đặt thành công một máy ảo là tiế
 
 **Khởi động máy ảo**
 
+Sau khi cài đặt thành công máy ảo, trên cửa số chính của phần mềm virt-manager sẽ xuất hiện các lựa chọn máy ảo. Ta click vào máy ảo muốn khởi động, ấn lựa chọn Power on the virtual machine để khởi động máy ảo.
+
+![.](src-image/w4_13.png)
+
+Sau khi khởi động máy ảo thành công, trạng thái của máy ảo chuyển thành Running. Tuy nhiên, để có thể mở và truy cập giao diện của máy ảo trên màn hình hệ thống, ta cần click nút open. Một cửa số mới hiện lên cho ta thao tác với hệ điều hành của máy ảo.
+
+![.](src-image/w4_14.png)
+
 **Tạm dừng máy ảo**
 
+Việc tạm dừng máy ảo được thực hiện thông qua virt-manager bằng cách ấn nút pause trên thanh điều khiển của cửa số chính virt-manager hoặc cửa sổ đồ họa hệ điều hành máy ảo.
+
+![.](src-image/w4_15.png)
+
+Lưu ý, khi tương tác với máy ảo, con trỏ chuột của hệ thống có thể bị disabled bên ngoài vùng cửa sổ đồ họa của hệ điều hành máy ảo. Để khôi phục con trỏ chuột, ấn tổ hợp phím Ctrl + Alt + L.
+
+Sau khi tạm dừng máy ảo và muốn máy ảo quay trở lại hoạt động, ta ấn nút pause thêm một lần nữa.
+
 **Thoát máy ảo**
+
+Để đóng một máy ảo, có 3 phương pháp.
+
+Đầu tiên, có thể đóng một máy ảo bằng cách tắt hệ điều hành của máy ảo thông qua tương tác với hệ điều hành đó. Ví dụ để đóng một máy ảo chạy hệ điều hành MS Dos, dùng lệnh
+```shell
+```
+Thứ hai, việc đóng một máy ảo có thể được thực hiện bằng cách ấn nút shutdown trong cửa số chính của virt-manager hoặc trong cửa sổ hệ điều hành của máy ảo hoạt động.
+
+Thứ ba, khi việc đóng máy ảo bằng phương pháp thứ hai không hiện quả, có thể đóng ngay máy ảo bằng cách chọn lựa chọn force off như hình dưới. Phương pháp này có thể nguy hiểm vì hủy mọi hoạt động hiện tại của máy ảo, có thể dẫn tới phá hủy dữ liệu hoặc hệ điều hành máy ảo.
+
+
 
 **Giám sát máy ảo**
 
