@@ -53,7 +53,7 @@ Lệnh này yêu cầu nhập mật khẩu để thực thi.
 
 <virt-host-validate kvm master tr 71>
 
-## 2. Quản Lý KVM bằng libvirt virt-manager
+## 2. Quản Lý KVM bằng giao diện người dùng
 
 Như đã trình bày từ trước, việc quản lý KVM được thực hiện một cách đơn giản và trực quan nhất thông qua virt-manager. virt-manager cung cấp giao diện cửa sổ người dùng thân thiện. Sau khi cài đặt thành công các gói như trình bày ở phần trên, ta khởi chạy virt-manager bằng cách gõ trong màn hình terminal lệnh
 
@@ -76,11 +76,11 @@ Một cửa sổ mới hiện ra cho phép lựa chọn các phương pháp cài
 
 **Local install media (ISO Image or CDROM)**
 
-Phương pháp cài đặt đầu tiên là thông qua file cài đặt. Chọn Local install media và click forward.
+*Bước 1:* Phương pháp cài đặt đầu tiên là thông qua file cài đặt. Chọn Local install media và click forward.
 
 ![.](src-image/w4_4.png)
 
-Tại đây ta sẽ lựa chọn file iso hoặc ổ đĩa CD chứa bản cài hệ điều hành. Lưu ý, nếu lựa chọn cài hệ điều hành cho máy ảo từ file iso tải xuống trong ổ cứng. Khi chọn Browse.., ở màn hình bên dưới cần chọn Browse Local để tìm đến file iso trong ổ cứng.
+*Bước 2:* Tại đây ta sẽ lựa chọn file iso hoặc ổ đĩa CD chứa bản cài hệ điều hành. Lưu ý, nếu lựa chọn cài hệ điều hành cho máy ảo từ file iso tải xuống trong ổ cứng. Khi chọn Browse.., ở màn hình bên dưới cần chọn Browse Local để tìm đến file iso trong ổ cứng.
 
 ![.](src-image/w4_5.png)
 
@@ -95,16 +95,16 @@ Official Debian images: https://www.debian.org/CD/
 Official Fedora images: https://getfedora.org/
 
 Official openSUSE images: https://software.opensuse.org/
-
-Sau khi lựa chọn file iso thành công, virt-manager sẽ tự động phát hiện hệ điều hành, công việc tiếp theo là ấn forward để chuyển sang màn hình cài đặt CPU và RAM. Việc lựa chọn kích thước RAM ảo và số lượng CPU ảo phải dựa vào yêu cầu sử dụng và tài nguyên sẵn có của hệ thống.
+ 
+*Bước 3:* Sau khi lựa chọn file iso thành công, virt-manager sẽ tự động phát hiện hệ điều hành, công việc tiếp theo là ấn forward để chuyển sang màn hình cài đặt CPU và RAM. Việc lựa chọn kích thước RAM ảo và số lượng CPU ảo phải dựa vào yêu cầu sử dụng và tài nguyên sẵn có của hệ thống.
 
 ![.](src-image/w4_6.png)
 
-Sau khi cài đặt CPU và RAM, ấn forward sẽ chuyển sang màn hình cài đặt kích thước bộ nhớ.
+*Bước 4:* Sau khi cài đặt CPU và RAM, ấn forward sẽ chuyển sang màn hình cài đặt kích thước bộ nhớ.
 
 ![.](src-image/w4_7.png)
 
-Việc lựa chọn bộ nhớ cho máy ảo kết thúc, ấn forward chuyển sang màn hình cài đặt cuối cùng. Ở đây, ta cần đặt tên cho máy ảo và thay đỗi thiết lập mạng nếu cần. Cuối cùng, ấn finish để hoàn tất việc thiết lập máy ảo.
+*Bước 5:* Việc lựa chọn bộ nhớ cho máy ảo kết thúc, ấn forward chuyển sang màn hình cài đặt cuối cùng. Ở đây, ta cần đặt tên cho máy ảo và thay đỗi thiết lập mạng nếu cần. Cuối cùng, ấn finish để hoàn tất việc thiết lập máy ảo.
 
 ![.](src-image/w4_8.png)
 
@@ -112,8 +112,50 @@ Việc cài đặt hệ điều hành hoàn tất và có thể sử dụng bìn
 
 ![.](src-image/w4_9.png)
 
+**Network Install (http, fpt, nfs)**
 
-### 1.2 Tạo Máy Ảo
+Phương pháp thứ hai để cài đặt hệ điều hành cho máy ảo là thông qua đường dẫn thư mục nguồn của hệ điều hành trên internet. Phương pháp này chỉ khác phương pháp đầu ở bước thứ nhất và thứ 2. Cụ thể, ta chọn Network Install, ấn forward.
+
+![.](src-image/w4_11.png)
+
+Trên màn hình này, ta cần nhập link dẫn tới thư mục nguồn của hệ điều hành, ví dụ:
+```
+http://ftp.us.debian.org/debian/dists/stable/main/installer-amd64/
+```
+
+Các bước tiếp theo sẽ tương tự phương pháp cài đặt đầu tiên. Tuy nhiên, thời gian cài đặt sẽ lâu hơn và có thể xuất hiện sự cố nếu đường truyền mạng không ổn định.
+
+![.](src-image/w4_10.png)
+
+**Network Boot (PXE)***
+
+Phương pháp cài đặt này sử dụng một server Preboot eXecution Environment (PXE) để cài đặt hệ điều hành cho máy ảo. server PXE phải thuộc cùng subnet với hệ thống hiện tại. Do giới hạn về thiết bị, em hiện chưa tìm hiểu thêm.
+
+**Import an existing disk image**
+
+Phương pháp cuối cùng cho phép cài đặt nhanh hệ điều hành cho máy ảo thông qua một file ảnh hệ điều hành. Phương pháp này tương tự phương pháp đầu tiên. Chọn Import an existing disk image và click forward.
+
+![.](src-image/w4_12.png)
+
+Trên màn hình này, ta chọn Browse.. và chọn file ảnh hệ điều hành để tiến hành cài. Các file ảnh dùng để cài đặt hệ điều hành tương thích với virt-manager có định dạng qcow2.
+
+### 2.2 Vận hành và giám sát máy ảo
+
+Các tác vụ chính sau khi cài đặt thành công một máy ảo là tiến hành sử dụng, giám sát máy ảo. Cụ thể, công việc này bao gồm:
+
+* Khởi động máy ảo
+* Tạm dừng máy ảo
+* Thoát máy ảo
+* Giám sát máy ảo
+
+**Khởi động máy ảo**
+
+**Tạm dừng máy ảo**
+
+**Thoát máy ảo**
+
+**Giám sát máy ảo**
+
 
 ### 1.3 Quản lý Network và Storage
 
