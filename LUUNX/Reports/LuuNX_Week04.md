@@ -172,25 +172,55 @@ Sau khi tạm dừng máy ảo và muốn máy ảo quay trở lại hoạt đ�
 
 Để đóng một máy ảo, có 3 phương pháp.
 
-Đầu tiên, có thể đóng một máy ảo bằng cách tắt hệ điều hành của máy ảo thông qua tương tác với hệ điều hành đó. Ví dụ để đóng một máy ảo chạy hệ điều hành MS Dos, dùng lệnh
-```shell
-```
+Đầu tiên, có thể đóng một máy ảo bằng cách tắt hệ điều hành của máy ảo thông qua tương tác với hệ điều hành đó. Ví dụ, turn off hệ điều hành windows xp
+
+![.](src-image/w4_16.png)
+
+
 Thứ hai, việc đóng một máy ảo có thể được thực hiện bằng cách ấn nút shutdown trong cửa số chính của virt-manager hoặc trong cửa sổ hệ điều hành của máy ảo hoạt động.
+
+![.](src-image/w4_17.png)
 
 Thứ ba, khi việc đóng máy ảo bằng phương pháp thứ hai không hiện quả, có thể đóng ngay máy ảo bằng cách chọn lựa chọn force off như hình dưới. Phương pháp này có thể nguy hiểm vì hủy mọi hoạt động hiện tại của máy ảo, có thể dẫn tới phá hủy dữ liệu hoặc hệ điều hành máy ảo.
 
+![.](src-image/w4_18.png)
 
 
 **Giám sát máy ảo**
 
+Việc giám sát máy ảo thông qua virt-manager tập chung vào 4 thông số: CPU usage, Memory usage, Disk I/O usage và Network Usage.
 
-### 1.3 Quản lý Network và Storage
+Có hai mức độ giám sát máy ảo.
 
-### 1.4 Template và Snapshot
+Thứ nhất, ở cấp độ tổng quát, ta có thể quan sát các thông số của các máy ảo đang chạy trên hệ thống một cách trực quan qua màn hình chính của virt-manager. Cụ thể, như hình dưới.
 
-### 1.5 Migrate Virtual Machine
+![.](src-image/w4_19.png)
 
+Lưu ý, việc bật tắt hiển thị các thông số trên màn hình chính của virt-manager được thực hiện bằng lựa chọn qua toolbar view/graph.
 
+![.](src-image/w4_20.png)
 
-## 2. Hướng Dẫn Sử Dụng KimChi
+Thứ hai, ở cấp độ chi tiết, ta có thể giám sát chi tiết các thông số của một máy ảo đang chạy trên hệ thống bằng cách click nút info trên màn hình cửa số máy ảo.
+
+![.](src-image/w4_21.png)
+
+Trong màn hình mới hiện lên, chọn Performance và quan sát các thông số.
+
+![.](src-image/w4_22.png)
+
+### 2.3 Di chuyển, Back up, Clone và Xóa máy ảo
+
+### 2.4 Quản lý chi tiết các tài nguyên phần cứng ảo hóa
+
+//TODO
+
+## 3. Quản lý KVM bằng giao diện dòng lệnh với virsh và các công cụ liên quan
+
+//TODO
+
+## 4. Quản lý KVM bằng giao diện dòng lệnh với nhóm công cụ hỗ trợ từ QEMU
+
+//TODO
+
+# Hướng Dẫn Sử Dụng KimChi
 
