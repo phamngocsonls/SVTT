@@ -299,7 +299,7 @@ Chọn Add Template để tạo template. Trên cửa sổ mới hiện ra, nh�
 
 ![.](src-image/w4_26.png)
 
-Sau khi lựa chọn xong, ấn create để tạo. Công việc tạo template chưa hoàn tất vì ta chưa chỉnh sửa các thông tin chi tiết phù hợp. Ta chọn Actions/Edit với template vừa tạo
+Sau khi lựa chọn xong, ấn create để tạo. Công việc tạo template chưa hoàn tất vì ta chưa chỉnh sửa các thông tin chi tiết phù hợp. Ta chọn Actions/Edit với template vừa tạo.
 
 ![.](src-image/w4_27.png)
 
@@ -311,15 +311,22 @@ Lựa chọn Storage cho phép chỉnh sửa kích thước bộ nhớ trong c�
 
 ![.](src-image/w4_29.png)
 
-Lựa chọn Interface cho phép cài đặt giao thức mạng
+Lựa chọn Interface cho phép cài đặt giao thức mạng cho máy ảo.
 
 ![.](src-image/w4_30.png)
 
-Lựa chọn Processor cho phép lựa chọn số nhân CPU cho máy ảo
+Lựa chọn Processor cho phép lựa chọn số nhân CPU cho máy ảo.
 
 ![.](src-image/w4_31.png)
 
-Ta chọn sang tab Guest để tạo máy ảo. Tại đây, lựa chọn Add Guest, cửa sổ hiện ra cho phép nhập tên máy ảo lựa chọn template cho máy ảo.
+Sau khi cài đặt các thông số cho template, ấn save để lưu lại. Ta chọn sang tab Guest để tạo máy ảo. Tại đây, lựa chọn Add Guest, cửa sổ hiện ra cho phép nhập tên máy ảo và lựa chọn template cho máy ảo.
 
+<img>
+
+Việc cài đặt máy ảo hoàn tất, danh sách máy ảo được hiển thị trong cửa sổ chính của tab Guest
+
+<img>
+
+## 3. Vận hành và giám sát máy ảo bằng KIMCHI
 
 
