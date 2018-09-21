@@ -287,8 +287,39 @@ Lưu ý, trên phiên bản hiện tại, nếu truy cập vào đường link t
 
 ## 2. Tạo máy ảo bằng KIMCHI
 
-Trên màn hình đăng nhập, nhập tài khoản ubuntu để truy cập vào wok server. Tại đây, ta có giao diện làm việc như sau
+Trên màn hình đăng nhập, nhập tài khoản ubuntu để truy cập vào wok server. Tại đây, ta có giao diện làm việc như sau:
 
 ![.](src-image/w4_23.png)
+
+Chọn tab Virtualization để thực hiện các công việc ảo hóa. Tại đây, việc đầu tiên cần làm là tạo một template cho máy ảo. Chọn tiếp tab Templates:
+
+![.](src-image/w4_25.png)
+
+Chọn Add Template để tạo template. Trên cửa sổ mới hiện ra, nhập tên máy ảo và đường dẫn tới file iso của hệ điều hành muốn cài. Lưu ý, kimchi tự động tìm các file iso trong ổ cứng để người dùng chọn nhanh hơn. Ngoài ra, một số hệ điều hành phổ biến cũng có thể chọn trực tiếp tại đây. 
+
+![.](src-image/w4_26.png)
+
+Sau khi lựa chọn xong, ấn create để tạo. Công việc tạo template chưa hoàn tất vì ta chưa chỉnh sửa các thông tin chi tiết phù hợp. Ta chọn Actions/Edit với template vừa tạo
+
+![.](src-image/w4_27.png)
+
+Lựa chọn General cho phép chỉnh sửa tên, kích thước RAM và lựa chọn kết nối đồ họa tới máy ảo.
+
+![.](src-image/w4_28.png)
+
+Lựa chọn Storage cho phép chỉnh sửa kích thước bộ nhớ trong cấp cho máy ảo.
+
+![.](src-image/w4_29.png)
+
+Lựa chọn Interface cho phép cài đặt giao thức mạng
+
+![.](src-image/w4_30.png)
+
+Lựa chọn Processor cho phép lựa chọn số nhân CPU cho máy ảo
+
+![.](src-image/w4_31.png)
+
+Ta chọn sang tab Guest để tạo máy ảo. Tại đây, lựa chọn Add Guest, cửa sổ hiện ra cho phép nhập tên máy ảo lựa chọn template cho máy ảo.
+
 
 
