@@ -210,6 +210,8 @@ Trong màn hình mới hiện lên, chọn Performance và quan sát các thông
 
 ### 2.3 Di chuyển, Back up, Clone và Xóa máy ảo
 
+//TODO
+
 ### 2.4 Quản lý chi tiết các tài nguyên phần cứng ảo hóa
 
 //TODO
@@ -223,4 +225,70 @@ Trong màn hình mới hiện lên, chọn Performance và quan sát các thông
 //TODO
 
 # Hướng Dẫn Sử Dụng KimChi
+
+## 1. Cài đặt KIMCHI
+
+Việc cài đặt kimchi được thực hiện qua Terminal như sau
+
+Đầu tiên, cập nhật server
+
+```shell
+sudo apt-get update && sudo apt-get upgrade
+```
+
+Tiếp theo, cài đặt KVM nếu chưa cài đặt
+
+```shell
+sudo apt-get install qemu qemu-kvm libvirt-bin
+```
+
+Tải gói cài đặt kimchi cho ubuntu
+```
+wget https://github.com/kimchi-project/kimchi/releases/download/2.5.0/wok-2.5.0-0.noarch.deb
+
+wget http://kimchi-project.github.io/gingerbase/downloads/latest/ginger-base.noarch.deb
+
+wget https://github.com/kimchi-project/kimchi/releases/download/2.5.0/kimchi-2.5.0-0.noarch.deb
+```
+
+Cài đặt các gói
+
+```
+sudo apt-get install nginx
+
+sudo dpkg -i wok-2.5.0-0.noarch.deb
+
+sudo apt-get install -f
+
+sudo service wokd start
+
+sudo dpkg -i ginger-base.noarch.deb
+
+sudo apt-get install -f
+
+sudo service wokd restart
+
+sudo dpkg -i kimchi-2.5.0-0.noarch.deb
+
+sudo apt-get install -f
+
+sudo ufw allow 8001/tcp
+```
+
+Kiểm tra cài đặt thành công, vào trình duyệt web, truy cập địa chỉ:
+
+```
+https://localhost:8001
+```
+
+Lưu ý, trên phiên bản hiện tại, nếu truy cập vào đường link trên và trình duyệt web thông báo lỗi chứng chỉ, hãy chọn tiếp tục truy cập để mở được trang đăng nhập của wok server.
+
+![.](src-image/w4_24.png)
+
+## 2. Tạo máy ảo bằng KIMCHI
+
+Trên màn hình đăng nhập, nhập tài khoản ubuntu để truy cập vào wok server. Tại đây, ta có giao diện làm việc như sau
+
+![.](src-image/w4_23.png)
+
 
