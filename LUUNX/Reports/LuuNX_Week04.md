@@ -329,4 +329,20 @@ Việc cài đặt máy ảo hoàn tất, danh sách máy ảo được hiển t
 
 ## 3. Vận hành và giám sát máy ảo bằng KIMCHI
 
+Công việc vận hành và giám sát máy ảo bằng KIMCHI tương tự virt-manager. Trong tab Virtualization / Guests, lựa chọn Actions / Start để khởi động máy ảo mong muốn.
 
+<img>
+
+Sau khi máy ảo đã khởi chạy, lựa chọn Show Console để truy cập vào màn hình làm việc của hệ điều hành máy ảo.
+
+<img>
+
+Lựa chọn này sẽ mở một tab mới trên trình duyệt.
+
+<img>
+
+Để tạm dừng hoạt động của một máy ảo, trong tab Virtualization/Guests, lựa chọn Actions / Pause với máy ảo đang chạy.
+
+<img>
+
+Việc đóng máy ảo được thực hiện thông qua 3 cách.
