@@ -55,6 +55,14 @@ Use case tiềm năng là Vaultaire Time Series Database (TSDB). Vaultaire là m
 
 ## 2. Ceph-deploy toolkit - Tạo một Ceph cluster đơn giản.
 
-### 1. Cấu hình các máy ảo.
+- 1 admin node
+- 1 monintor 
+- 3 OSD      
 
-#### Cài đặt mạng cho các máy ảo
+cấu hình mạng:
+
+192.168.1.25 adminNode
+192.168.1.26 node1
+192.168.1.27 node2
+192.168.1.28 node3
+192.168.1.29 node4

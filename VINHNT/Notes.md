@@ -18,7 +18,7 @@ Filesystem cũng là một kiến trúc lưu trữ dữ liệu máy tính nhưng
 
 <a name="POSIX"></a>
 
-**POSIX (The Portable Operating System Interface)** duy trì khả năng tương thích giữa các hệ điều hành. POSIX định nghĩa các API cùng với các command shells và tiện ích cho khả năng tương tác với các biến thể của Unix và các hệ điều hành khác.
+**POSIX (The Portable Operating System Interface)** là tập các tiêu chuẩn duy trì khả năng tương thích giữa các hệ điều hành. POSIX định nghĩa các API cùng với các command shells và tiện ích cho phần mềm khả năng tương tác với các biến thể của Unix.
 
 <a name="socket"></a>
 
@@ -48,3 +48,7 @@ Filesystem cũng là một kiến trúc lưu trữ dữ liệu máy tính nhưng
 <a name="disk-image"></a>
 
 **Disk image** là một file máy tính bao gồm nội dung và cấu trúc của một ổ đĩa hoặc một thiết bị lưu trữ dữ liệu.
+
+<a name="raid"></a>
+
+**RAID (Redundant Array of Independent Disks)**: là một công nghệ ảo hóa lưu trữ dữ liệu kết hợp nhiều ổ đĩa vật lý thành một hoặc nhiều đơn vị lưu trữ logic cho mục đích *data redundancy (dữ liệu bổ sung phục vụ cho dữ liệu chính và cho phép sửa lỗi trong khi dữ liệu chính bị lỗi)* 
