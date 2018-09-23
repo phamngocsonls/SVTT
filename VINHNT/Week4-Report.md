@@ -42,23 +42,23 @@ Dữ liệu trong object storage thường được truy cập thông qua các g
 |---------------|:---------------------:|:-------------------:|:----------------------|
 |Kiến trúc và   | Lưu trữ file          |  Lưu trữ block      | Lưu trữ hướng đối     |
 |đơn vị lưu trữ | (files)               | (blocks)            | tượng                 |
-|-------------------------------------------------------------------------------------|
+|---------------|:---------------------:|:-------------------:|:----------------------|
 |Cập nhật sửa   | hỗ trợ cập nhật tại   | Hỗ trợ cập nhật tại | Không hõ trợ cập nhât |
 |đổi            | chỗ và sửa đổi 1 phần | và sửa đổi 1 phần   | tại chỗ và sửa đổi    |
 |               | dữ liệu               | dữ liệu             | toàn phần dữ liệu     |
-|-------------------------------------------------------------------------------------|
+|---------------|:---------------------:|:-------------------:|:----------------------|
 |Phù hợp nhất   | Chia sẻ dữ liệu       | Dữ liệu thường giao | Dữ liệu tập trung và  |
 |cho            |                       | dịch và thay đổi    | unstructure.          |
 |               |                       | (databases)         |                       |
-|-------------------------------------------------------------------------------------|
+|---------------|:---------------------:|:-------------------:|:----------------------|
 |Lợi thế nổi    | Đơn giản hóa truy cập | Hiệu năng cao       | Khả năng mở rộng và   |
 |bật            | và quản lý chia sẻ    |                     | và truy cập phân tán  |
 |               | files                 |                     |                       |
-|-------------------------------------------------------------------------------------|
+|---------------|:---------------------:|:-------------------:|:----------------------|
 |Tốc độ xử lý   | Trở nên nặng nề khi   | Phân mảnh dữ liệu,  | Truy xuất đến thẳng vị|
 |               | số lượng file lên đến | không thể truy xuất | trí lưu trữ, tốc độ   |
 |               | hàng tỷ               | 1 file nhanh chóng  | nhanh                 |
-|-------------------------------------------------------------------------------------|
+|---------------|:---------------------:|:-------------------:|:----------------------|
 |Use case       | Nhu cầu chia sẻ dữ    | Databases cho các   | Big data              |
 |               | liệu lớn, lưu trữ cục | ứng dụng, web.      | web apps,             |
 |               | bộ                    | Virtual machine     | lưu trữ sao lưu       |
@@ -87,11 +87,11 @@ Các node là các máy ảo chạy Centos 7 và linux kernel 3.10. VirtualBox v
 
 Chuyển hostname và sửa file /etc/hosts
 
-![](w4-cài-hostname.png))
+![](./Image/w4-cài-hostname.png))
 
 Cấu hình mạng cho máy ảo tại file /etc/sysconfig/network-scripts/ifcfg-emp0s3
 
-![](w4-cấu-hình-mạng-cho-vm.png)
+![](./Image/w4-cấu-hình-mạng-cho-vm.png)
 
 Sau khi cấu hình xong restart lại network service và reboot
 
@@ -151,7 +151,7 @@ Generate ssh key cho ceph user
 ssh-keygen
 ```
 
-![](w4-ssh-keygen.png)
+![](./Image/w4-ssh-keygen.png)
 
 Tạo file cấu hình cho ssh vào file có đường dẫn /home/ceph/.ssh/config và thêm vào nội dung sau:
 
@@ -239,7 +239,7 @@ Tạo thư mục my-cluster và vào trong thư mục. Tạo mới một cấu h
 ceph-deploy new  node1
 ```
 
-![](w4-ceph-deploy-new.png)
+![](./Image/w4-ceph-deploy-new.png)
 
 sửa file cấu hình ceph.conf
 
@@ -255,8 +255,8 @@ ceph-deploy mon create-initial
 
 Em đang gặp lỗi này
 
-![](loi.png)
+![](./Image/loi.png)
 
 Cài lại không bật tường lửa và các port thì gặp lỗi 
 
-![](loi2.png)
+![](./Image/loi2.png)
