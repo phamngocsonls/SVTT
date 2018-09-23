@@ -39,30 +39,13 @@ Dữ liệu trong object storage thường được truy cập thông qua các g
 ### So sánh 3 loại dữ liệu lưu trữ
 
 |So sánh        | File storage          | Block storage       | Object storage        |
-|---------------|:---------------------:|:-------------------:|:----------------------|
-|Kiến trúc và   | Lưu trữ file          |  Lưu trữ block      | Lưu trữ hướng đối     |
-|đơn vị lưu trữ | (files)               | (blocks)            | tượng                 |
-|---------------|:---------------------:|:-------------------:|:----------------------|
-|Cập nhật sửa   | hỗ trợ cập nhật tại   | Hỗ trợ cập nhật tại | Không hõ trợ cập nhât |
-|đổi            | chỗ và sửa đổi 1 phần | và sửa đổi 1 phần   | tại chỗ và sửa đổi    |
-|               | dữ liệu               | dữ liệu             | toàn phần dữ liệu     |
-|---------------|:---------------------:|:-------------------:|:----------------------|
-|Phù hợp nhất   | Chia sẻ dữ liệu       | Dữ liệu thường giao | Dữ liệu tập trung và  |
-|cho            |                       | dịch và thay đổi    | unstructure.          |
-|               |                       | (databases)         |                       |
-|---------------|:---------------------:|:-------------------:|:----------------------|
-|Lợi thế nổi    | Đơn giản hóa truy cập | Hiệu năng cao       | Khả năng mở rộng và   |
-|bật            | và quản lý chia sẻ    |                     | và truy cập phân tán  |
-|               | files                 |                     |                       |
-|---------------|:---------------------:|:-------------------:|:----------------------|
-|Tốc độ xử lý   | Trở nên nặng nề khi   | Phân mảnh dữ liệu,  | Truy xuất đến thẳng vị|
-|               | số lượng file lên đến | không thể truy xuất | trí lưu trữ, tốc độ   |
-|               | hàng tỷ               | 1 file nhanh chóng  | nhanh                 |
-|---------------|:---------------------:|:-------------------:|:----------------------|
-|Use case       | Nhu cầu chia sẻ dữ    | Databases cho các   | Big data              |
-|               | liệu lớn, lưu trữ cục | ứng dụng, web.      | web apps,             |
-|               | bộ                    | Virtual machine     | lưu trữ sao lưu       |
-|               |                       | ramdom read/write   |                       |
+|---------------|:----------------------|:--------------------|:----------------------|
+|Kiến trúc và đơn vị lưu trữ| Lưu trữ file (files) |  Lưu trữ block (blocks) | Lưu trữ hướng đối (object)|
+|Cập nhật sửa đổi | hỗ trợ cập nhật tại chỗ và sửa lỗi một phần | Hỗ trợ cập nhật tại chỗ và sửa lỗi một phần | Không hõ trợ cập nhât tại chỗ và sửa lỗi toàn phần dữ liệu |
+|Phù hợp nhất cho | Chia sẻ dữ liệu  | Dữ liệu thường giao dịch và thay đổi (databases) | Dữ liệu tập trung và unstructure. |
+|Lợi thế nổi bật | Đơn giản hóa truy cập và quản lý chia sẻ files | Hiệu năng cao       | Khả năng mở rộng và truy cập phân tán |
+|Tốc độ xử lý   | Trở nên nặng nề khi số lượng file tăng lên đến hàng tỷ | Phân mảnh dữ liệu, không thể truy xuất nhanh chóng | Truy xuất đến thẳng vị trí lưu trữ, tốc độ nhan |
+|Use case       | Nhu cầu chia sẻ dữ liệu lớn, lưu trữ cục bộ  | Databases cho các ứng dụng, web. Virtual machine, random read/write | Big data, web apps, lưu trữ sao lưu.|
 
 <a name="2"></a>
 
