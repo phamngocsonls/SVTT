@@ -82,7 +82,7 @@ Kiến trúc của Manila service bao gồm các thành các thành phần sau:
 - Defines the Neutron network & subnet through which instances access the share
 - A share can be associated with only one share network
 
-<a name=""35></a>
+<a name="35"></a>
 
 ## 3.5 Security Services
 - Định nghĩa, thiết lập rules cho việc xác thực, truy cập vào file share(ví dụ: Có thể khai báo các rules thông qua các external service: LDAP, Active Directory, Kerberos)
