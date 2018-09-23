@@ -351,6 +351,6 @@ Việc đóng máy ảo được thực hiện thông qua 3 cách.
 
 Cách thứ nhất là đóng từ hệ điều hành hệ thống. Cách hai và cách ba là lựa chọn shutdown (tắt máy từ hệ điều hành) hoặc power off (tắt nguồn) từ màn hình điều khiển máy ảo của KIMCHI như trên.
 
-Về công việt giám sát các máy ảo. Trên màn hình chính của tab Guest ta dễ dàng quan sát các thông số tổng thể của tài nguyên máy ảo sử dụng. Bên cạnh đó, KIMCHI cho phép theo dõi các thông số tài nguyên của hệ thống máy chủ. Lựa chọn tab Host / Dashboards.
+Về công việt giám sát các máy ảo. Trên màn hình chính của tab Guest ta dễ dàng quan sát các thông số tổng thể của tài nguyên máy ảo sử dụng. Bên cạnh đó, KIMCHI cho phép theo dõi các thông số tài nguyên hệ thống c máy chủ. Lựa chọn tab Host / Dashboards.
 
 ![.](src-image/w4_38.png)
