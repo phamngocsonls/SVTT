@@ -321,28 +321,36 @@ Lựa chọn Processor cho phép lựa chọn số nhân CPU cho máy ảo.
 
 Sau khi cài đặt các thông số cho template, ấn save để lưu lại. Ta chọn sang tab Guest để tạo máy ảo. Tại đây, lựa chọn Add Guest, cửa sổ hiện ra cho phép nhập tên máy ảo và lựa chọn template cho máy ảo.
 
-<img>
+![.](src-image/w4_32.png)
 
 Việc cài đặt máy ảo hoàn tất, danh sách máy ảo được hiển thị trong cửa sổ chính của tab Guest
 
-<img>
+![.](src-image/w4_33.png)
 
 ## 3. Vận hành và giám sát máy ảo bằng KIMCHI
 
 Công việc vận hành và giám sát máy ảo bằng KIMCHI tương tự virt-manager. Trong tab Virtualization / Guests, lựa chọn Actions / Start để khởi động máy ảo mong muốn.
 
-<img>
+![.](src-image/w4_34.png)
 
 Sau khi máy ảo đã khởi chạy, lựa chọn Show Console để truy cập vào màn hình làm việc của hệ điều hành máy ảo.
 
-<img>
+![.](src-image/w4_35.png)
 
 Lựa chọn này sẽ mở một tab mới trên trình duyệt.
 
-<img>
+![.](src-image/w4_36.png)
 
 Để tạm dừng hoạt động của một máy ảo, trong tab Virtualization/Guests, lựa chọn Actions / Pause với máy ảo đang chạy.
 
-<img>
+![.](src-image/w4_37.png)
 
 Việc đóng máy ảo được thực hiện thông qua 3 cách.
+
+![.](src-image/w4_37.png)
+
+Cách thứ nhất là đóng từ hệ điều hành hệ thống. Cách hai và cách ba là lựa chọn shutdown (tắt máy từ hệ điều hành) hoặc power off (tắt nguồn) từ màn hình điều khiển máy ảo của KIMCHI như trên.
+
+Về công việt giám sát các máy ảo. Trên màn hình chính của tab Guest ta dễ dàng quan sát các thông số tổng thể của tài nguyên máy ảo sử dụng. Bên cạnh đó, KIMCHI cho phép theo dõi các thông số tài nguyên của hệ thống máy chủ. Lựa chọn tab Host / Dashboards.
+
+![.](src-image/w4_38.png)
