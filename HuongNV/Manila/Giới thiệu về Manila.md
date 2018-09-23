@@ -29,7 +29,7 @@ Ví dụ sau đây miêu tả 2 file share giữa các VM với nhau. `Marketing
 ![Imgur](https://i.imgur.com/1W0mccx.png)
 
 
-<a name="11"><?a>
+<a name="11"></a>
 
 ## 1.1 How Manila work
 
