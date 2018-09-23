@@ -2,7 +2,17 @@
 * Tuần 4
 * Người tạo: Nguyễn Xuân Lưu
 
-# Hướng Dẫn Sử Dụng KVM
+# [Hướng Dẫn Sử Dụng KVM](#1)
+## [1. Cài Đặt KVM](#1.1)
+## [2. Quản Lý KVM bằng giao diện  người dùng](#1.2)
+
+# [Hướng Dẫn Sử Dụng KimChi](#2)
+## [1. Cài đặt KIMCHI](#2.1)
+## [2. Tạo máy ảo bằng KIMCHI](#2.2)
+## [3. Vận hành và giám sát máy ảo bằng KIMCHI](#2.3)
+
+
+# <a name="1"></a> Hướng Dẫn Sử Dụng KVM
 
 KVM có nhiều hơn một cách quản trị, cụ thể người sử dụng có thể sử dụng các công cụ khác nhau để quản trị KVM
 
@@ -10,7 +20,7 @@ KVM có nhiều hơn một cách quản trị, cụ thể người sử dụng c
 
 Có hai phương pháp chính. Thứ nhất là dùng nhóm công cụ do QEMU cung cấp. Ưu điểm là không cần công cụ trung gian, tốc độ thực hiện nhanh. Tuy nhiên, độ phức tạp cao và cần dùng những lệnh dài. Thứ hai là sử dụng một công cụ trung gian là libvirt. Libvirt hỗ trợ nhiều dòng hypervisor khác nhau quản trị máy ảo như KVM, Xen,... Libvirt bao gồm một nhóm các công cụ quản trị máy ảo. Trong số đó, hai công cụ cần tập chung quan tâm là virsh và virt-manager. virsh (virtual shell) là công cụ command line interface (CLI) và virt-manager là công cụ graphic user interface (GUI) hỗ trợ việc quản lý máy ảo một cách đơn giản và thao tác dễ dàng. Trong khuôn khổ tìm hiểu, ta sẽ đi từ công cụ đơn giản tới phức tạp cho từng loại tác vụ cơ bản.
 
-## 1. Cài Đặt KVM
+## <a name="1.1"></a>1. Cài Đặt KVM
 
 Trước hết là công việc cài đặt KVM, công việc cài đặt KVM thực hiện theo trình tự sau:
 
@@ -53,7 +63,7 @@ Lệnh này yêu cầu nhập mật khẩu để thực thi.
 
 <virt-host-validate kvm master tr 71>
 
-## 2. Quản Lý KVM bằng giao diện người dùng
+## <a name="1.2"></a>2. Quản Lý KVM bằng giao diện  người dùng
 
 Như đã trình bày từ trước, việc quản lý KVM được thực hiện một cách đơn giản và trực quan nhất thông qua virt-manager. virt-manager cung cấp giao diện cửa sổ người dùng thân thiện. Sau khi cài đặt thành công các gói như trình bày ở phần trên, ta khởi chạy virt-manager bằng cách gõ trong màn hình terminal lệnh
 
@@ -224,9 +234,9 @@ Trong màn hình mới hiện lên, chọn Performance và quan sát các thông
 
 //TODO
 
-# Hướng Dẫn Sử Dụng KimChi
+# <a name="2"></a>Hướng Dẫn Sử Dụng KimChi
 
-## 1. Cài đặt KIMCHI
+## <a name="2.1"></a>1. Cài đặt KIMCHI
 
 Việc cài đặt kimchi được thực hiện qua Terminal như sau
 
@@ -285,7 +295,7 @@ Lưu ý, trên phiên bản hiện tại, nếu truy cập vào đường link t
 
 ![.](src-image/w4_24.png)
 
-## 2. Tạo máy ảo bằng KIMCHI
+## <a name="2.2"></a>2. Tạo máy ảo bằng KIMCHI
 
 Trên màn hình đăng nhập, nhập tài khoản ubuntu để truy cập vào wok server. Tại đây, ta có giao diện làm việc như sau:
 
@@ -327,7 +337,7 @@ Việc cài đặt máy ảo hoàn tất, danh sách máy ảo được hiển t
 
 ![.](src-image/w4_33.png)
 
-## 3. Vận hành và giám sát máy ảo bằng KIMCHI
+## <a name="2.3"></a>3. Vận hành và giám sát máy ảo bằng KIMCHI
 
 Công việc vận hành và giám sát máy ảo bằng KIMCHI tương tự virt-manager. Trong tab Virtualization / Guests, lựa chọn Actions / Start để khởi động máy ảo mong muốn.
 
