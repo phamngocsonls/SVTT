@@ -1,5 +1,5 @@
 # The Design and Implementation of Open vSwitch
-## [0. Introduction] (#intro)
+## [0. Introduction](#intro)
 ## [1. Design Contraints](#constraint)
 ## [2. Design](#design)
 ---
