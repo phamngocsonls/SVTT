@@ -22,6 +22,13 @@ Sau khi hoàn tất việc thiết lập kết nối. Chọn chuột phải và 
 **Back up**
 
 
+**Clone**
+
+
+**Delete**
+
+
+
 
 
 ### 2.4 Quản lý chi tiết các tài nguyên phần cứng ảo hóa
