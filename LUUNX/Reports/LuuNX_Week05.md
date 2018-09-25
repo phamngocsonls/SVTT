@@ -13,11 +13,11 @@ Việc di chuyển một máy ảo từ phần cứng vật lý này tới phầ
 
 Để thực hiện di chuyển, ta cần thiết lập kết nối từ virt-manager của máy nguồn tới máy đích. Công việc được thực hiện qua việc add connect từ cửa sổ chính của virt-manager, ở đây, ta sử dụng giao thức SSH.
 
-![.](src-image/w5_x.png)
+![.](src-image/w5_8.png)
 
 Sau khi hoàn tất việc thiết lập kết nối. Chọn chuột phải và máy ảo muốn di chuyển, chọn migrate và chọn địa chỉ đích đã tạo ở phía trên. Do hạn chế về thiết bị, em không thể thực hiện bước này.
 
-<img>
+![.](src-image/w5_9.png)
 
 **Back up**
 
@@ -64,7 +64,16 @@ Cuối cùng, việc xóa bỏ một máy ảo được thực hiện dễ dàng
 
 ### 2.4 Quản lý chi tiết các tài nguyên phần cứng ảo hóa
 
-//TODO
+**Virtual Network**
+
+KVM cung cấp nhiều loại mạng ảo cho máy ảo, trong đó có 3 loại chính:
+
+* isolated virtual network
+* routed virtual network
+* NATed virtual network
+
+Để tạo các dạng mạng ảo này, ta vào chế độ cấu hình bằng cách chọn Edit/Connection Details trên màn hình chính của v
+
 
 ## 3. Quản lý KVM bằng giao diện dòng lệnh với virsh và các công cụ liên quan
 
