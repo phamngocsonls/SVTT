@@ -216,6 +216,23 @@ sudo firewall-cmd --reload
 
 ### 3.3 Cấu hình các node osd
 
+chúng ta tạo 3 OSD và mỗi OSD có 2 partitions:
+- /dev/sda          Phân vùng cho root
+- /dev/sdb          Phân vùng trống - 10G
+
+Nhiệm vụ là format phân vùng /dev/sdb với XFS filesystem và một GPT partition table sử dụng:
+
+```
+sudo parted -s /dev/sdb mklable gpt mkpart primary xfs 0% 100%
+sudo mkfs.xfs /dev/sdb -f
+sudo blkid -o value -s TYPE /dev/sdb
+```
+
+![](/Image/w4-format-xfs.png))
+
+
+### Build the ceph cluster
+
 Tạo thư mục my-cluster và vào trong thư mục. Tạo mới một cấu hình cluster tại monitor node "node1"
 
 ```
@@ -236,10 +253,67 @@ Add the initial monitor and gather the keys:
 ceph-deploy mon create-initial
 ```
 
-Em đang gặp lỗi này
+Nếu gặp lỗi này thì xóa ceph đi cài lại tại các node:
 
 ![](./Image/loi.png)
 
-Cài lại không bật tường lửa và các port thì gặp lỗi 
+Xóa ceph và cài lại:
 
-![](./Image/loi2.png)
+```
+ceph-deploy purge admin0 mon1 osd1 osd2 osd3
+ceph-deploy purgedata admin0 mon1 osd1 osd2 osd3
+ceph-deploy forgetkeys
+
+# Tiến hành cài lại ceph trên các node
+
+ceph-deploy new mon1
+ceph-deploy install admin0 mon1 osd1 osd2 osd3
+ceph-deploy mon create-initial
+ceph-deploy gatherkeys  mon1
+```
+### Thêm OSD vào cluster
+
+Khi ceph được cài đặt trên tất cả các nodes chúng ta có thể thêm OSD daemons vào cluster. OSD daemons sẽ tạo ra dữ liệu và journal partition trên disk /dev/sdb
+
+Xóa bảng phân vùng /dev/sdb trên tất cả các node với zap: xóa dữ liệu trong /dev/sdb
+
+```
+ceph-deploy disk zap osd1:/dev/sdb osd2:/dev/sdb osd3:/dev/sdb
+```
+
+Prepare and Activate các OSD với command
+
+```
+ceph-deploy osd prepare osd1:/dev/sdb osd2:/dev/sdb osd3:/dev/sdb
+ceph-deploy osd activate osd1:/dev/sdb osd2:/dev/sdb osd3:/dev/sdb
+```
+
+Kết quả 2 lệnh trên là như sau:
+
+```
+- /dev/sdb1 - Ceph data
+- /dev/sdb2 - Ceph journal
+```
+
+Tiếp theo deploy managemnent-key tới tất cả các node
+
+```
+ceph-deploy admin admin0 mon1 osd1 osd2 osd3
+```
+
+Thay đổi quyền của file key cho tất cả các node
+
+```
+sudo chmod 644 /etc/ceph/ceph.client.admin.keyring
+```
+
+### Kiểm tra ceph cluster
+
+``` 
+ssh mon1
+sudo ceph -s
+```
+
+Kết quả như sau:
+
+![](/Image/health-ok.png)
