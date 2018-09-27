@@ -228,7 +228,7 @@ sudo mkfs.xfs /dev/sdb -f
 sudo blkid -o value -s TYPE /dev/sdb
 ```
 
-![](/Image/w4-format-xfs.png))
+![](./Image/w4-format-xfs.png))
 
 
 ### Build the ceph cluster
@@ -316,4 +316,4 @@ sudo ceph -s
 
 Kết quả như sau:
 
-![](/Image/health-ok.png)
+![](./Image/health-ok.png)
