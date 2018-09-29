@@ -1,4 +1,4 @@
-2018-09-29T06:15:29.418Z|00001|vlog|INFO|opened log file /home/kikyou/Documents/VTCS_REPORT/SVTT/LUONGTD/Open-vSwitch/project/tutorial/sandbox/ovsdb-server.log
-2018-09-29T06:15:29.440Z|00002|ovsdb_server|INFO|ovsdb-server (Open vSwitch) 2.9.2
-2018-09-29T06:15:39.450Z|00003|memory|INFO|5856 kB peak resident set size after 10.0 seconds
-2018-09-29T06:15:39.450Z|00004|memory|INFO|cells:36 json-caches:1 monitors:2 sessions:1
+2018-09-29T06:51:32.537Z|00001|vlog|INFO|opened log file /home/kikyou/Documents/VTCS_REPORT/SVTT/LUONGTD/Open-vSwitch/project/tutorial/sandbox/ovsdb-server.log
+2018-09-29T06:51:32.558Z|00002|ovsdb_server|INFO|ovsdb-server (Open vSwitch) 2.9.2
+2018-09-29T06:51:42.568Z|00003|memory|INFO|5612 kB peak resident set size after 10.0 seconds
+2018-09-29T06:51:42.568Z|00004|memory|INFO|cells:36 json-caches:1 monitors:2 sessions:1

@@ -60,13 +60,18 @@ ovs-ofctl add-flow br0 \
 - Switch br0 ở đây cũng không chuyển tiếp gói tin STP chuẩn IEEE 802.1D hoặc địa chỉ MAC đích là địa chỉ reversed multicast.
 ```sh
 ovs-ofctl add-flow br0 \
-"table=0, dl_src=01:80:c2:00:00:00/ff:ff:ff:ff:ff:f0, actions=drop"
+"table=0, dl_dst=01:80:c2:00:00:00/ff:ff:ff:ff:ff:f0, actions=drop"
 ```
-- Với các gói tin khác ta coi là hợp lệ thì chuyển gói tin sang bước tiếp theo trên Open Flow table 1:
+- Với các gói tin khác ta coi là hợp lệ thì chuyển (resubmit) gói tin sang bước tiếp theo trên **Open Flow table 1**:
 ```sh
 ovs-ofctl add-flow br0 "table=0, priority=0, actions=resubmit(,1)"
 ```
 
 ### Kiểm thử Table 0
-- Thử với command: ```ovs-appctl ofproto/trace br0 in_port=1,dl_dst=01:80:c2:00:00:05```, đầu ra như sau:
+- Thử với command: ```ovs-appctl ofproto/trace br0 in_port=1,dl_dst=01:80:c2:00:00:05```:
+
+![](images/Labs/sand_box/appctl-1.png)
+
+
+
 ## <a name="vlan"></a> 2. VLAN Testing
