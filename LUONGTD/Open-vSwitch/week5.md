@@ -23,7 +23,7 @@
 - Lab này tạo nên các Open vSwitch flow table để phục vụ các tính năng VLAN, MAC learning của switch với 4 port:
 	- p1: trunk port cho phép gói tin từ mọi VLAN, tương ứng với Open Flow port1
 	- p2: access port cho VLAN 20, tương ứng OpenFlow port 2
-	- p3, p4: cả hai port này đều phục vụ VLAN 30, tương ứng với Open Flow port 3 và port 4
+	- p3, p4: cả hai access port này đều phục vụ VLAN 30, tương ứng với Open Flow port 3 và port 4
 - Tạo switch bao gồm 4 bảng chính, mỗi bảng sẽ triển khai một stage trong pipeline của switch:
 	- Table 0: Admission control - Cho phép kiểm soát các gói tin đầu vào ở mức cơ bản
 	- Table 1: Xử lý VLAN đầu vào
@@ -88,7 +88,7 @@ Lần này, flow xử lý bởi ```ofproto/trace``` không khớp với bất k�
 ```sh
 ovs-ofctl add-flow br0 "table=1, priority=0, actions=drop"
 ```
-- Tiếp đó, gửi mọi gói tin đi vào **port 1** sang **table 2**:
+- Trunk port **p1** trên OpenFlow **port 1** gửi mọi gói tin (không kể đến VLAN header của chúng) đi vào **port 1** sang **table 2**:
 ```sh
 ovs-ofctl add-flow br0 "table=1, in_port=1, actions=resubmit(,2)"
 ```
