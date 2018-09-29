@@ -73,6 +73,8 @@ ovs-ofctl add-flow br0 "table=0, priority=0, actions=resubmit(,1)"
 
 ![](images/Labs/sand_box/appctl-1.png)
 
+Dòng đầu tiên của kết quả cho biết *flow* đang duyệt. Nhóm các dòng tiếp theo 
+
 
 
 ## <a name="vlan"></a> 2. VLAN Testing
