@@ -2,6 +2,7 @@
 ## [1. Pipeline Testing](#pipeline)
 ## [2. VLAN Testing](#vlan)
 ---
+Các flows qui định, điều tiết cách các gói tin đi qua các ports. 
 ## <a name="pipeline"></a> 1. Pipeline Testing
 ### 1.1. Khởi động Sandbox
 - Chuyển vào thư mục tutorial của project Open vSwitch: ```cd /tutorial```
@@ -82,7 +83,7 @@ test command ```ovs-appctl ofproto/trace br0 in_port=1,dl_dst=01:80:c2:00:00:10`
 ![](images/Labs/sand_box/appctl-2.png)
 Lần này, flow xử lý bởi ```ofproto/trace``` không khớp với bất kì "drop flow" nào trong **table 0** và nó chuyển qua flow có độ ưu tiên thấp hơn là "resubmit" để đưa gói tin sang **table 1** xử lý ở chặng tiếp theo. Vì ta chưa thêm bất cứ flow nào vào **OpenFlow table 1**, nên không có matching flow nào xảy ra trong lần lookup thứ 2 này. Gói tin cuối cùng cũng bị drop.
 
-### Triển khai Table 1: VLAN input processing
+### 1.5. Triển khai Table 1: VLAN input processing
 - Gói tin sau khi đã vượt qua bước xác thực cơ bản ở **table 0** sẽ đi vào **table 1** để chứng thực VLAN của gói tin dựa trên cấu hình VLAN của port mà gói tin đi qua. Nếu gói tin đi vào acccess port mà chưa có VLAN header chỉ định thuộc VLAN nào thì nó sẽ được chèn thêm VLAN header để xử lý tiếp.
 - Đầu tiên, thực hiện thêm flow mặc định với mức độ ưu tiên thấp để hủy bỏ mọi gói tin không khớp flow nào khác:
 ```sh
@@ -133,6 +134,7 @@ Gói tin ở đây với ```Tag Control Information``` là 5 đi vào **port 2**
 
 ![](images/Labs/sand_box/appctl-5.png)
 
-
+### 1.6. Triển khai Table 2: MAC + VLAN Learning for Ingress Port
+**table 2** cho phép switch (mà chúng ta đang xây dựng) học (được) rằng source MAC của gói tin nằm trên ingress port của gói tin trong VLAN của nó (packet).
 
 ## <a name="vlan"></a> 2. VLAN Testing
