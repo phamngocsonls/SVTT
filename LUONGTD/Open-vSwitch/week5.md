@@ -112,5 +112,23 @@ Kết quả đầu ra cho thấy, hành vi tìm kiếm (lookup) trên **table 0*
 
  ![](images/Labs/sand_box/appctl-3.png)
 
+**Ví dụ 2: Valid Packet on Access Port**
+command kiểm thử gói tin hợp lệ trên Access Port: 
+```sh
+ovs-appctl ofproto/trace br0 in_port=2
+```
+Ở đây, gói tin đi vào port 2 mà không có VLAN header nên sẽ được chèn thêm VLAN header tương ứng của **port 2** với VLAN ID là 20.
+ ![](images/Labs/sand_box/appctl-4.png)
+
+**Invalid Packet on Access Port**
+command kiểm thử gói tin không hợp lệ trên Access Port:
+```sh
+ovs-appctl ofproto/trace br0 in_port=2,vlan_tci=5
+```
+Gói tin ở đây với ```Tag Control Information``` là 5 đi vào **port 2** tương ứng VLAN 20 sẽ bị hủy:
+
+![](images/Labs/sand_box/appctl-5.png)
+
+
 
 ## <a name="vlan"></a> 2. VLAN Testing
