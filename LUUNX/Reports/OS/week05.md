@@ -84,5 +84,63 @@ Exokernels là một chương trình chạy ở kernel mode chuyên đảm nhi�
 
 # 1.8 The World According To C
 
+Các hệ điều hành thông thường được viết dưới ngôn ngữ C.
 
+# 2. Process and Thread
+
+# 2.1 Processes
+
+## 2.1.1 Process Model
+
+Mỗi chương trình thông thường được thực hiện tuần tự, tuy nhiên, một máy tính khi hoạt động lại yêu cầu nhiều tác vụ được thực hiện cùng lúc. Để giải quyết bài toán này. Các tiến trình sẽ được chạy song song bằng các lát cắt thời gian.
+
+Nhìn chung, mỗi tiến trình độc lập sẽ chạy với một CPU ảo, nó có chứa các thông tin về program counter, các giá trị thanh ghi, các biến và các file đã mở. Nếu chỉ xét một máy tính có 1 CPU thực. Tại mỗi thời điểm, CPU chỉ chạy một tiến trình. Tuy nhiên, sự phối hợp về mặt thời gian giúp nó chạy lần lượt các tiến trình khác nhau. Sự chuyển đỗi nhanh chóng tới mức con người không thể nhận ra. 
+
+Một sự phân biệt cần thiết là tiến trình (process) và chương trình (program). Một chương trình ý chỉ file chứa nội dung các lệnh được thực thi. Một tiến trình thì hơn thế, nó bao gồm việc đọc file thực thi, nạp các dữ liệu đầu vào, thực thi và xuất dữ liệu đầu ra.
+
+## 2.1.2 Process Creation
+
+Có nhiều cách để khởi tạo một tiến trình.
+
+Thứ nhất, khi một hệ điều hành được khởi động, nó sẽ khởi tạo nhiều tiến trình đi kèm. Một số thì có giao diện tương tác với người dùng. Ngược lại, một số thì không, chúng chạy ngầm dưới nền, thực hiện những tác vụ cần thiết, chúng gọi là daemons.
+
+Thứ hai, mỗi tiến trình khi đang hoạt động có thể yêu cầu hệ điều hành tạo ra một tiến trình mới để thực thi nhiệm vụ của tiến trình hiện tại giao phó. Lệnh fork() trong UNIX là một ví dụ điển hình.
+
+Thứ ba, người dùng hoàn toàn có thể khởi tạo một tiến trình thông qua việc click một icon, hãy gõ lệnh thông qua shell. Tất cả sẽ khởi tạo tiến trình phù hợp với yêu cầu của người dùng.
+
+## 2.1.3 Process Termination
+
+Việc kết thúc các tiến trình luôn xảy ra đi cùng việc tạo ra các tiến trình.
+
+Lý do kết thúc các tiến trình thường gặp như sau.
+
+Đầu tiên, khi một tiến trình kết thúc công việc, nó sẽ gọi system call exit đối với UNIX hoặc ExitProcess đối với Windows để tự hủy.
+
+Thứ hai, tiến trình bị kết thúc khi nó có lỗi bên trong. Ví dụ như chia cho không, truy cập vùng nhớ không tồn tại, sử dụng lệnh không được phép. 
+
+Thứ ba, tiến trình sẽ bị kết thúc nếu tập dữ liệu đầu vào bị lỗi. Ví dụ tiến trình có đầu vào là một file không tồn tại.
+
+Cuối cùng, lệnh kill từ hệ điều hành có thể kết thúc ngay một tiến trình đang chạy.
+
+## 2.1.4 Process Hierarchies
+
+Việc phân cấp các tiến trình được thực hiện khác nhau ở UNIX và Windows.
+
+Nhìn chung, một tiến trình có một hoặc không tiến trình cha nhưng có thể có rất nhiều tiến trình con. Đối với hệ điều hành UNIX, tiến trình init được khởi chạy lúc hệ điều hành khởi động và là cha của tất cả các tiến trình sau đó. Đối với hệ điều hành Windows, các tiến trình là ngang hàng và không phân cấp.
+
+## 2.1.5 Process State
+
+Các tiến trình khi hoạt động sẽ có trạng thái. Cụ thể, có ba trạng thái của một tiến trình là Running, Blocked và Ready.
+
+Một tiến trình đang chạy trên CPU có trạng thái Running.
+
+Một tiến trình sẵn sàng khởi chạy nhưng không có sẵn CPU rảnh sẽ có trạng thái Ready
+
+Một tiến trình bị dừng để đợi một sự kiện kích thích bên ngoài sẽ có trạng thái Blocked.
+
+Các trạng thái này sẽ thường được chuyển đỗi cho nhau trong suốt vòng đời của tiến trình.
+
+## 2.1.6 Implementation of Process
+
+Hệ điều hành quản lý các process thông qua một process table. Các tiến trình sẽ được lưu thông tin trong table này, bao gồm tất cả các thông tin về program counter, memory, stack, trạng thái các file, các tính toán và lịch chạy. Thông tin này cần thiết khi một tiến trình chuyển từ trạng thái ready sang running và running sang blocked.
 
