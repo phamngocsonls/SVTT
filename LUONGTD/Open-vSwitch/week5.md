@@ -41,13 +41,15 @@ ovs-vsctl add-br br0 -- set Bridge br0 fail-mode=secure
 
 ![](images/Labs/sand_box/conf-db1.png)
 
-- Tạo các port p1, p2, p3, p4 với tùy chọn ```ofport-request``` để đảm bảo port 1 gán cho Open Flow port1, p2 được gán cho OpenFlow port2 và tương tự như vậy...
+- Tạo các port p1, p2, p3, p4 với tùy chọn ```ofport-request``` để đảm bảo **port p1** gán cho **Open Flow port1**, **port p2** được gán cho **OpenFlow port2** và tương tự như vậy...
 ```sh
 for i in 1 2 3 4; do
 	ovs-vsctl add-port br0 p$i -- set Interface p$i ofport_request=$i
 	ovs-ofctl mod-port br0 p$i up
 done
 ```
+
+![](images/Labs/sand_box/conf-db2.png)
 
 ### 1.4. Triển khai Table 0: Admission Control
 - Table 0 là bảng đầu tiên gói tin đi qua đầu tiên, được sử dụng để bỏ qua các gói tin vì một số lý do nào đó hoặc gói tin không hợp lệ. Trong trường hợp này, các gói tin với địa chỉ nguồn multicast được coi là không hợp lệ và do đó ta thêm flow để hủy chúng:
