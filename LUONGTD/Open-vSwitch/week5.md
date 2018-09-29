@@ -1,4 +1,4 @@
-#OVS labs
+# OVS labs
 ## [1. Pipeline Testing](#pipeline)
 ## [2. VLAN Testing](#vlan)
 ---
@@ -12,6 +12,11 @@
 	- Khởi động ```ovsdb-server``` trong thư mục ```sandbox```
 	- Khởi động ```ovs-vswitchd``` trong thư mục ```sandbox```
 	- Khởi động trình shell trong thư mục ```sandbox```
+
+![](images/Labs/sand_box/sb_step1.png)
+
+![](images/Labs/sand_box/conf-db0.png)
+
 - Dưới góc nhìn của OVS thì các bridge tạo ra trên môi trường sandbox tương tự như bridge thường, nhưng network stack của hệ điều hành chủ không thể nhìn thấy được các bridge này nên không thể sử dụng các lệnh thông thường như ```ip``` hay ```tcpdump```\
 
 ### 1.2. Kịch bản
@@ -31,10 +36,15 @@
 ```sh
 ovs-vsctl add-br br0 -- set Bridge br0 fail-mode=secure
 ```
+
+![](images/Labs/sand_box/sb_add-bridge.png)
+
+![](images/Labs/sand_box/conf-db1.png)
+
 - Tạo các port p1, p2, p3, p4 với tùy chọn ```ofport-request``` để đảm bảo port 1 gán cho Open Flow port1, p2 được gán cho OpenFlow port2 và tương tự như vậy...
 ```sh
 for i in 1 2 3 4; do
-	ovs-vsctl add-port br0 p$i -- set Interface p$i ofproto_request=$i
+	ovs-vsctl add-port br0 p$i -- set Interface p$i ofport_request=$i
 	ovs-ofctl mod-port br0 p$i up
 done
 ```
