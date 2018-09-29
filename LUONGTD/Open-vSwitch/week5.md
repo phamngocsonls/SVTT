@@ -1,0 +1,60 @@
+#OVS labs
+## [1. Pipeline Testing](#pipeline)
+## [2. VLAN Testing](#vlan)
+---
+## <a name="pipeline"></a> 1. Pipeline Testing
+### 1.1. Khởi động Sandbox
+- Chuyển vào thư mục tutorial của project Open vSwitch: ```cd /tutorial```
+- Thực thi script ```ovs-sandbox```: ```./ovs-sandbox```. Script này sẽ thực hiện những thao tác sau:
+	- Thư mục ```sandbox``` do phiên làm việc cũ sẽ bị xóa, đồng thời thư mục ```sandbox``` mới được tạo ra
+	- Cài đặt biến môi trường đặc biệt, đảm bảo Open vSwitch sẽ nhìn vào thư mục sandbox và làm việc thay vì thư mục cài đặt Open vSwitch
+	- Tạo cơ sở dữ liệu cấu hình trong thư mục ```sandbox```
+	- Khởi động ```ovsdb-server``` trong thư mục ```sandbox```
+	- Khởi động ```ovs-vswitchd``` trong thư mục ```sandbox```
+	- Khởi động trình shell trong thư mục ```sandbox```
+- Dưới góc nhìn của OVS thì các bridge tạo ra trên môi trường sandbox tương tự như bridge thường, nhưng network stack của hệ điều hành chủ không thể nhìn thấy được các bridge này nên không thể sử dụng các lệnh thông thường như ```ip``` hay ```tcpdump```\
+
+### 1.2. Kịch bản
+- Lab này tạo nên các Open vSwitch flow table để phục vụ các tính năng VLAN, MAC learning của switch với 4 port:
+	- p1: trunk port cho phép gói tin từ mọi VLAN, tương ứng với Open Flow port1
+	- p2: access port cho VLAN 20, tương ứng OpenFlow port 20
+	- p3, p4: cả hai port này đều phục vụ VLAN 30, tương ứng với Open Flow port 3 và port 4
+- Tạo switch bao gồm 4 bảng chính, mỗi bảng sẽ triển khai một stage trong pipeline của switch:
+	- Table 0: Admission control - Cho phép kiểm soát các gói tin đầu vào ở mức cơ bản
+	- Table 1: Xử lý VLAN đầu vào
+	- Table 2: học MAC và VLAN đối với ingress port
+	- Table 3: tìm kiếm port đã học nhằm xác định port đầu ra của gói tin
+	- Table 4: xử lý đầu ra
+
+### 1.3. Cài đặt
+- Tạo bridge ```br0``` ở ```fail-secure``` mode để Open Flow table rỗng khi khởi tạo, nếu không Open Flow table sẽ khởi tạo một flow thực thi ```normal``` action.
+```sh
+ovs-vsctl add-br br0 -- set Bridge br0 fail-mode=secure
+```
+- Tạo các port p1, p2, p3, p4 với tùy chọn ```ofport-request``` để đảm bảo port 1 gán cho Open Flow port1, p2 được gán cho OpenFlow port2 và tương tự như vậy...
+```sh
+for i in 1 2 3 4; do
+	ovs-vsctl add-port br0 p$i -- set Interface p$i ofproto_request=$i
+	ovs-ofctl mod-port br0 p$i up
+done
+```
+
+### 1.4. Triển khai Table 0: Admission Control
+- Table 0 là bảng đầu tiên gói tin đi qua đầu tiên, được sử dụng để bỏ qua các gói tin vì một số lý do nào đó hoặc gói tin không hợp lệ. Trong trường hợp này, các gói tin với địa chỉ nguồn multicast được coi là không hợp lệ và do đó ta thêm flow để hủy chúng:
+```sh
+ovs-ofctl add-flow br0 \ 
+"table=0, dl_src=01:00:00:00:00:00/01:00:00:00:00:00, actions=drop"
+```
+- Switch br0 ở đây cũng không chuyển tiếp gói tin STP chuẩn IEEE 802.1D hoặc địa chỉ MAC đích là địa chỉ reversed multicast.
+```sh
+ovs-ofctl add-flow br0 \
+"table=0, dl_src=01:80:c2:00:00:00/ff:ff:ff:ff:ff:f0, actions=drop"
+```
+- Với các gói tin khác ta coi là hợp lệ thì chuyển gói tin sang bước tiếp theo trên Open Flow table 1:
+```sh
+ovs-ofctl add-flow br0 "table=0, priority=0, actions=resubmit(,1)"
+```
+
+### Kiểm thử Table 0
+- Thử với command: ```ovs-appctl ofproto/trace br0 in_port=1,dl_dst=01:80:c2:00:00:05```, đầu ra như sau:
+## <a name="vlan"></a> 2. VLAN Testing
