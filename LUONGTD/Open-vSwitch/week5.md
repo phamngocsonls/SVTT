@@ -66,6 +66,7 @@ ovs-ofctl add-flow br0 \
 ```sh
 ovs-ofctl add-flow br0 "table=0, priority=0, actions=resubmit(,1)"
 ```
+![](images/Labs/sand_box/add-flow-tb0.png)
 
 ### Kiểm thử Table 0
 - Thử với command: ```ovs-appctl ofproto/trace br0 in_port=1,dl_dst=01:80:c2:00:00:05```:
