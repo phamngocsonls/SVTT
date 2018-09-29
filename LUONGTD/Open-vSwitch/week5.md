@@ -68,13 +68,49 @@ ovs-ofctl add-flow br0 "table=0, priority=0, actions=resubmit(,1)"
 ```
 ![](images/Labs/sand_box/add-flow-tb0.png)
 
-### Kiểm thử Table 0
-- Thử với command: ```ovs-appctl ofproto/trace br0 in_port=1,dl_dst=01:80:c2:00:00:05```:
+### Testing Table 0
+Nếu ta sử dụng Open vSwitch để thiết lập (set up) một switch vật lý hoặc switch ảo, ta có thể test bằng cách gửi gói tin thông qua nó bằng các công cụ kiểm tra mạng phổ biến như **ping** và **tcpdump** hoặc các công cụ chuyên biệt khác như Scapy. Trong bài lab này, switch của ta không "hiển thị" với hệ điều hành nên ta phải dùng công cụ **ofproto/trace**. **ofproto/trace** chỉ ra từng bước một cách một flow đi qua switch. 
+**Ví dụ 1** 
+test command ```ovs-appctl ofproto/trace br0 in_port=1,dl_dst=01:80:c2:00:00:05```:
 
 ![](images/Labs/sand_box/appctl-1.png)
 
-Dòng đầu tiên của kết quả cho biết *flow* đang duyệt. Nhóm các dòng tiếp theo 
+Dòng đầu tiên của kết quả cho biết *flow* đang duyệt. Nhóm các dòng tiếp theo cho biết hành trình của gói tin qua bridge br0. OpenFlow **flow table 0** thấy địa chỉ đích là địa chỉ reversed multicast và khớp với flow đã thiết lập nên hủy bỏ gói tin.
+**Ví dụ 2** 
+test command ```ovs-appctl ofproto/trace br0 in_port=1,dl_dst=01:80:c2:00:00:10```:
 
+![](images/Labs/sand_box/appctl-2.png)
+Lần này, flow xử lý bởi ```ofproto/trace``` không khớp với bất kì "drop flow" nào trong **table 0** và nó chuyển qua flow có độ ưu tiên thấp hơn là "resubmit" để đưa gói tin sang **table 1** xử lý ở chặng tiếp theo. Vì ta chưa thêm bất cứ flow nào vào **OpenFlow table 1**, nên không có matching flow nào xảy ra trong lần lookup thứ 2 này. Gói tin cuối cùng cũng bị drop.
+
+### Triển khai Table 1: VLAN input processing
+- Gói tin sau khi đã vượt qua bước xác thực cơ bản ở **table 0** sẽ đi vào **table 1** để chứng thực VLAN của gói tin dựa trên cấu hình VLAN của port mà gói tin đi qua. Nếu gói tin đi vào acccess port mà chưa có VLAN header chỉ định thuộc VLAN nào thì nó sẽ được chèn thêm VLAN header để xử lý tiếp.
+- Đầu tiên, thực hiện thêm flow mặc định với mức độ ưu tiên thấp để hủy bỏ mọi gói tin không khớp flow nào khác:
+```sh
+ovs-ofctl add-flow br0 "table=1, priority=0, actions=drop"
+```
+- Tiếp đó, gửi mọi gói tin đi vào **port 1** sang **table 2**:
+```sh
+ovs-ofctl add-flow br0 "table=1, in_port=1, actions=resubmit(,2)"
+```
+- Trên các access port khác, gói tin đi tới mà không có VLAN header sẽ được gắn VLAN number tương ứng với access port, sau đó được chuyển tới bảng tiếp theo:
+```sh
+ovs-ofctl add-flows br0 - <<'EOF'
+table=1, priority=99, in_port=2, vlan_tci=0, actions=mod_vlan_vid:20, resubmit(,2)
+table=1, priority=99, in_port=3, vlan_tci=0, actions=mod_vlan_vid:30, resubmit(,2)
+table=1, priority=99, in_port=4, vlan_tci=0, actions=mod_vlan_vid:30, resubmit(,2)
+EOF
+```
+
+**Testing table 1**
+**ofprot/trace** cho phép ta kiểm tra các VLAN flows mà ta vừa thêm vào.
+**Ví dụ 1: Packet on Trunk port (p1)**
+- Kiểm thử gói tin trên trunk port (p1):
+```sh
+ovs-appctl ofproto/trace br0 in_port=1,vlan_tci=5
+```
+Kết quả đầu ra cho thấy, hành vi tìm kiếm (lookup) trên **table 0**, sau đó resubmit sang **table 1**, rồi resubmit tiếp tới **table 2**
+
+ ![](images/Labs/sand_box/appctl-3.png)
 
 
 ## <a name="vlan"></a> 2. VLAN Testing
