@@ -101,10 +101,12 @@ table=1, priority=99, in_port=4, vlan_tci=0, actions=mod_vlan_vid:30, resubmit(,
 EOF
 ```
 
-**Testing table 1**
+### Testing table 1
 **ofprot/trace** cho phép ta kiểm tra các VLAN flows mà ta vừa thêm vào.
+
 **Ví dụ 1: Packet on Trunk port (p1)**
-- Kiểm thử gói tin trên trunk port (p1):
+
+command kiểm thử gói tin trên trunk port (p1):
 ```sh
 ovs-appctl ofproto/trace br0 in_port=1,vlan_tci=5
 ```
@@ -113,6 +115,7 @@ Kết quả đầu ra cho thấy, hành vi tìm kiếm (lookup) trên **table 0*
  ![](images/Labs/sand_box/appctl-3.png)
 
 **Ví dụ 2: Valid Packet on Access Port**
+
 command kiểm thử gói tin hợp lệ trên Access Port: 
 ```sh
 ovs-appctl ofproto/trace br0 in_port=2
@@ -120,7 +123,8 @@ ovs-appctl ofproto/trace br0 in_port=2
 Ở đây, gói tin đi vào port 2 mà không có VLAN header nên sẽ được chèn thêm VLAN header tương ứng của **port 2** với VLAN ID là 20.
  ![](images/Labs/sand_box/appctl-4.png)
 
-**Invalid Packet on Access Port**
+**Ví dụ 3: Invalid Packet on Access Port**
+
 command kiểm thử gói tin không hợp lệ trên Access Port:
 ```sh
 ovs-appctl ofproto/trace br0 in_port=2,vlan_tci=5
