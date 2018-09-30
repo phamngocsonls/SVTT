@@ -144,14 +144,39 @@ ovs-ofctl add-flow br0 \
 						load:NXM_OF_IN_PORT[]->NXM_NX_REG0[0..15]), \
 				resubmit(,3)"
 ```
-- Ở đây, hành động ```learn``` chỉnh sửa flow table dựa trên nội dung của flow đang được xử lý. Phần tiếp theo sẽ giải thích các thành phần của hành động ```learn```:
-	- **table=10**: Chỉnh sửa **flow table 10**. Đây chính là MAC learning table.
+- Ở đây, hành động ```learn``` chỉnh sửa flow table (**MAC Learning Table**) dựa trên nội dung của flow đang được xử lý. Phần tiếp theo sẽ giải thích các thành phần của action ```learn```:
+	- **table=10**: **flow table 10**. Đây sẽ là MAC learning table.
 	- **NXM_OF_VLAN_TCI[0..11]**: đảm bảo flow ta thêm vào **flow table 10** sẽ match với cùng VLAN ID của gói tin đang xử lý
-	- **NXM_OF_ETH_DST[]=NXM_OF_ETH_SRC**: đảm bảo flow mà ta vừa thêm vào bảng **flow table 10** match địa chỉ Ethernet đích như địa chỉ Ethernet nguồn, điều này chính là việc học địa chỉ MAC của gói tin đi vào từ port nào của bridge, để thực hiện chuyển tiếp một gói tin tới đích là MAC vừa học được tới port tương ứng với MAC đó.
+	- **NXM_OF_ETH_DST[]=NXM_OF_ETH_SRC[]**: đảm bảo flow mà ta vừa thêm vào bảng **flow table 10** match địa chỉ Ethernet đích như địa chỉ Ethernet nguồn, điều này chính là việc học địa chỉ MAC của gói tin đi vào từ port nào của bridge, để thực hiện chuyển tiếp một gói tin tới đích là MAC vừa học được tới port tương ứng với MAC đó.
 	- **load:NXM_OF_IN_PORT[]->NXM_NX_REG0[0..15]**: ghi lại ingress port number vào thanh ghi 0. Thanh ghi 0 sẽ ghi lại địa chỉ port đầu ra mong muốn.
 
 ### Testing Table 2
-#### Ví dụ 1:
+#### Ví dụ 1: 
+test command: 
+```sh
+ovs-appctl ofproto/trace br0 \
+in_port=2,vlan_tci=20,dl_src=50:00:00:00:00:01 -generate
+```
+Output cho thấy hành động "learn" được thực hiện trong **table 2** và flow được thêm vào:
 
+![](images/Labs/sand_box/appctl-6.png)
+
+Để xem sự thay đổi trên **table 10**: ```ovs-ofctl dump-flows br0 table=10```:
+
+![](images/Labs/sand_box/tb10.png)
+
+Ta thấy các trường ```vlan_tci``` và ```dl_dst``` đã được học, đồng thời actions ghi (load) ingress port number vào thanh ghi cũng được thực hiện. Cụ thể, gói tin đến từ VLAN 20 với source MAC **50:00:00:00:00:01** cho ta một flow match VLAN 20 và destination MAC **50:00:00:00:00:01**. Flow này ghi lại (load) port số 1 (0x01, là port cho flow ta đang test) vào thanh ghi REG0. 
+
+#### Ví dụ 2:
+Ta thử với trường hợp gói tin có source MAC giống như ví dụ 1, VLAN là một access port VLAN (không phải là một 802.1Q header như ví dụ 1) 
+```sh
+ovs-appctl ofproto/trace br0 \
+						 in_port=2,dl_src=50:00:00:00:00:01 -generate
+```
+![](images/Labs/sand_box/tb2-vd2.png)
+
+Ta kiểm tra lại **flow table 10**: ```ovs-ofctl dump-flows br0 table=10```
+
+![](images/Labs/sand_box/tb10-vd2.png)
 
 ## <a name="vlan"></a> 2. VLAN Testing
