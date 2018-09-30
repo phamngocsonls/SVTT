@@ -1,8 +1,19 @@
 # OVS labs
 ## [1. Pipeline Testing](#pipeline)
+### [1.1. Khởi động sandbox](#sandbox)
+### [1.2. Kịch bản](#scenario)
+### [1.3. Cài đặt](#install)
+### [1.4. Triển khai Table 0: Admission Control](#tbl0)
+### [1.5. Triển khai Table 1: VLAN input processing](#tbl1)
+### [1.6. Triển khai Table 2: MAC+VLAN Learning for Ingress Port](#tbl2)
+### [1.7. Triển khai Table 3: Look up destination port](#tbl3)
+### [1.8. Triển khai Table 4: Output Processing](#tbl4)
+## [2. VLAN Testing](#vlan)
+### [2.1. Kịch bản](#scen2)
+### [2.2. Cấu hình VLAN](#vl2)
 ---
 ## <a name="pipeline"></a> 1. Pipeline Testing
-### 1.1. Khởi động Sandbox
+### <a name="sandbox"></a> 1.1. Khởi động Sandbox
 - Chuyển vào thư mục tutorial của project Open vSwitch: ```cd /tutorial```
 - Thực thi script ```ovs-sandbox```: ```./ovs-sandbox```. Script này sẽ thực hiện những thao tác sau:
 	- Thư mục ```sandbox``` do phiên làm việc cũ sẽ bị xóa, đồng thời thư mục ```sandbox``` mới được tạo ra
@@ -18,7 +29,7 @@
 
 - Dưới góc nhìn của OVS thì các bridge tạo ra trên môi trường sandbox tương tự như bridge thường, nhưng network stack của hệ điều hành chủ không thể nhìn thấy được các bridge này nên không thể sử dụng các lệnh thông thường như ```ip``` hay ```tcpdump```\
 
-### 1.2. Kịch bản
+### <a name="scenario"></a> 1.2. Kịch bản
 - Lab này tạo nên các Open vSwitch flow table để phục vụ các tính năng VLAN, MAC learning của switch với 4 port:
 	- p1: trunk port cho phép gói tin từ mọi VLAN, tương ứng với Open Flow port1
 	- p2: access port cho VLAN 20, tương ứng OpenFlow port 2
@@ -30,7 +41,7 @@
 	- Table 3: tìm kiếm port đã học nhằm xác định port đầu ra của gói tin
 	- Table 4: xử lý đầu ra
 
-### 1.3. Cài đặt
+### <a name="install"></a> 1.3. Cài đặt
 - Tạo bridge ```br0``` ở ```fail-secure``` mode để Open Flow table rỗng khi khởi tạo, nếu không Open Flow table sẽ khởi tạo một flow thực thi ```normal``` action.
 ```sh
 ovs-vsctl add-br br0 -- set Bridge br0 fail-mode=secure
@@ -50,7 +61,7 @@ done
 
 ![](images/Labs/sand_box/conf-db2.png)
 
-### 1.4. Triển khai Table 0: Admission Control
+### <a name="tb0"></a> 1.4. Triển khai Table 0: Admission Control
 - Table 0 là bảng đầu tiên gói tin đi qua đầu tiên, được sử dụng để bỏ qua các gói tin vì một số lý do nào đó hoặc gói tin không hợp lệ. Trong trường hợp này, các gói tin với địa chỉ nguồn multicast được coi là không hợp lệ và do đó ta thêm flow để hủy chúng:
 ```sh
 ovs-ofctl add-flow br0 \ 
@@ -81,7 +92,7 @@ test command ```ovs-appctl ofproto/trace br0 in_port=1,dl_dst=01:80:c2:00:00:10`
 ![](images/Labs/sand_box/appctl-2.png)
 Lần này, flow xử lý bởi ```ofproto/trace``` không khớp với bất kì "drop flow" nào trong **table 0** và nó chuyển qua flow có độ ưu tiên thấp hơn là "resubmit" để đưa gói tin sang **table 1** xử lý ở chặng tiếp theo. Vì ta chưa thêm bất cứ flow nào vào **OpenFlow table 1**, nên không có matching flow nào xảy ra trong lần lookup thứ 2 này. Gói tin cuối cùng cũng bị drop.
 
-### 1.5. Triển khai Table 1: VLAN input processing
+### <a name="tb1"></a> 1.5. Triển khai Table 1: VLAN input processing
 - Gói tin sau khi đã vượt qua bước xác thực cơ bản ở **table 0** sẽ đi vào **table 1** để chứng thực VLAN của gói tin dựa trên cấu hình VLAN của port mà gói tin đi qua. Nếu gói tin đi vào acccess port mà chưa có VLAN header chỉ định thuộc VLAN nào thì nó sẽ được chèn thêm VLAN header để xử lý tiếp.
 - Đầu tiên, thực hiện thêm flow mặc định với mức độ ưu tiên thấp để hủy bỏ mọi gói tin không khớp flow nào khác:
 ```sh
@@ -132,7 +143,7 @@ Gói tin ở đây với ```Tag Control Information``` là 5 đi vào **port 2**
 
 ![](images/Labs/sand_box/appctl-5.png)
 
-### 1.6. Triển khai Table 2: MAC + VLAN Learning for Ingress Port
+### <a name="tb2"></a> 1.6. Triển khai Table 2: MAC + VLAN Learning for Ingress Port
 **table 2** cho phép switch (mà ta đang xây dựng) học (được) rằng source MAC của gói tin nằm trên ingress port (của gói tin) trong VLAN của nó (packet).
 - Ta thêm flow sau:
 ```sh
@@ -179,7 +190,7 @@ Ta kiểm tra lại **flow table 10**: ```ovs-ofctl dump-flows br0 table=10```
 
 Ta có thể thấy, port đã được học là port 2.
 
-### 1.7. Triển khai Table 7: Look up destination port
+### <a name="tb3"></a> 1.7. Triển khai Table 3: Look up destination port
 - Table này tìm kiếm xem port nào để gửi gói tin tới dựa trên địa chỉ MAC đích và VLAN.
 - Thêm flow để thực hiện tìm kiếm:
 ```sh
@@ -239,7 +250,7 @@ Output như sau:
 
 ![](images/Labs/sand_box/tb3-df2.png)
 
-### 1.8. Triển khai Table 4: Output Processing
+### <a name="tb4"></a> 1.8. Triển khai Table 4: Output Processing
 - Tại entry của stage 4, thanh ghi 0 sẽ chứa port number mà gói tin được chuyển đến hoặc bằng 0 để thực hiện flood gói tin. (VLAN của gói tin nằm trong 802.1Q header của nó, kể cả VLAN của một gói tin đến từ một access port (implicit))
 - Nhiệm vụ của pipeline stage cuối cùng này chính là output gói tin. Đầu tiên ta thực hiện output ra trunk port **p1**:
 ```sh
@@ -339,3 +350,169 @@ Output như sau:
 ![](images/Labs/sand_box/tb4-vd2-3.png)
 
 Ta thấy rằng nó cũng không còn (bị) flood qua cổng 3 nữa mà (gói tin) được loại bỏ VLAN header và gửi qua cổng **p4**.
+
+## <a name="vlan"></a> 2. VLAN Testing
+---
+### <a name="scen2"></a> 2.1. Kịch bản
+- Sử dụng OVS tạo hai switch ảo br-ex và br-ex1 kết nối với nhau bằng một đường trunk, thiết lập các vlan tag 100 và 200.
+- Tạo 4 máy ảo gán vào các vlan tương ứng với các tab interface của 2 switch ảo trên:
+	- **kvm-th0** và **kvm-th1** gán vào switch **br-ex**
+	- **kvm-u0** và **kvm-u1** gán vào switch **br-ex1**
+- Gán các máy ảo vào các vlan: **kvm-th0** và **kvm-u0** gán vào vlan 100, **kvm-eth1** và **kvm-u1** gán vào vlan 200.
+- Ping giữa các máy ảo để kiểm tra hoạt động của vlan.
+
+### Topology:
+
+![](images/Labs/VLAN_testing/topo.jpg)
+
+### <a name="vl2"></a> 2.2. Cấu hình VLAN
+#### Tạo các switch ảo và cấu hình vlan tag
+- Tạo switch ảo:
+```sh
+ovs-vsctl add-br br-ex
+ovs-vsctl add-br br-ex1
+```
+- Tạo các tab interface và gắn vào các vlan tag (các máy ảo được coi như các access port trên các vlan):
+```sh
+#tab interface on br-ex
+ovs-vsctl add-port br-ex tap0 tag=100
+ovs-vsctl add-port br-ex tap1 tag=200
+#tab interface on br-ex1
+ovs-vsctl add-port br-ex1 tap2 tag=100
+ovs-vsctl add-port br-ex1 tap3 tag=200
+```
+- Tạo các trunk port trên các switch ảo và tạo đường trunk kết nối hai switch:
+```sh
+# create trunk 	ports on switches
+ovs-vsctl add-port br-ex trk
+ovs-vsctl add-port br-ex1 trk1
+#Combine 2 switches
+ovs-vsctl set interface trk type=patch options:peer=trk1
+ovs-vsctl set interface trk1 type=patch options:peer=trk
+```
+- Kiểm tra lại cấu hình các switch: ```ovs-vsctl show```
+
+![](images/Labs/VLAN_testing/brex.png)
+![](images/Labs/VLAN_testing/brex1.png)
+
+#### Tạo network cho các máy ảo (kết hợp sử dụng OVS với libvirt)
+- Để khai báo network mới với libvirt, ta tạo một file định dạng *.xml* và sử dụng công cụ **vrish** để áp dụng cấu hình trong file đó. Ở đây, ta khai báo hai file *xml* cấu hình hai network tương ứng	 với hai switch ảo trên:
+	- Cấu hình network cho br-ex: ```nano ovs-vlan1.xml```:
+```xml
+<network>
+
+	<name>ovs-network</name>
+	<forward mode='bridge'/>
+	<bridge name='br-ex'/>
+	<virtualport type='openvswitch'/>
+
+	<portgroup name='vlan-00' default='yes'/>
+	</portgroup>
+
+	<portgroup name='vlan-100'>
+		<vlan>
+			<tag id='100'/>
+		</vlan>
+	</portgroup>
+
+	<portgroup name='vlan-200'>
+		<vlan>
+			<tag id='200'/>
+		</vlan>
+	</portgroup>
+
+	<portgroup name='vlan-all'>
+		<vlan trunk='yes'>
+			<tag id='100'/>
+			<tag id='200'/>
+		</vlan>
+	</portgroup>
+
+</network>
+```
+
+	- Cấu hình network cho br-ex1: ```nano ovs-vlan2.xml```:
+```xml
+<network>
+
+	<name>ovs-network</name>
+	<forward mode='bridge'/>
+	<bridge name='br-ex1'/>
+	<virtualport type='openvswitch'/>
+
+	<portgroup name='vlan-00' default='yes'/>
+	</portgroup>
+
+	<portgroup name='vlan-100'>
+		<vlan>
+			<tag id='100'/>
+		</vlan>
+	</portgroup>
+
+	<portgroup name='vlan-200'>
+		<vlan>
+			<tag id='200'/>
+		</vlan>
+	</portgroup>
+
+	<portgroup name='vlan-all'>
+		<vlan trunk='yes'>
+			<tag id='100'/>
+			<tag id='200'/>
+		</vlan>
+	</portgroup>
+
+</network>
+```
+
+- Áp dụng cấu hình các network mới:
+```sh
+#define new networks
+vrish net-define ovs-vlan1.xml
+vrish net-define ovs-vlan2.xml
+
+#start new networks
+vrish net-start ovs-network
+vrish net-start ovs-network-1
+
+#auto start networks when turning on
+vrish net-autostart ovs-network
+vrish net-autostart ovs-network-1
+```
+
+Kết quả như sau:
+
+![](images/Labs/VLAN_testing/kqnw.png)
+
+#### Tạo các máy ảo và thiết lập network cho các máy ảo
+- Tạo bốn máy ảo và thực hiện cấu hình network cho 4 máy ảo sử dụng công cụ **vrish**. Cấu hình của các máy ảo được thiết lập trong 1 file *.xml* nằm trong thư mục ```/etc/libvirt/qemu/```. Để chỉnh sửa cấu hình một máy ảo (ở đây lấy ví dụ là kvm-th0) ta sử dụng lệnh: ```virsh edit kvm-th0```. Output như sau:
+
+![](images/Labs/VLAN_testing/kvm-th0-nw.png)
+
+- Thiết lập cho máy ảo thuộc vlan-100 và gán vào switch br-ex (tương ứng với ovs-network). Ta chỉnh sửa section như sau:
+
+![](images/Labs/VLAN_testing/kvm-th0-nw2.png)
+
+- Cấu hình tương tự cho các máy ảo còn lại theo topology.
+
+#### Kiểm tra kết nối
+- Cấu hình IP tĩnh cho các máy ảo theo topology
+
+![](images/Labs/VLAN_testing/IP.png)
+
+- Tiến hành ping giữa các máy trong cùng VLAN: **kvm-th0** với **kvm-u0** (vlan-100) 
+
+![](images/Labs/VLAN_testing/ping1.png)
+
+**kvm-th1** với **kvm-u1** (vlan-200) 
+
+![](images/Labs/VLAN_testing/ping2.png)
+
+Kết quả, ping thành công
+
+- Tiến hành ping giữa các máy khác vlan: **kvm-th0** với **kvm-th1** 
+
+![](images/Labs/VLAN_testing/ping3.png)
+
+Kết quả ping không thành công.
+
