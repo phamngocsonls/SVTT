@@ -241,4 +241,120 @@ Output như sau:
 
 ![](images/Labs/sand_box/tb3-df2.png)
 
+### 1.8. Triển khai Table 4: Output Processing
+- Tại entry của stage 4, thanh ghi 0 sẽ chứa port number mà gói tin được chuyển đến hoặc bằng 0 để thực hiện flood gói tin. (VLAN của gói tin nằm trong 802.1Q header của nó, kể cả VLAN của một gói tin đến từ một access port (implicit))
+- Nhiệm vụ của pipeline stage cuối cùng này chính là output gói tin. Đầu tiên ta thực hiện output ra trunk port **p1**:
+```sh
+ovs-ofctl add-flow br0 "table=4 reg0=1 actions=1"
+```
+- Với output ra các access pỏt, ta thực hiện loại bỏ (strip) VLAN header trước khi đẩy gói tin ra:
+```sh
+ovs-ofctl add-flows br0 - <<'EOF'
+table=4 reg0=2 actions=strip_vlan,2
+table=4 reg0=3 actions=strip_vlan,3
+table=4 reg0=4 actions=strip_vlan,4
+EOF
+
+```
+- Đối với các gói tin broadcast và multicast với MAC đích không cụ thể (unlearned destination) thì thực hiện flood gói tin ra trunk port (với cả 802.1Q header) và gỡ bỏ VLAN header trước khi gửi ra các access port:  
+```sh
+ovs-ofctl add-flows br0 - <<'EOF'
+table=4 reg0=0 priority=99 dl_vlan=20 actions=1,strip_vlan,2
+table=4 reg0=0 priority=99 dl_vlan=30 actions=1,strip_vlan,3,4
+table=4 reg0=0 priority=50 			  actions=1
+
+```
+Chú ý là output gói tin ra port phục vụ cho VLAN của gói tin đó. Một điểm nữa là các flow của ta dựa vào hành vi của OpenFlow standard, một action đầu ra sẽ không chuyển tiếp một gói tin trở lại port mà nó đi vào. Tức là, nếu gói tin đến trên p1, và chúng ta đã biết MAC đích của gói cũng nằm trên p1, (với action = 1) switch sẽ không chuyển tiếp gói tin trở lại port đầu vào của nó. Các trường hợp gói tin multicast/broadcast/unicast ở trên cũng dựa vào hành vi này.
+
+### Testing Table 4
+#### Ví dụ 1: Broadcast, Multicast, and Unknown Destination
+- Duyệt gói tin broadcast trong VLAN 30 đến port **p1**
+```sh
+ovs-appctl ofproto/trace br0 \
+in_port=1,dl_dst=ff:ff:ff:ff:ff:ff,dl_vlan=30
+``` 
+- Output sẽ là flood gói tin ra hai cổng **p3**, **p4** với VLAN header bị loại bỏ:
+
+![](images/Labs/sand_box/tb4-vd1.png)
+
+- Tương tự với gói tin broadcast trên port **p3**:
+```sh
+ovs-appctl ofproto/trace br0 in_port=3,dl_dst=ff:ff:ff:ff:ff:ff
+```
+Gói tin đi tới port **p3** chưa có VLAN header sẽ được thêm VLAN header với ID 30 rồi flood qua trunk port **p1** và access port **p4**. Output như sau:
+
+![](images/Labs/sand_box/tb4-vd1-2.png)
+
+- Ta thử tiếp một vài gói tin broadcast khác:
+```sh
+ovs-appctl ofproto/trace br0 \
+in_port=1,dl_dst=ff:ff:ff:ff:ff:ff
+```
+
+Output như sau:
+
+![](images/Labs/sand_box/tb4-vd1-3.png)
+
+```sh
+ovs-appctl ofproto/trace br0 \
+in_port=1,dl_dst=ff:ff:ff:ff:ff:ff,dl_vlan=55
+```
+
+Output như sau:
+
+![](images/Labs/sand_box/tb4-vd1-4.png)
+
+Các gói tin này bị drop bởi output port của chúng (trong thanh ghi 0) là input port mà chúng đã đi vào. 
+
+#### Ví dụ 2: MAC Learning
+- Đầu tiên, học MAC của gói tin thuộc VLAN 30 (đến) trên port **p1**:
+```sh
+ovs-appctl ofproto/trace br0 \
+in_port=1,dl_vlan=30,dl_src=10:00:00:00:00:01,dl_dst=20:00:00:00:00:01 \
+-generate
+```
+
+Output như sau:
+
+![](images/Labs/sand_box/tb4-vd2-1.png)
+
+Ta thấy, gói tin này được flood ra các port **p3** và **p4** (cũng) thuộc VLAN 30, đồng thời địa chỉ MAC nguồn của gói tin (tới trên port 1) cũng được học.
+- Tận dụng địa chỉ MAC đã học được đó, ta gửi một gói tin qua port 4 với các địa chỉ MAC đảo ngược với gói tin trên:
+```sh
+ovs-appctl ofproto/trace br0 \
+in_port=4,dl_src=20:00:00:00:00:01,dl_dst=10:00:00:00:00:01, -generate 
+```
+Output như sau:
+
+![](images/Labs/sand_box/tb4-vd2-2.png)
+
+Ta thấy, lúc này, bridge tìm kiếm trên **table 10** thấy được MAC đích (đã học được từ MAC nguồn của gói tin trước) nên chuyển tiếp qua port 1 mà không flood qua port 3 nữa.
+
+- Ta test lại với gói tin ban đầu:
+```sh
+ovs-appctl ofproto/trace br0 \
+	in_port=1,dl_vlan=30,dl_src=10:00:00:00:00:01,dl_dst=20:00:00:00:00:01 \
+	-generate
+``` 
+Output như sau:
+
+![](images/Labs/sand_box/tb4-vd2-3.png)
+
+Ta thấy rằng nó cũng không còn (bị) flood qua cổng 3 nữa mà (gói tin) được loại bỏ VLAN header và gửi qua cổng **p4**.
+
 ## <a name="vlan"></a> 2. VLAN Testing
+
+### 2.1. Kịch bản
+- Sử dụng OVS tạo hai switch ảo br1 và br2 kết nối với nhau bằng một đường trunk, thiết lập các vlan tag 100 và 200.
+- Tạo 4 máy ảo gán vào các vlan tương ứng với các tab interface của 2 switch ảo trên:
+	- kvm-th0 và kvm-th1 gán vào switch br1
+	- kvm-u0 và kvm-u1 gán vào switch br2
+- Gán các máy ảo vào các vlan.
+- Ping giữa các máy ảo để kiểm tra hoạt động của vlan.
+
+### Topology:
+
+![](images/Labs/VLAN_testing/topo.jpg)
+
+### 2.2. Cấu hình VLAN
+
