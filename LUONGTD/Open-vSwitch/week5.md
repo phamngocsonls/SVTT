@@ -71,13 +71,13 @@ ovs-ofctl add-flow br0 "table=0, priority=0, actions=resubmit(,1)"
 
 ### Testing Table 0
 Nếu ta sử dụng Open vSwitch để thiết lập (set up) một switch vật lý hoặc switch ảo, ta có thể test bằng cách gửi gói tin thông qua nó bằng các công cụ kiểm tra mạng phổ biến như **ping** và **tcpdump** hoặc các công cụ chuyên biệt khác như Scapy. Trong bài lab này, switch của ta không "hiển thị" với hệ điều hành nên ta phải dùng công cụ **ofproto/trace**. **ofproto/trace** chỉ ra từng bước một cách một flow đi qua switch. 
-**Ví dụ 1** 
+#### Ví dụ 1
 test command ```ovs-appctl ofproto/trace br0 in_port=1,dl_dst=01:80:c2:00:00:05```:
 
 ![](images/Labs/sand_box/appctl-1.png)
 
 Dòng đầu tiên của kết quả cho biết *flow* đang duyệt. Nhóm các dòng tiếp theo cho biết hành trình của gói tin qua bridge br0. OpenFlow **flow table 0** thấy địa chỉ đích là địa chỉ reversed multicast và khớp với flow đã thiết lập nên hủy bỏ gói tin.
-**Ví dụ 2** 
+#### Ví dụ 2
 test command ```ovs-appctl ofproto/trace br0 in_port=1,dl_dst=01:80:c2:00:00:10```:
 
 ![](images/Labs/sand_box/appctl-2.png)
@@ -105,7 +105,7 @@ EOF
 ### Testing table 1
 **ofprot/trace** cho phép ta kiểm tra các VLAN flows mà ta vừa thêm vào.
 
-**Ví dụ 1: Packet on Trunk port (p1)**
+#### Ví dụ 1: Packet on Trunk port (p1)
 
 command kiểm thử gói tin trên trunk port (p1):
 ```sh
@@ -115,7 +115,7 @@ Kết quả đầu ra cho thấy, hành vi tìm kiếm (lookup) trên **table 0*
 
  ![](images/Labs/sand_box/appctl-3.png)
 
-**Ví dụ 2: Valid Packet on Access Port**
+#### Ví dụ 2: Valid Packet on Access Port
 
 command kiểm thử gói tin hợp lệ trên Access Port: 
 ```sh
@@ -124,7 +124,7 @@ ovs-appctl ofproto/trace br0 in_port=2
 Ở đây, gói tin đi vào port 2 mà không có VLAN header nên sẽ được chèn thêm VLAN header tương ứng của **port 2** với VLAN ID là 20.
  ![](images/Labs/sand_box/appctl-4.png)
 
-**Ví dụ 3: Invalid Packet on Access Port**
+#### Ví dụ 3: Invalid Packet on Access Port
 
 command kiểm thử gói tin không hợp lệ trên Access Port:
 ```sh
@@ -135,6 +135,23 @@ Gói tin ở đây với ```Tag Control Information``` là 5 đi vào **port 2**
 ![](images/Labs/sand_box/appctl-5.png)
 
 ### 1.6. Triển khai Table 2: MAC + VLAN Learning for Ingress Port
-**table 2** cho phép switch (mà chúng ta đang xây dựng) học (được) rằng source MAC của gói tin nằm trên ingress port của gói tin trong VLAN của nó (packet).
+**table 2** cho phép switch (mà ta đang xây dựng) học (được) rằng source MAC của gói tin nằm trên ingress port (của gói tin) trong VLAN của nó (packet).
+- Ta thêm flow sau:
+```sh
+ovs-ofctl add-flow br0 \
+"table=2, actions=learn(table=10, NXM_OF_VLAN_TCI[0..11], \
+						NXM_OF_ETH_DST[]=NXM_OF_ETH_SRC[], \
+						load:NXM_OF_IN_PORT[]->NXM_NX_REG0[0..15]), \
+				resubmit(,3)"
+```
+- Ở đây, hành động ```learn``` chỉnh sửa flow table dựa trên nội dung của flow đang được xử lý. Phần tiếp theo sẽ giải thích các thành phần của hành động ```learn```:
+	- **table=10**: Chỉnh sửa **flow table 10**. Đây chính là MAC learning table.
+	- **NXM_OF_VLAN_TCI[0..11]**: đảm bảo flow ta thêm vào **flow table 10** sẽ match với cùng VLAN ID của gói tin đang xử lý
+	- **NXM_OF_ETH_DST[]=NXM_OF_ETH_SRC**: đảm bảo flow mà ta vừa thêm vào bảng **flow table 10** match địa chỉ Ethernet đích như địa chỉ Ethernet nguồn, điều này chính là việc học địa chỉ MAC của gói tin đi vào từ port nào của bridge, để thực hiện chuyển tiếp một gói tin tới đích là MAC vừa học được tới port tương ứng với MAC đó.
+	- **load:NXM_OF_IN_PORT[]->NXM_NX_REG0[0..15]**: ghi lại ingress port number vào thanh ghi 0. Thanh ghi 0 sẽ ghi lại địa chỉ port đầu ra mong muốn.
+
+### Testing Table 2
+#### Ví dụ 1:
+
 
 ## <a name="vlan"></a> 2. VLAN Testing
