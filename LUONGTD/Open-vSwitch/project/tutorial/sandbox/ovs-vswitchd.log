@@ -684,3 +684,175 @@ actions: output enqueue set_vlan_vid set_vlan_pcp strip_vlan mod_dl_src mod_dl_d
 2018-09-30T05:23:02.141Z|00257|vconn|DBG|unix#38: received: NXST_FLOW request (xid=0x6): table=10
 2018-09-30T05:23:02.141Z|00258|vconn|DBG|unix#38: sent (Success): NXST_FLOW reply (xid=0x6):
  cookie=0x0, duration=16254.269s, table=10, n_packets=0, n_bytes=0, idle_age=16254, hard_age=6881, vlan_tci=0x0014/0x0fff,dl_dst=50:00:00:00:00:01 actions=load:0x2->NXM_NX_REG0[0..15]
+2018-09-30T08:37:40.683Z|00259|vconn|DBG|unix#40: sent (Success): OFPT_HELLO (OF1.4) (xid=0x21):
+ version bitmap: 0x01, 0x02, 0x03, 0x04, 0x05
+2018-09-30T08:37:40.683Z|00260|vconn|DBG|unix#40: received: OFPT_HELLO (xid=0x1):
+ version bitmap: 0x01
+2018-09-30T08:37:40.683Z|00261|vconn|DBG|unix#40: negotiated OpenFlow version 0x01 (we support version 0x05 and earlier, peer supports version 0x01)
+2018-09-30T08:37:40.683Z|00262|vconn|DBG|unix#40: received: OFPT_FEATURES_REQUEST (xid=0x2):
+2018-09-30T08:37:40.685Z|00263|vconn|DBG|unix#40: sent (Success): OFPT_FEATURES_REPLY (xid=0x2): dpid:000082240d4dec48
+n_tables:254, n_buffers:0
+capabilities: FLOW_STATS TABLE_STATS PORT_STATS QUEUE_STATS ARP_MATCH_IP
+actions: output enqueue set_vlan_vid set_vlan_pcp strip_vlan mod_dl_src mod_dl_dst mod_nw_src mod_nw_dst mod_nw_tos mod_tp_src mod_tp_dst
+ 1(p1): addr:aa:55:aa:55:00:11
+     config:     0
+     state:      0
+     speed: 0 Mbps now, 0 Mbps max
+ 2(p2): addr:aa:55:aa:55:00:12
+     config:     0
+     state:      0
+     speed: 0 Mbps now, 0 Mbps max
+ 3(p3): addr:aa:55:aa:55:00:13
+     config:     0
+     state:      0
+     speed: 0 Mbps now, 0 Mbps max
+ 4(p4): addr:aa:55:aa:55:00:14
+     config:     0
+     state:      0
+     speed: 0 Mbps now, 0 Mbps max
+ LOCAL(br0): addr:82:24:0d:4d:ec:48
+     config:     PORT_DOWN
+     state:      LINK_DOWN
+     speed: 0 Mbps now, 0 Mbps max
+2018-09-30T08:37:40.686Z|00264|vconn|DBG|unix#41: sent (Success): OFPT_HELLO (OF1.4) (xid=0x22):
+ version bitmap: 0x01, 0x02, 0x03, 0x04, 0x05
+2018-09-30T08:37:40.686Z|00265|vconn|DBG|unix#41: received: OFPT_HELLO (xid=0x3):
+ version bitmap: 0x01
+2018-09-30T08:37:40.686Z|00266|vconn|DBG|unix#41: negotiated OpenFlow version 0x01 (we support version 0x05 and earlier, peer supports version 0x01)
+2018-09-30T08:37:40.686Z|00267|vconn|DBG|unix#41: received: NXT_FLOW_MOD_TABLE_ID (xid=0x4): enable
+2018-09-30T08:37:40.687Z|00268|vconn|DBG|unix#41: received: OFPT_BARRIER_REQUEST (xid=0x5):
+2018-09-30T08:37:40.687Z|00269|vconn|DBG|unix#41: sent (Success): OFPT_BARRIER_REPLY (xid=0x5):
+2018-09-30T08:37:40.687Z|00270|vconn|DBG|unix#41: received: OFPT_FLOW_MOD (xid=0x6): ADD table:3 priority=50 actions=resubmit(,10),resubmit(,4)
+2018-09-30T08:37:40.687Z|00271|vconn|DBG|unix#41: received: OFPT_BARRIER_REQUEST (xid=0x7):
+2018-09-30T08:37:40.687Z|00272|vconn|DBG|unix#41: sent (Success): OFPT_BARRIER_REPLY (xid=0x7):
+2018-09-30T08:37:40.688Z|00273|connmgr|INFO|br0<->unix#41: 1 flow_mods in the last 0 s (1 adds)
+2018-09-30T08:41:20.587Z|00274|vconn|DBG|unix#42: sent (Success): OFPT_HELLO (OF1.4) (xid=0x23):
+ version bitmap: 0x01, 0x02, 0x03, 0x04, 0x05
+2018-09-30T08:41:20.588Z|00275|vconn|DBG|unix#42: received: OFPT_HELLO (xid=0x1):
+ version bitmap: 0x01
+2018-09-30T08:41:20.588Z|00276|vconn|DBG|unix#42: negotiated OpenFlow version 0x01 (we support version 0x05 and earlier, peer supports version 0x01)
+2018-09-30T08:41:20.588Z|00277|vconn|DBG|unix#42: received: OFPT_FEATURES_REQUEST (xid=0x2):
+2018-09-30T08:41:20.589Z|00278|vconn|DBG|unix#42: sent (Success): OFPT_FEATURES_REPLY (xid=0x2): dpid:000082240d4dec48
+n_tables:254, n_buffers:0
+capabilities: FLOW_STATS TABLE_STATS PORT_STATS QUEUE_STATS ARP_MATCH_IP
+actions: output enqueue set_vlan_vid set_vlan_pcp strip_vlan mod_dl_src mod_dl_dst mod_nw_src mod_nw_dst mod_nw_tos mod_tp_src mod_tp_dst
+ 1(p1): addr:aa:55:aa:55:00:11
+     config:     0
+     state:      0
+     speed: 0 Mbps now, 0 Mbps max
+ 2(p2): addr:aa:55:aa:55:00:12
+     config:     0
+     state:      0
+     speed: 0 Mbps now, 0 Mbps max
+ 3(p3): addr:aa:55:aa:55:00:13
+     config:     0
+     state:      0
+     speed: 0 Mbps now, 0 Mbps max
+ 4(p4): addr:aa:55:aa:55:00:14
+     config:     0
+     state:      0
+     speed: 0 Mbps now, 0 Mbps max
+ LOCAL(br0): addr:82:24:0d:4d:ec:48
+     config:     PORT_DOWN
+     state:      LINK_DOWN
+     speed: 0 Mbps now, 0 Mbps max
+2018-09-30T08:41:20.590Z|00279|vconn|DBG|unix#43: sent (Success): OFPT_HELLO (OF1.4) (xid=0x24):
+ version bitmap: 0x01, 0x02, 0x03, 0x04, 0x05
+2018-09-30T08:41:20.590Z|00280|vconn|DBG|unix#43: received: OFPT_HELLO (xid=0x3):
+ version bitmap: 0x01
+2018-09-30T08:41:20.590Z|00281|vconn|DBG|unix#43: negotiated OpenFlow version 0x01 (we support version 0x05 and earlier, peer supports version 0x01)
+2018-09-30T08:41:20.591Z|00282|vconn|DBG|unix#43: received: NXT_SET_FLOW_FORMAT (xid=0x4): format=nxm
+2018-09-30T08:41:20.591Z|00283|vconn|DBG|unix#43: received: OFPT_BARRIER_REQUEST (xid=0x5):
+2018-09-30T08:41:20.591Z|00284|vconn|DBG|unix#43: sent (Success): OFPT_BARRIER_REPLY (xid=0x5):
+2018-09-30T08:41:20.592Z|00285|vconn|DBG|unix#43: received: NXT_FLOW_MOD_TABLE_ID (xid=0x6): enable
+2018-09-30T08:41:20.592Z|00286|vconn|DBG|unix#43: received: OFPT_BARRIER_REQUEST (xid=0x7):
+2018-09-30T08:41:20.592Z|00287|vconn|DBG|unix#43: sent (Success): OFPT_BARRIER_REPLY (xid=0x7):
+2018-09-30T08:41:20.593Z|00288|vconn|DBG|unix#43: received: NXT_FLOW_MOD (xid=0x8): ADD table:3 priority=99,dl_dst=01:00:00:00:00:00/01:00:00:00:00:00 actions=resubmit(,4)
+2018-09-30T08:41:20.593Z|00289|vconn|DBG|unix#43: received: OFPT_BARRIER_REQUEST (xid=0x9):
+2018-09-30T08:41:20.593Z|00290|vconn|DBG|unix#43: sent (Success): OFPT_BARRIER_REPLY (xid=0x9):
+2018-09-30T08:41:20.594Z|00291|connmgr|INFO|br0<->unix#43: 1 flow_mods in the last 0 s (1 adds)
+2018-09-30T09:13:57.032Z|00292|vconn|DBG|unix#45: sent (Success): OFPT_HELLO (OF1.4) (xid=0x25):
+ version bitmap: 0x01, 0x02, 0x03, 0x04, 0x05
+2018-09-30T09:13:57.032Z|00293|vconn|DBG|unix#45: received: OFPT_HELLO (xid=0x1):
+ version bitmap: 0x01
+2018-09-30T09:13:57.032Z|00294|vconn|DBG|unix#45: negotiated OpenFlow version 0x01 (we support version 0x05 and earlier, peer supports version 0x01)
+2018-09-30T09:13:57.032Z|00295|vconn|DBG|unix#45: received: OFPT_FEATURES_REQUEST (xid=0x2):
+2018-09-30T09:13:57.034Z|00296|vconn|DBG|unix#45: sent (Success): OFPT_FEATURES_REPLY (xid=0x2): dpid:000082240d4dec48
+n_tables:254, n_buffers:0
+capabilities: FLOW_STATS TABLE_STATS PORT_STATS QUEUE_STATS ARP_MATCH_IP
+actions: output enqueue set_vlan_vid set_vlan_pcp strip_vlan mod_dl_src mod_dl_dst mod_nw_src mod_nw_dst mod_nw_tos mod_tp_src mod_tp_dst
+ 1(p1): addr:aa:55:aa:55:00:11
+     config:     0
+     state:      0
+     speed: 0 Mbps now, 0 Mbps max
+ 2(p2): addr:aa:55:aa:55:00:12
+     config:     0
+     state:      0
+     speed: 0 Mbps now, 0 Mbps max
+ 3(p3): addr:aa:55:aa:55:00:13
+     config:     0
+     state:      0
+     speed: 0 Mbps now, 0 Mbps max
+ 4(p4): addr:aa:55:aa:55:00:14
+     config:     0
+     state:      0
+     speed: 0 Mbps now, 0 Mbps max
+ LOCAL(br0): addr:82:24:0d:4d:ec:48
+     config:     PORT_DOWN
+     state:      LINK_DOWN
+     speed: 0 Mbps now, 0 Mbps max
+2018-09-30T09:13:57.035Z|00297|vconn|DBG|unix#46: sent (Success): OFPT_HELLO (OF1.4) (xid=0x26):
+ version bitmap: 0x01, 0x02, 0x03, 0x04, 0x05
+2018-09-30T09:13:57.035Z|00298|vconn|DBG|unix#46: received: OFPT_HELLO (xid=0x3):
+ version bitmap: 0x01
+2018-09-30T09:13:57.035Z|00299|vconn|DBG|unix#46: negotiated OpenFlow version 0x01 (we support version 0x05 and earlier, peer supports version 0x01)
+2018-09-30T09:13:57.035Z|00300|vconn|DBG|unix#46: received: NXT_SET_FLOW_FORMAT (xid=0x4): format=nxm
+2018-09-30T09:13:57.036Z|00301|vconn|DBG|unix#46: received: OFPT_BARRIER_REQUEST (xid=0x5):
+2018-09-30T09:13:57.036Z|00302|vconn|DBG|unix#46: sent (Success): OFPT_BARRIER_REPLY (xid=0x5):
+2018-09-30T09:13:57.036Z|00303|vconn|DBG|unix#46: received: NXST_FLOW request (xid=0x6): table=10
+2018-09-30T09:13:57.036Z|00304|vconn|DBG|unix#46: sent (Success): NXST_FLOW reply (xid=0x6):
+ cookie=0x0, duration=21663.281s, table=10, n_packets=0, n_bytes=0, idle_age=21663, hard_age=4451, vlan_tci=0x0014/0x0fff,dl_dst=50:00:00:00:00:01 actions=load:0x2->NXM_NX_REG0[0..15]
+ cookie=0x0, duration=1870.597s, table=10, n_packets=0, n_bytes=0, idle_age=1870, vlan_tci=0x0014/0x0fff,dl_dst=f0:00:00:00:00:01 actions=load:0x1->NXM_NX_REG0[0..15]
+2018-09-30T10:20:28.025Z|00305|vconn|DBG|unix#49: sent (Success): OFPT_HELLO (OF1.4) (xid=0x27):
+ version bitmap: 0x01, 0x02, 0x03, 0x04, 0x05
+2018-09-30T10:20:28.025Z|00306|vconn|DBG|unix#49: received: OFPT_HELLO (xid=0x1):
+ version bitmap: 0x01
+2018-09-30T10:20:28.025Z|00307|vconn|DBG|unix#49: negotiated OpenFlow version 0x01 (we support version 0x05 and earlier, peer supports version 0x01)
+2018-09-30T10:20:28.025Z|00308|vconn|DBG|unix#49: received: OFPT_FEATURES_REQUEST (xid=0x2):
+2018-09-30T10:20:28.025Z|00309|vconn|DBG|unix#49: sent (Success): OFPT_FEATURES_REPLY (xid=0x2): dpid:000082240d4dec48
+n_tables:254, n_buffers:0
+capabilities: FLOW_STATS TABLE_STATS PORT_STATS QUEUE_STATS ARP_MATCH_IP
+actions: output enqueue set_vlan_vid set_vlan_pcp strip_vlan mod_dl_src mod_dl_dst mod_nw_src mod_nw_dst mod_nw_tos mod_tp_src mod_tp_dst
+ 1(p1): addr:aa:55:aa:55:00:11
+     config:     0
+     state:      0
+     speed: 0 Mbps now, 0 Mbps max
+ 2(p2): addr:aa:55:aa:55:00:12
+     config:     0
+     state:      0
+     speed: 0 Mbps now, 0 Mbps max
+ 3(p3): addr:aa:55:aa:55:00:13
+     config:     0
+     state:      0
+     speed: 0 Mbps now, 0 Mbps max
+ 4(p4): addr:aa:55:aa:55:00:14
+     config:     0
+     state:      0
+     speed: 0 Mbps now, 0 Mbps max
+ LOCAL(br0): addr:82:24:0d:4d:ec:48
+     config:     PORT_DOWN
+     state:      LINK_DOWN
+     speed: 0 Mbps now, 0 Mbps max
+2018-09-30T10:20:28.025Z|00310|vconn|DBG|unix#50: sent (Success): OFPT_HELLO (OF1.4) (xid=0x28):
+ version bitmap: 0x01, 0x02, 0x03, 0x04, 0x05
+2018-09-30T10:20:28.025Z|00311|vconn|DBG|unix#50: received: OFPT_HELLO (xid=0x3):
+ version bitmap: 0x01
+2018-09-30T10:20:28.025Z|00312|vconn|DBG|unix#50: negotiated OpenFlow version 0x01 (we support version 0x05 and earlier, peer supports version 0x01)
+2018-09-30T10:20:28.025Z|00313|vconn|DBG|unix#50: received: NXT_SET_FLOW_FORMAT (xid=0x4): format=nxm
+2018-09-30T10:20:28.025Z|00314|vconn|DBG|unix#50: received: OFPT_BARRIER_REQUEST (xid=0x5):
+2018-09-30T10:20:28.025Z|00315|vconn|DBG|unix#50: sent (Success): OFPT_BARRIER_REPLY (xid=0x5):
+2018-09-30T10:20:28.026Z|00316|vconn|DBG|unix#50: received: NXST_FLOW request (xid=0x6): table=10
+2018-09-30T10:20:28.026Z|00317|vconn|DBG|unix#50: sent (Success): NXST_FLOW reply (xid=0x6):
+ cookie=0x0, duration=25654.271s, table=10, n_packets=0, n_bytes=0, idle_age=25654, hard_age=8442, vlan_tci=0x0014/0x0fff,dl_dst=50:00:00:00:00:01 actions=load:0x2->NXM_NX_REG0[0..15]
+ cookie=0x0, duration=5861.587s, table=10, n_packets=0, n_bytes=0, idle_age=5861, hard_age=609, vlan_tci=0x0014/0x0fff,dl_dst=f0:00:00:00:00:01 actions=load:0x1->NXM_NX_REG0[0..15]
+ cookie=0x0, duration=3483.462s, table=10, n_packets=0, n_bytes=0, idle_age=3483, vlan_tci=0x0014/0x0fff,dl_dst=90:00:00:00:00:01 actions=load:0x2->NXM_NX_REG0[0..15]

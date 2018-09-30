@@ -171,12 +171,74 @@ Ta thấy các trường ```vlan_tci``` và ```dl_dst``` đã được học, đ
 Ta thử với trường hợp gói tin có source MAC giống như ví dụ 1, VLAN là một access port VLAN (không phải là một 802.1Q header như ví dụ 1) 
 ```sh
 ovs-appctl ofproto/trace br0 \
-						 in_port=2,dl_src=50:00:00:00:00:01 -generate
+in_port=2,dl_src=50:00:00:00:00:01 -generate
 ```
 ![](images/Labs/sand_box/tb2-vd2.png)
 
 Ta kiểm tra lại **flow table 10**: ```ovs-ofctl dump-flows br0 table=10```
 
 ![](images/Labs/sand_box/tb10-vd2.png)
+
+Ta có thể thấy, port đã được học là port 2.
+
+### 1.7. Triển khai Table 7: Look up destination port
+- Table này tìm kiếm xem port nào để gửi gói tin tới dựa trên địa chỉ MAC đích và VLAN.
+- Thêm flow để thực hiện tìm kiếm:
+```sh
+ovs-ofctl add-flow br0 \
+"table=3 priority=50 actions=resubmit(,10), resubmit(,4)"
+```
+Hành động đầu tiên của flow là resubmit sang **table 10**. Flows đã học được trong bảng này có ghi port vào thanh ghi 0. Nếu đích của packet chưa được học thì flow matching thất bại. Điều đó có nghĩa là thanh ghi 0 giờ đây vẫn có giá trị là 0 và sẽ là điều kiện để đưa ra tín hiệu flood gói tin ở bước tiếp theo trên table 4.
+Hành động thứ hai là resubmit sang table 4 và tiếp tục bước tiếp theo của pipeline.
+- Thêm flow khác để 	bỏ qua tìm kiếm cho gói tin multicast và broadcast:
+```sh
+ovs-ofctl add-flow br0 \
+"table=3 priority=99 dl_dst=01:00:00:00:00:00/01:00:00:00:00:00 \
+actions=resubmit(,4)"
+```
+
+### Testing Table 3
+#### Ví dụ:
+- Đầu tiên, học **f0:00:00:00:00:01** trên p1 thuộc VLAN 20:
+```sh
+ovs-appctl ofproto/trace br0 \
+in_port=1,dl_vlan=20,dl_src=f0:00:00:00:00:01,dl_dst=90:00:00:00:00:01 \
+-generate
+```
+Lúc này địa chỉ destination MAC chưa được học ("no match" looking up trong **table 10** thể hiện rằng flow's destination chưa được học)
+
+![](images/Labs/sand_box/tb3-vd1.png)
+
+Lúc này, source MAC của gói tin đã được đưa học và ghi vào **table 10**. Thử *dump-flows* của br0 trên **table 10**: ```ovs-ofctll dump-flows br0 table=10```, output như sau:
+
+ ![](images/Labs/sand_box/tb3-dp1.png)
+
+- Ta thực hiện test với gói tin có địa chỉ MAC nguồn và đích đảo ngược so với gói tin thử đầu tiên:
+```sh
+ovs-appctl ofproto/trace br0 \
+in_port=2,dl_src=90:00:00:00:00:01,dl_dst=f0:00:00:00:00:01 -generate
+``` 
+Output như sau:
+
+![](images/Labs/sand_box/tb3-vd2.png)
+
+Ta thấy rằng, với thao tác *resubmit(,10)*, gói tin đã match flow đối với địa chỉ (source) MAC đầu tiên đã được học, đồng thời chỉ số port 0x1 tương ứng với **port p1** cũng được load vào thanh ghi 0, sau đó thao tác resubmit sang table 4 được thực hiện.
+Một điểm nữa là, ở bước thứ 3, **table 10** đã học được địa chỉ MAC nguồn của của gói tin (đang test) trên port 2 và load chỉ số port tương ứng là 0x2 vào thanh ghi 0. Như vậy, **table 10** đã học được cả hai địa chỉ MAC đích và nguồn của gói tin thử đầu tiên.
+
+- Ta sẽ thử lại với gói tin ở bưóc test đầu tiên:
+```sh
+ovs-appctl ofproto/trace br0 \
+in_port=1,dl_vlan=20,dl_src=f0:00:00:00:00:01,dl_dst=90:00:00:00:00:01 \
+-generate
+``` 
+
+Output như sau:
+![](images/Labs/sand_box/tb3-vd3.png)
+
+Ở bưóc này, bridge đã tìm thấy được MAC đích của gói tin bằng việc tìm kiếm trên **table 10** và *resubmit* sang **table 4** để xử lý tiếp. 
+
+- Ta nhìn lại **table 10** trước khi chuyển sang thực thi **table 4**:
+
+![](images/Labs/sand_box/tb3-df2.png)
 
 ## <a name="vlan"></a> 2. VLAN Testing
