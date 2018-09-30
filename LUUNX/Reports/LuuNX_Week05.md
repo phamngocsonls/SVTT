@@ -72,7 +72,7 @@ KVM cung cấp nhiều loại mạng ảo cho máy ảo, trong đó có 3 loại
 * routed virtual network
 * NATed virtual network
 
-Để tạo các dạng mạng ảo này, ta vào chế độ cấu hình bằng cách chọn Edit/Connection Details trên màn hình chính của v
+Để tạo các dạng mạng ảo này, ta vào chế độ cấu hình bằng cách chọn Edit/Connection Details trên màn hình chính của virt-manager.
 
 
 ## 3. Quản lý KVM bằng giao diện dòng lệnh với virsh và các công cụ liên quan
