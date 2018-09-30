@@ -1,8 +1,6 @@
 # OVS labs
 ## [1. Pipeline Testing](#pipeline)
-## [2. VLAN Testing](#vlan)
 ---
-Các flows qui định, điều tiết cách các gói tin đi qua các ports. 
 ## <a name="pipeline"></a> 1. Pipeline Testing
 ### 1.1. Khởi động Sandbox
 - Chuyển vào thư mục tutorial của project Open vSwitch: ```cd /tutorial```
@@ -341,20 +339,3 @@ Output như sau:
 ![](images/Labs/sand_box/tb4-vd2-3.png)
 
 Ta thấy rằng nó cũng không còn (bị) flood qua cổng 3 nữa mà (gói tin) được loại bỏ VLAN header và gửi qua cổng **p4**.
-
-## <a name="vlan"></a> 2. VLAN Testing
-
-### 2.1. Kịch bản
-- Sử dụng OVS tạo hai switch ảo br1 và br2 kết nối với nhau bằng một đường trunk, thiết lập các vlan tag 100 và 200.
-- Tạo 4 máy ảo gán vào các vlan tương ứng với các tab interface của 2 switch ảo trên:
-	- kvm-th0 và kvm-th1 gán vào switch br1
-	- kvm-u0 và kvm-u1 gán vào switch br2
-- Gán các máy ảo vào các vlan.
-- Ping giữa các máy ảo để kiểm tra hoạt động của vlan.
-
-### Topology:
-
-![](images/Labs/VLAN_testing/topo.jpg)
-
-### 2.2. Cấu hình VLAN
-
