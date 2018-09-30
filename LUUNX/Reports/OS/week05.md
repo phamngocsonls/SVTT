@@ -12,7 +12,7 @@ Process là một khái niệm cơ bản của tất cả các hệ điều hàn
 
 ## 1.5.2 Address Space
 
-Mỗi máy tính có một bộ nhớ chính lưu giữ các chương trình được thực thi. Các chương trình có thể được thực thi đồng thời với nhau. Việc quản lý địa chỉ nhớ và bộ nhớ vật lý là một trong những công việc quan trọng của hệ điều hành
+Mỗi máy tính có một bộ nhớ chính lưu giữ các chương trình được thực thi. Các chương trình có thể được thực thi đồng thời với nhau. Việc quản lý địa chỉ nhớ và bộ nhớ vật lý là một trong những công việc quan trọng của hệ điều hành.
 
 ## 1.5.3 Files
 
@@ -34,9 +34,9 @@ Các hệ điều hành luôn cung cấp một shell để người dùng thực
 
 Chúng ta đã biết hệ điều hành có hai nhiệm vụ chính: cung cấp sự trừu tượng cho chương trình ứng dụng người dùng và quản lý tài nguyên máy tính. Phần lớn những tương tác giữa chương trình người dùng và hệ điều hành sẽ yêu cầu các system call để thực hiện  các tác vụ với tài nguyên máy tính.
 
-Cách thức để thực hiện system call của chương trình người dùng sẽ là cung cấp các tham số và loại system call và bộ nhớ, sau đó gọi lệnh Trap, hệ điều hành sẽ đọc dữ liệu yêu cầu, thực hiện yêu cầu và cuối cùng là trở về chương trình người dùng ban đầu.
+Cách thức để thực hiện system call của chương trình người dùng sẽ là cung cấp các tham số và loại system call vào bộ nhớ, sau đó gọi lệnh Trap, hệ điều hành sẽ đọc dữ liệu yêu cầu, thực hiện yêu cầu và cuối cùng là trở về chương trình người dùng ban đầu.
 
-Để thống nhất việc sử dụng system call, các hệ điều hành có nguồn gốc từ UNIX sử dụng một bộ các system call chuẩn hóa gọi là POSIX system call. Khi các chương trình người dùng sử dụng các POSIX system call cho yêu cầu tới hệ điều hành nơi chúng đang hoạt động thì sẽ được chấp nhận. Tức là một chương trình người dùng có thể tương thích với nhiều hệ điều hành, nếu chúng sử dụng POSIX system call và hệ điều hành ấy hỗ trợ.
+Để thống nhất việc sử dụng system call, các hệ điều hành có nguồn gốc từ UNIX sử dụng một bộ các system call chuẩn hóa gọi là POSIX system call. Khi các chương trình người dùng sử dụng các POSIX system call cho yêu cầu tới hệ điều hành nơi chúng đang hoạt động thì sẽ được chấp nhận. Tức là một chương trình người dùng có thể tương thích với nhiều hệ điều hành, nếu chúng sử dụng POSIX system call và hệ điều hành chương trình ấy hoạt động hỗ trợ.
 
 Có khoảng 100 POSIX system call được phân vào 4 nhóm chức năng.
 
@@ -56,7 +56,7 @@ Hệ điều hành windows có cách cư xử khác với UNIX, chúng tập chu
 
 Hệ điều hành cấu trúc kiểu khối, chỉ có một chương trình chạy trong kernel mode.
 
-## 1.7.2 Layerde System
+## 1.7.2 Layered System
 
 Hệ điều hành cấu trúc chia nhiều lớp, mỗi lớp một tác vụ.
 
@@ -64,11 +64,11 @@ Ví dụ hệ điều hành THE. Nó có 5 lớp. Lớp 0 quản lý việc mộ
 
 ## 1.7.3 Microkernels
 
-Ở dạng thiết kế hệ điều hành thứ 2, chúng ta thấy sự phân chia giữa user mode và kernel mode, tuy nhiên vậy là chưa đủ. Theo tính toán, cứ 1000 dòng lệnh kernel thì sẽ xuất hiện từ 2 đến 10 lỗi. Và số lượng lỗi của 5 triệu dòng lệnh sẽ là 10000 đến 50000. Tuy những lỗi này hiếm xảy ra nhưng chúng không an toàn. Ý tưởng của Microkernel là làm cho chương trình chạy trong kernel nhỏ xuống, đơn giản xuống và chỉ thực hiện điều hướng các tác vụ cần thiết. Phần còn lại sẽ chạy ở user mode.
+Ở dạng thiết kế hệ điều hành thứ 2, chúng ta thấy sự phân chia giữa user mode và kernel mode, tuy nhiên vậy là chưa đủ. Theo tính toán, cứ 1000 dòng lệnh kernel thì sẽ xuất hiện từ 2 đến 10 lỗi. Và số lượng lỗi của 5 triệu dòng lệnh sẽ là 10000 đến 50000. Tuy những lỗi này hiếm xảy ra nhưng chúng không an toàn. Ý tưởng của Microkernel là làm cho chương trình chạy trong kernel nhỏ xuống, đơn giản hơn và chỉ thực hiện điều hướng các tác vụ cần thiết. Phần còn lại sẽ chạy ở user mode.
 
-## 1.7.4 client -server system
+## 1.7.4 Client-server system
 
-Từ ý tưởng của microkernel, người ta đã đưa ra hai đối tượng client và server. Client và server sẽ liên lạc với nhau qua message. Client gửi yêu cầu tới server, server phản hồi lại yêu cầu của client. Client và server có thể chạy ở những máy tính phân biệt, kết nối với nhau qua mạng LAN hoặc internet.
+Từ ý tưởng của microkernel, người ta đã đưa ra hai đối tượng client và server. Client và server sẽ liên lạc với nhau qua message. Client gửi message yêu cầu tới server, server gửi message phản hồi lại yêu cầu của client. Client và server có thể chạy ở những máy tính phân biệt, kết nối với nhau qua mạng LAN hoặc internet.
 
 ## 1.7.5 Virtual Machine
 
@@ -80,7 +80,7 @@ Có hai dạng mô hình ảo hóa hệ điều hành. Loại thứ nhất, hype
 
 ## 1.7.6 Exokernels
 
-Exokernels là một chương trình chạy ở kernel mode chuyên đảm nhiệm việc quản lý tài nguyên lưu trữ trong ở đĩa của của các máy ảo, tránh cho chúng sử dụng các vùng lưu trữ đè lên nhau và giảm thời gian dịch block giữa vùng nhớ cấp cho máy ảo và vùng nhớ thật.
+Exokernels là một chương trình chạy ở kernel mode chuyên đảm nhiệm việc quản lý tài nguyên lưu trữ trong ở đĩa của của các máy ảo, tránh cho chúng sử dụng các vùng lưu trữ đè lên nhau và giảm thời gian phiên dịch block giữa vùng nhớ cấp cho máy ảo và vùng nhớ thật.
 
 # 1.8 The World According To C
 
@@ -106,7 +106,7 @@ Thứ nhất, khi một hệ điều hành được khởi động, nó sẽ kh�
 
 Thứ hai, mỗi tiến trình khi đang hoạt động có thể yêu cầu hệ điều hành tạo ra một tiến trình mới để thực thi nhiệm vụ của tiến trình hiện tại giao phó. Lệnh fork() trong UNIX là một ví dụ điển hình.
 
-Thứ ba, người dùng hoàn toàn có thể khởi tạo một tiến trình thông qua việc click một icon, hãy gõ lệnh thông qua shell. Tất cả sẽ khởi tạo tiến trình phù hợp với yêu cầu của người dùng.
+Thứ ba, người dùng hoàn toàn có thể khởi tạo một tiến trình thông qua việc click một icon, hay gõ lệnh thông qua shell. Tất cả sẽ khởi tạo tiến trình phù hợp với yêu cầu của người dùng.
 
 ## 2.1.3 Process Termination
 
@@ -126,7 +126,7 @@ Cuối cùng, lệnh kill từ hệ điều hành có thể kết thúc ngay m�
 
 Việc phân cấp các tiến trình được thực hiện khác nhau ở UNIX và Windows.
 
-Nhìn chung, một tiến trình có một hoặc không tiến trình cha nhưng có thể có rất nhiều tiến trình con. Đối với hệ điều hành UNIX, tiến trình init được khởi chạy lúc hệ điều hành khởi động và là cha của tất cả các tiến trình sau đó. Đối với hệ điều hành Windows, các tiến trình là ngang hàng và không phân cấp.
+Nhìn chung, một tiến trình có một hoặc không có tiến trình cha nhưng có thể có rất nhiều tiến trình con. Đối với hệ điều hành UNIX, tiến trình init được khởi chạy lúc hệ điều hành khởi động và là cha của tất cả các tiến trình sau đó. Đối với hệ điều hành Windows, các tiến trình là ngang hàng và không phân cấp.
 
 ## 2.1.5 Process State
 
@@ -134,7 +134,7 @@ Các tiến trình khi hoạt động sẽ có trạng thái. Cụ thể, có ba
 
 Một tiến trình đang chạy trên CPU có trạng thái Running.
 
-Một tiến trình sẵn sàng khởi chạy nhưng không có sẵn CPU rảnh sẽ có trạng thái Ready
+Một tiến trình sẵn sàng khởi chạy nhưng không có sẵn CPU rảnh sẽ có trạng thái Ready.
 
 Một tiến trình bị dừng để đợi một sự kiện kích thích bên ngoài sẽ có trạng thái Blocked.
 
@@ -150,7 +150,7 @@ Hệ điều hành quản lý các process thông qua một process table. Các 
 
 Cũng như một máy tính có nhiều phần mềm hoạt động song song ( processes), mỗi phần mềm cũng sẽ yêu cầu nhiều tác vụ chạy song song. Để thực hiện điều này, ta đưa ra khái niệm thread.
 
-Ví dụ, khi máy tính hoạt động, nhiều phần mềm chạy song song như phần mềm quản lý file, phần mềm duyệt web, phần mềm nghe nhạc, phần mềm soạn thảo văn bản,... Ta xét riêng phần mềm soạn thảo văn bản. Nếu xem nó là một tiến trình, thì nó sẽ có không gian địa chỉ nhớ riêng, chứa các dữ liệu của riêng nó. Khi một phần mềm soạn thảo văn bản hoạt động, nó cho phép người dùng nhập liệu, chỉnh sửa định dạng file văn bản, đồng thời nó liên tục thực hiện việc cập nhật trạng thái của file văn bản, tiếp đến, nó sẽ sao lưu có chu kì file văn bản để tránh trường hợp lỗi hệ thống. Nhìn chung, một tiến trình yêu cầu tới 3 công việc được thực thi cùng lúc. Vậy làm thế nào để nó làm được điều đó. Nếu ta dùng 3 tiến trình khác nhau để phục vụ công việc soạn thảo văn bản thì sẽ thất bại, do tại cùng một thời điểm, một file chỉ do một tiến trình quản lý, 3 tiến trình trên sẽ xung đột với nhau. Cách giải quyết là phân nhỏ một tiến trình thành các thread (luồng) . Mỗi luồng chạy song song và đảm nhiệm một công việc riêng. Điểm thú vị là chúng sẽ chia sẻ chung các tài nguyên của tiến trình hiện tại, do vậy sẽ không gặp phải xung đột như những tiến trình riêng rẽ.
+Ví dụ, khi máy tính hoạt động, nhiều phần mềm chạy song song như phần mềm quản lý file, phần mềm duyệt web, phần mềm nghe nhạc, phần mềm soạn thảo văn bản,... Ta xét riêng phần mềm soạn thảo văn bản. Nếu xem nó là một tiến trình, thì nó sẽ có không gian địa chỉ nhớ riêng, chứa các dữ liệu của riêng nó. Khi một phần mềm soạn thảo văn bản hoạt động, nó cho phép người dùng nhập liệu, chỉnh sửa định dạng file văn bản, đồng thời nó liên tục thực hiện việc cập nhật và đọc dữ liệu của file văn bản, tiếp đến, nó sẽ sao lưu có chu kì file văn bản để tránh trường hợp lỗi hệ thống. Nhìn chung, tiến trình này yêu cầu tới 3 công việc được thực thi cùng lúc. Vậy làm thế nào để nó làm được điều đó. Nếu ta dùng 3 tiến trình khác nhau để phục vụ công việc soạn thảo văn bản thì sẽ thất bại, do tại cùng một thời điểm, một file chỉ do một tiến trình quản lý, 3 tiến trình trên sẽ xung đột với nhau. Cách giải quyết là phân nhỏ một tiến trình thành các thread (luồng) . Mỗi luồng chạy song song và đảm nhiệm một công việc riêng. Điểm thú vị là chúng sẽ chia sẻ chung các tài nguyên của tiến trình hiện tại, do vậy sẽ không gặp phải xung đột như những tiến trình riêng rẽ.
 
 ## 2.2.2 The Classical Thread Model
 
