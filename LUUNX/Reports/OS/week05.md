@@ -144,3 +144,24 @@ Các trạng thái này sẽ thường được chuyển đỗi cho nhau trong s
 
 Hệ điều hành quản lý các process thông qua một process table. Các tiến trình sẽ được lưu thông tin trong table này, bao gồm tất cả các thông tin về program counter, memory, stack, trạng thái các file, các tính toán và lịch chạy. Thông tin này cần thiết khi một tiến trình chuyển từ trạng thái ready sang running và running sang blocked.
 
+# 2.2 Thread
+
+## 2.2.1 Thread Usage
+
+Cũng như một máy tính có nhiều phần mềm hoạt động song song ( processes), mỗi phần mềm cũng sẽ yêu cầu nhiều tác vụ chạy song song. Để thực hiện điều này, ta đưa ra khái niệm thread.
+
+Ví dụ, khi máy tính hoạt động, nhiều phần mềm chạy song song như phần mềm quản lý file, phần mềm duyệt web, phần mềm nghe nhạc, phần mềm soạn thảo văn bản,... Ta xét riêng phần mềm soạn thảo văn bản. Nếu xem nó là một tiến trình, thì nó sẽ có không gian địa chỉ nhớ riêng, chứa các dữ liệu của riêng nó. Khi một phần mềm soạn thảo văn bản hoạt động, nó cho phép người dùng nhập liệu, chỉnh sửa định dạng file văn bản, đồng thời nó liên tục thực hiện việc cập nhật trạng thái của file văn bản, tiếp đến, nó sẽ sao lưu có chu kì file văn bản để tránh trường hợp lỗi hệ thống. Nhìn chung, một tiến trình yêu cầu tới 3 công việc được thực thi cùng lúc. Vậy làm thế nào để nó làm được điều đó. Nếu ta dùng 3 tiến trình khác nhau để phục vụ công việc soạn thảo văn bản thì sẽ thất bại, do tại cùng một thời điểm, một file chỉ do một tiến trình quản lý, 3 tiến trình trên sẽ xung đột với nhau. Cách giải quyết là phân nhỏ một tiến trình thành các thread (luồng) . Mỗi luồng chạy song song và đảm nhiệm một công việc riêng. Điểm thú vị là chúng sẽ chia sẻ chung các tài nguyên của tiến trình hiện tại, do vậy sẽ không gặp phải xung đột như những tiến trình riêng rẽ.
+
+## 2.2.2 The Classical Thread Model
+
+Một tiến trình có thể sinh ra nhiều thread để thực hiện công việc của nó.
+
+Các thread sẽ có bộ nhớ chứa thông tin về program counter, register, stack và state riêng biệt và chia sẻ các thông tin về process chung bao gồm address space, global variables, open files, child process, pending alarm, signal và accounting information.
+
+Thông thường, khi một process được tạo, chúng chạy một thread, thread này sẽ gọi library call để tạo ra các thread khác. Các thread cũng có các trạng thái tương tự một process là running, ready và blocked. Các trạng thái có thể chuyển đỗi tương tự như các process. Khi thread hoàn thành công việc, nó cũng sẽ tiến hành termination để hủy và giải phóng bộ nhớ.
+
+## 2.2.3 POSIX Thread
+
+Tiêu chuẩn IEEE 1003.1c cung cấp quy định tạo các POSIX Thread (Pthread). Các Pthread này có thể chạy trên các hệ điều hành hỗ trợ POSIX. Có khoảng 60 Pthread function call khác nhau. 
+
+Một vài ví dụ điển hình là Pthread_create, Pthread_exit, Pthread_join, Pthread_yield, Pthread_attr_init, Pthread_attr_destroy.
