@@ -5,6 +5,8 @@
 - [1. Giới thiệu về Manila](#1)
     - [1.1 How Manila work](#11)
 - [2. Các thành phần trong Manila](#2)
+    - [2.1 Share Creation Workflow with share server](#21)
+    - [2.2 Share Creation Workflow without share server](#22)
 - [3. Key concept](#3)
     - [3.1 Share](#31)
     - [3.2 Share Access Rules](#32)
@@ -12,6 +14,9 @@
     - [3.4 Share Networks](#34)
     - [3.5 Security Services](#35)
     - [3.6 Storage Pool](#36)
+    - [3.7 Share types](#37)
+    - [3.8 Share servers](#38)
+- [4. Manila Network plugin](#4)
 
 
 <a name="1"></a>
@@ -29,13 +34,13 @@ Ví dụ sau đây miêu tả 2 file share giữa các VM với nhau. `Marketing
 ![Imgur](https://i.imgur.com/1W0mccx.png)
 
 
-<a name="11"></a>
+<a name="11"><?a>
 
 ## 1.1 How Manila work
 
 Nhiệm vụ chính của Manila là cho phép Nova compute instances truy cập tới storage dựa trên shared-file, các storage ở đây có thể là các external storage như `Ceph` hoặc `GlusterFS`
 
-Manila cung cấp các components để quản lý việc create of file share và ánh xạ những file-share này tới Nova compute instances. vIệc này thực hiện dễ dàng qua API, command line interface CLI hoặc dashboard horizon.
+Dịch vụ Openstack Shared File Systems cung cấp file storage cho một máy ảo. Dịch vụ Shared File Systems cung cấp một cơ sở hạ tầng để quản lý và cung cấp các file chia sẻ. Dịch vụ cũng cho phép quản lý các kiểu chia sẻ cũng như các share snapshot nếu driver hỗ trợ chúng.
 
 
 <a name="2"></a>
@@ -53,6 +58,40 @@ Kiến trúc của Manila service bao gồm các thành các thành phần sau:
 - **Auth Manager** - Thành phần quản lý user, projects và roles
 - **SQL database** - Manila sử dụng một sơ sở dữ liệu tập trung sql-based central database để chia sẻ giữa các dịch vụ Manila trong hệ thống.
 
+<a name="21"></a>
+
+## 2.1 Share Creation Workflow with share server
+
+![Imgur](https://i.imgur.com/iNtiMnl.png)
+
+1. Clients request to create share through REST API hoặc sử dụng python-manilaclient:
+Qúa trình xử lý request như sau:
+    a. `manila-api` xác thực request, xác thực user và gửi message tới AMQP queue chờ xử lý
+    b. `manila-share` xử lý message từ queue, gửi message tới `manila-scheduler` để xác định backend share
+    c. `manila-scheduler` lập lịch, chuyển các request với share service thích hợp
+    d. `manila-share` quản lý các backend cung cấp share file system
+2. Share manager liên kết với backend và chọn ra một network plugin(standalone plugin, Neutron hoặc Nova network, được định nghịa trong file manila.conf)
+3. NetApp's Manila driver create request share qua một kết nối tới storage subsysstem
+4. `manila-share` process create share metadata và post response mesgae tới AMQP queue
+    `manila-api` xử lý message từ queue và responds tới clients with share ID information
+5. Sau khi create share, clients sử dụng ID information to request updated share details to mount share
+
+<a name="2.2"></a>
+
+## 2.2 Share Creation Workflow without share server 
+
+![Imgur](https://i.imgur.com/mMIkKOb.png)
+
+1. Clients request to create share through REST API hoặc sử dụng python-manilaclient:
+Qúa trình xử lý request như sau:
+    a. `manila-api` xác thực request, xác thực user và gửi message tới AMQP queue chờ xử lý
+    b. `manila-share` xử lý message từ queue, gửi message tới `manila-scheduler` để xác định backend share
+    c. `manila-scheduler` lập lịch, chuyển các request với share service thích hợp
+    d. `manila-share` quản lý các backend cung cấp share file system
+2. NetApp's Manila driver create request share thông qua kết nối tới storage subsystem
+3. `manila-share` process create share metadata và post response mesgae tới AMQP queue
+    `manila-api` xử lý message từ queue và responds tới clients with share ID information
+4. Sau khi create share, clients sử dụng ID information to request updated share details to mount share
 
 <a name="3"></a>
 
@@ -61,8 +100,8 @@ Kiến trúc của Manila service bao gồm các thành các thành phần sau:
 <a name="31"></a>
 
 ## 3.1 Share 
-- User định nghĩa size, access protocol và sharing type
-- Multiple instances có thể truy cập file system này
+
+Là một đơn vụ của storage với một giao  thức, một kích thước và một danh sách được phép truy cập. Tất cả các share tồn tại trên một backend. Một vài share tương tác với share networ và share server. Các giao thức chính được hỗ trợ là NFS và CIFS, ngoài ra còn có các giao thức khác được hỗ trợ như GLUSTERFS
 
 <a name="32"></a>
 
@@ -73,16 +112,16 @@ Kiến trúc của Manila service bao gồm các thành các thành phần sau:
 <a name="33"></a>
 
 ## 3.3 Snapshot 
-- Read-only copy of share contents
-- New share can be created from a snapshot
+
+Snapshot là một bản copy của share. Snapshot có thể được sử dụng để tạo một share mới. Share không thể bị xóa nếu có các snapshot tạo ra trên share đó (ta phải xóa hết snapshot của share đó rồi mới xóa được share)
 
 <a name="34"></a>
 
 ## 3.4 Share Networks
-- Defines the Neutron network & subnet through which instances access the share
-- A share can be associated with only one share network
 
-<a name="35"></a>
+Một share network là một đối tượng được định nghĩa bởi một project mà báo cho Manila về security và cấu hình mạng cho một nhóm của các share. Share network chỉ thích hợp cho backend quản lý share server. Một share network bao gồm các dịch vụ bảo mật, network và subnet.
+
+<a name=""35></a>
 
 ## 3.5 Security Services
 - Định nghĩa, thiết lập rules cho việc xác thực, truy cập vào file share(ví dụ: Có thể khai báo các rules thông qua các external service: LDAP, Active Directory, Kerberos)
@@ -93,5 +132,33 @@ Kiến trúc của Manila service bao gồm các thành các thành phần sau:
 ## 3.6 Storage Pool
 Từ bản Kilo trở đi, Shared File Systems có thể sử dụng `storage pool`. Storage pool là một hoặc một nhóm tài nguyên lưu trữ mà dịch vụ Shared File Systems chọn làm lưu trữ khi cấp phép chia sẻ.
 
+<a name="37"></a>
 
+## 3.7 Share types
+
+A share type cho phép ta lọc và chọn backends trước khi create a share và set data cho nó. A share type hoạt động tương tự như Block Storage volume type
+
+Để tạo một share type, sử dụng **manila type-create** command:
+
+```
+manila type-create [--snapshot_support <snapshot_support>]
+                   [--is_public <is_public>]
+                   <name> <spec_driver_handles_share_servers>
+```
+
+Trông câu lệnh, **name** để thiết lập tên cho share type, **is_public** defines the level of the visibility for share type, **snapshot_support** và **spec_driver_handles_share_servers** là các thông số bổ sung để filter backends. Các thông số bổ sung có thể được thiết lập như sau:
+
+- **driver_handles_share_servers**. Required. Xác định driver mode để quản lý vòng đời share server. Gía trị thiết lập có thể là **true/1** và **false/0**. Thiết lập True khi share driver có thể quản lý hoặc xử lý vòng đời share server. Thiết lập False khi admin quản lý chứ không phải là share driver như trên
+- **snapshot_support**. Default là **True**. Set True để tìm 1 backends support share snapshots, set False thì ngược lại với False.
+
+<a name="38"></a>
+
+## 3.8 Share servers
+
+A share server là một thực thể nhằm quản lý các chia sẻ trên một mạng cụ thể. 
+
+
+<a name="4"></a>
+
+# 4. Manila Network plugin
 
