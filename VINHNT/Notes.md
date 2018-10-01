@@ -52,3 +52,11 @@ Filesystem cũng là một kiến trúc lưu trữ dữ liệu máy tính nhưng
 <a name="raid"></a>
 
 **RAID (Redundant Array of Independent Disks)**: là một công nghệ ảo hóa lưu trữ dữ liệu kết hợp nhiều ổ đĩa vật lý thành một hoặc nhiều đơn vị lưu trữ logic cho mục đích *data redundancy (dữ liệu bổ sung phục vụ cho dữ liệu chính và cho phép sửa lỗi trong khi dữ liệu chính bị lỗi)* 
+
+<a name="nfs"></a>
+
+**Network File System (NFS)** là một distributed file system protocol (giao thức file system phân tán) cho phép user trên máy client có thể truy cập files trên một computer network (mạng máy tính) giống như việc truy cập một file local
+
+<a name="virtio"></a>
+
+**VirtIO - An I/O virtualization framework for linux** là một chuẩn ảo hóa cho các thiết bị mạng và đĩa cứng. Virtio làm cho máy ảo biết nó là máy ảo và vì thế sẽ hợp tác với trình ảo hóa để tăng tốc các thiết bị mạng và ổ cứng(bình thường nó chạy như một máy thật sử dụng các thiết bị ảo, các thiết bị này rất phức tạp, khiến cho tốc độ chậm)
