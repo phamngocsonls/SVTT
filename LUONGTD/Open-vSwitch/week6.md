@@ -2,7 +2,7 @@
 ## [0. Giới thiệu về Mininet](#tongquan)
 ### [0.1. Một số topo cơ bản](#basic)
 ### [0.2. Kiểm tra Flow Table](#flowtb)
-### [0.3. ]
+### [0.3. ](#3)
 ---
 Ở week5, ta đã tìm hiểu về sơ lược về cơ chế một gói tin đi qua pipeline của OVS bridge (khảo sát các flow table trong một OVS bridge để chuyển gói tin đến các port khác nhau). Trong week6, ta sẽ xây dựng một vài topo cụ thể (nhìn dưới góc độ có thêm các host và OpenFlow controller) để khảo sát quá trình gói tin được truyền qua OVS bridge. //(Need to be redefined)
 ## <a name="tongquan"></a> 0. Giới thiệu về Mininet
@@ -279,3 +279,5 @@ Ta thấy rằng, gói tin đầu tiên có RTT (Round Trip Time) lâu hơn do �
 ![](images/Labs/Mininet/2_5.png)
 
 Ta thấy, ARP rule đã được đưa thêm vào flow table. Output port là các port mà gói tin sẽ được forward ở đầu ra của pipeline trên switch. Số hiệu port tương ứng với các port dump ở command ```sh ovs-ofctl dump-ports-desc s1```.
+
+### 0.3.
