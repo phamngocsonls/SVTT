@@ -280,4 +280,4 @@ Ta thấy rằng, gói tin đầu tiên có RTT (Round Trip Time) lâu hơn do �
 
 Ta thấy, ARP rule đã được đưa thêm vào flow table. Output port là các port mà gói tin sẽ được forward ở đầu ra của pipeline trên switch. Số hiệu port tương ứng với các port dump ở command ```sh ovs-ofctl dump-ports-desc s1```.
 
-### 0.3.
+### <a name="3"></a> 0.3. Kiểm tra Flow Table
