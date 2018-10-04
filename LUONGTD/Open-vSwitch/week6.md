@@ -284,57 +284,36 @@ Ta thấy, ARP rule đã được đưa thêm vào flow table. Output port là c
 
 ![](images/Labs/Mininet/2_6.png)
 
-#### Sử dụng tcpdump ở chế độ background để bắt gói tin ping từ h1 sang h2
-- Khởi động tcpdump ở chế độ background trên trình shell chính của Linux, lắng nghe trên cổng loopback.
-Command: ```tcp-dump -s0 -i lo -w /tmp/h1pingh2.pcap &```
-
-![](images/Labs/Mininet/2_7.png)
+#### Sử dụng Wireshark để bắt gói tin ping từ h1 sang h2
+- Khởi động Wireshark trên trình shell chính của Linux, lắng nghe trên cổng loopback.
+Command: ```sudo wireshark```
 
 - ping từ **h1** sang **h2** trên shell của mininet: ```h1 ping -c5 h2```
 
 ![](images/Labs/Mininet/2_8.png)
 
-- Kill tiến trình tcpdump trên shell chính của Linux: 
-
-![](images/Labs/Mininet/2_9.png)
-
 #### Dump flow table của switch
 
 ![](images/Labs/Mininet/2_10.png)
 
-#### Mở file tcpdump đã ghi được
-Command: ```root@luongtd:~# tshark -tad -n -r /tmp/h1pingh2.pcap```
+#### Quan sát các gói tin wireshark đã bắt được
 
-```sh
-...
-   25 2018-10-04 20:11:39,309460    127.0.0.1 → 127.0.0.1    OpenFlow 146 Type: OFPT_FLOW_MOD
-   26 2018-10-04 20:11:39,313893     10.0.0.2 → 10.0.0.1     OpenFlow 188 Type: OFPT_PACKET_OUT
-   27 2018-10-04 20:11:39,314261    127.0.0.1 → 127.0.0.1    TCP 66 55766 → 6653 [ACK] Seq=265 Ack=357 Win=94 Len=0 TSval=956172530 TSecr=956172525
-   28 2018-10-04 20:11:40,297825     10.0.0.1 → 10.0.0.2     OpenFlow 182 Type: OFPT_PACKET_IN
-   29 2018-10-04 20:11:40,298621    127.0.0.1 → 127.0.0.1    OpenFlow 146 Type: OFPT_FLOW_MOD
-   30 2018-10-04 20:11:40,308634     10.0.0.1 → 10.0.0.2     OpenFlow 188 Type: OFPT_PACKET_OUT
-   31 2018-10-04 20:11:40,308950    127.0.0.1 → 127.0.0.1    TCP 66 55766 → 6653 [ACK] Seq=381 Ack=559 Win=94 Len=0 TSval=956173524 TSecr=956173514
-   32 2018-10-04 20:11:44,518353 00:00:00:00:00:02 → 00:00:00:00:00:01 OpenFlow 126 Type: OFPT_PACKET_IN
-   33 2018-10-04 20:11:44,518451 00:00:00:00:00:01 → 00:00:00:00:00:02 OpenFlow 126 Type: OFPT_PACKET_IN
-   34 2018-10-04 20:11:44,519042    127.0.0.1 → 127.0.0.1    OpenFlow 146 Type: OFPT_FLOW_MOD
-   35 2018-10-04 20:11:44,528210 00:00:00:00:00:02 → 00:00:00:00:00:01 OpenFlow 132 Type: OFPT_PACKET_OUT
-   36 2018-10-04 20:11:44,528556    127.0.0.1 → 127.0.0.1    TCP 66 55766 → 6653 [ACK] Seq=501 Ack=705 Win=94 Len=0 TSval=956177744 TSecr=956177734
-   37 2018-10-04 20:11:44,528815    127.0.0.1 → 127.0.0.1    OpenFlow 146 Type: OFPT_FLOW_MOD
-   38 2018-10-04 20:11:44,529695 00:00:00:00:00:01 → 00:00:00:00:00:02 OpenFlow 126 Type: OFPT_PACKET_IN
-   39 2018-10-04 20:11:44,538039 00:00:00:00:00:01 → 00:00:00:00:00:02 OpenFlow 132 Type: OFPT_PACKET_OUT
-   40 2018-10-04 20:11:44,538620    127.0.0.1 → 127.0.0.1    OpenFlow 146 Type: OFPT_FLOW_MOD
-   41 2018-10-04 20:11:44,539060    127.0.0.1 → 127.0.0.1    TCP 66 55766 → 6653 [ACK] Seq=561 Ack=931 Win=94 Len=0 TSval=956177754 TSecr=956177753
-   42 2018-10-04 20:11:44,539987 00:00:00:00:00:02 → 00:00:00:00:00:01 OpenFlow 126 Type: OFPT_PACKET_IN
-   43 2018-10-04 20:11:44,547971 00:00:00:00:00:01 → 00:00:00:00:00:02 OpenFlow 132 Type: OFPT_PACKET_OUT
-   44 2018-10-04 20:11:44,548562    127.0.0.1 → 127.0.0.1    OpenFlow 146 Type: OFPT_FLOW_MOD
-...
-```
-Ta thấy các frame 25, 29, 34, 37, 40, 44 là các bản tin tương ứng hành động add-flow của controller để tạo ra 6 flow entry như kết quả dump-flow table ở trên.
+![](images/Labs/Mininet/ws1.png)
 
-- Mở frame 25 - là frame đã add entry đầu tiên vào switch.
-Command: ```tshark -tad -n /tmp/h1pingh2.pcap/ -Y 'frame.number == 25'```
+Ta thấy các frame 316, 320, 331, 334, 337, 341 là các bản tin tương ứng hành động add-flow của controller để tạo ra 6 flow entry như kết quả dump-flow table ở trên.
 
-![](images/Labs/Mininet/2_11.png)
+- Mở frame 316 - là frame đã add entry đầu tiên vào switch.
 
+![](images/Labs/Mininet/ws2.png)
+
+#### Đợi sau hơn 60s ping lại từ h1 sang h2
+
+- Thời gian reply đầu tiên (một lần nữa) mất nhiều thời gian hơn bởi vì gói tin đã đi theo đường (h1–> s1–> c1–> s1–> h2) giống như ở bước 1.
+- Giá trị ```Idle time-out``` (60s), cho biết thời gian bao lâu kể từ khi bắt được gói tin thì flow sẽ bị inactive. Vì vậy, khi ta ping lại giữa hai host sau 60s thì flow phải được thiết lập lại.
+- Thử ping lại ngay sau thao tác ping trên:
+
+![](images/Labs/Mininet/2_12.png)
+
+Thời gian reply đầu tiên không quá lâu như lần ping trước đó vì flow trên vẫn còn "hiệu lực".
 
 ### <a name="3"></a> 0.3. 
