@@ -41,13 +41,13 @@ Tìm hiểu về chế độ system emulation của QEMU.
 
 QEMU là một phần mềm, khi hoạt động nó chạy như một tiến trình trên máy chủ. Mỗi máy ảo khi được ảo hóa bằng QEMU sẽ tương ứng với một tiến trình QEMU chạy độc lập.
 
-![.](./src-image/w6_1.png)
+![.](../src-image/w6_1.png)
 
 Khi một tiến trình QEMU khởi chạy, nó sẽ tạo trường cho máy ảo, khởi động hệ điều hành máy ảo. Đồng thời khi máy ảo tắt (do shutdown, poweroff), tiến trình QEMU sẽ bị hủy theo. Tuy nhiên trong trường hợp máy ảo reboot, tiến trình QEMU sẽ tiếp tục hoạt động.
 
 QEMU là một tiến trình, nó sẽ được cấp phát không gian địa chỉ nhớ (RAM) riêng. Máy ảo chạy trên tiến trình QEMU sẽ xem RAM của QEMU như physical RAM.
 
-![.](./src-image/w6_2.png)
+![.](../src-image/w6_2.png)
 
 Từ góc nhìn hệ thống , qemu là một tiến trình được chạy và lên lịch thông thường. Các máy ảo chạy trên một máy chủ thông qua các tiến trình QEMU không biết nhau và hệ điều hành máy chủ cũng không thể can thiệp sâu vào dữ liệu và các tiến trình bên trong máy ảo. Tiến trình QEMU đảm nhiệm hai nhiệm vụ chính là thực thi guest code và ảo hóa các thiết bị. Để thực hiện được các công việc này, qemu sẽ được xây dựng dựa trên một kiến trúc định hướng sự kiện kèm theo các luồng chạy song song.
 
@@ -112,7 +112,7 @@ Vòng main_loop_wait() sẽ thực hiện lặp 3 công việc:
 * Poll: Gọi system call poll
 * Dispatch: Thực thi lệnh tương ứng cho file descriptor ready hoặc timer-expired, BH
 
-![.](./src-image/w6_3.png)
+![.](../src-image/w6_3.png)
  
 
 
