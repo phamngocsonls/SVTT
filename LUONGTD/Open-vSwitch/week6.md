@@ -2,9 +2,7 @@
 ## [0. Giới thiệu về Mininet](#tongquan)
 ### [0.1. Một số topo cơ bản](#basic)
 ### [0.2. Kiểm tra Flow Table](#flowtb)
-### [0.3. ](#3)
 ---
-Ở week5, ta đã tìm hiểu về sơ lược về cơ chế một gói tin đi qua pipeline của OVS bridge (khảo sát các flow table trong một OVS bridge để chuyển gói tin đến các port khác nhau). Trong week6, ta sẽ xây dựng một vài topo cụ thể (nhìn dưới góc độ có thêm các host và OpenFlow controller) để khảo sát quá trình gói tin được truyền qua OVS bridge. //(Need to be redefined)
 ## <a name="tongquan"></a> 0. Giới thiệu về Mininet
 Mininet là phần mềm giả lập mạng cho phép tạo switch, host và kết nối giữa chúng để phục vụ mục đích kiểm thử.
 
@@ -308,7 +306,7 @@ Ta thấy các frame 316, 320, 331, 334, 337, 341 là các bản tin tương ứ
 
 #### Đợi sau hơn 60s ping lại từ h1 sang h2
 
-- Thời gian reply đầu tiên (một lần nữa) mất nhiều thời gian hơn bởi vì gói tin đã đi theo đường (h1–> s1–> c1–> s1–> h2) giống như ở bước 1.
+- Thời gian reply đầu tiên (một lần nữa) mất nhiều thời gian hơn bởi vì gói tin đã đi theo đường (h1–> s1–> c1–> s1–> h2) giống như đã trình bày ở trên.
 - Giá trị ```Idle time-out``` (60s), cho biết thời gian bao lâu kể từ khi bắt được gói tin thì flow sẽ bị inactive. Vì vậy, khi ta ping lại giữa hai host sau 60s thì flow phải được thiết lập lại.
 - Thử ping lại ngay sau thao tác ping trên:
 
@@ -316,4 +314,4 @@ Ta thấy các frame 316, 320, 331, 334, 337, 341 là các bản tin tương ứ
 
 Thời gian reply đầu tiên không quá lâu như lần ping trước đó vì flow trên vẫn còn "hiệu lực".
 
-### <a name="3"></a> 0.3. 
+
