@@ -39,3 +39,4 @@
 2018-09-30T19:49:46.764Z|00039|bridge|INFO|bridge br-ex: added interface trk on port 3
 2018-09-30T19:49:53.274Z|00040|bridge|INFO|bridge br-ex1: deleted interface trk1 on port 3
 2018-09-30T19:49:53.274Z|00041|bridge|INFO|bridge br-ex1: added interface trk1 on port 3
+2018-09-30T20:55:21.826Z|00042|fatal_signal|WARN|terminating with signal 15 (Terminated)

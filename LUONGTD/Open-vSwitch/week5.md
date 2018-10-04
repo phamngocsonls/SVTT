@@ -397,7 +397,7 @@ ovs-vsctl set interface trk1 type=patch options:peer=trk
 
 #### Tạo network cho các máy ảo (kết hợp sử dụng OVS với libvirt)
 - Để khai báo network mới với libvirt, ta tạo một file định dạng *.xml* và sử dụng công cụ **vrish** để áp dụng cấu hình trong file đó. Ở đây, ta khai báo hai file *xml* cấu hình hai network tương ứng	 với hai switch ảo trên:
-	- Cấu hình network cho br-ex: ```nano ovs-vlan1.xml```:
+	- Cấu hình network cho br-ex: ```nano ovs-vlan1.xml```
 ```xml
 <network>
 
@@ -431,7 +431,7 @@ ovs-vsctl set interface trk1 type=patch options:peer=trk
 </network>
 ```
 
-	- Cấu hình network cho br-ex1: ```nano ovs-vlan2.xml```:
+	- Cấu hình network cho br-ex1: ```nano ovs-vlan2.xml```
 ```xml
 <network>
 
