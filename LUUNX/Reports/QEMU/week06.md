@@ -32,7 +32,7 @@ QEMU có thể mô phỏng các card mạng và chia sẻ kết nối mạng c�
 QEMU không phụ thuộc vào các phương thức hiển thị đồ họa đầu vào đầu ra trên hệ thống máy chủ. Thay vào đó, nó có thể cho phép một người truy cập vào màn hình của hệ điều hành máy ảo thông qua một máy chủ VNC tích hợp.
 
 ## Cài đặt QEMU trên Ubuntu 16.04
-
+//TODO
 ## Kiến trúc QEMU
 
 Tìm hiểu về chế độ system emulation của QEMU.
@@ -110,7 +110,7 @@ Vòng main_loop_wait() sẽ thực hiện lặp 3 công việc:
 
 * Prepare: nạp các file descriptor cho system call poll
 * Poll: Gọi system call poll
-* Dispatch: Thực thi lệnh tương ứng cho file descriptor ready hoặc timer-expired, BH
+* Dispatch: Thực thi lệnh tương ứng cho file descriptor ready (phản hồi từ poll) hoặc timer-expired, BH 
 
 ![.](../src-image/w6_3.PNG)
  
