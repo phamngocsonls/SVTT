@@ -32,7 +32,24 @@ QEMU có thể mô phỏng các card mạng và chia sẻ kết nối mạng c�
 QEMU không phụ thuộc vào các phương thức hiển thị đồ họa đầu vào đầu ra trên hệ thống máy chủ. Thay vào đó, nó có thể cho phép một người truy cập vào màn hình của hệ điều hành máy ảo thông qua một máy chủ VNC tích hợp.
 
 ## Cài đặt QEMU trên Ubuntu 16.04
-//TODO
+
+Cài đặt QEMU từ source code
+
+Mở terminal, gõ lệnh
+
+```shell
+sudo apt install zlib1-dev flex bison
+wget https://download.qemu.org/qemu-3.0.0.tar.xz
+tar xvJf qemu-3.0.0.tar.xz
+cd qemu-3.0.0
+mkdir build
+cd build
+../configure --enable-debug
+sudo make && make install
+```
+
+
+
 ## Kiến trúc QEMU
 
 Tìm hiểu về chế độ system emulation của QEMU.
