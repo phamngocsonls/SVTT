@@ -6,3 +6,4 @@
 2018-09-30T19:47:59.683Z|00006|reconnect|WARN|unix#2: connection dropped (Connection reset by peer)
 2018-09-30T19:48:28.082Z|00007|jsonrpc|WARN|unix#3: receive error: Connection reset by peer
 2018-09-30T19:48:28.082Z|00008|reconnect|WARN|unix#3: connection dropped (Connection reset by peer)
+2018-09-30T20:55:21.821Z|00009|fatal_signal|WARN|terminating with signal 15 (Terminated)
