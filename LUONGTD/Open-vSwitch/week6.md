@@ -3,8 +3,8 @@
 ## [1. OpenvSwitch với Mininet](#tongquan)
 ### [1.1. Một số topo cơ bản](#basic)
 ### [1.2. Kiểm tra Flow Table](#flowtb)
-## [2. Bonding trong OpenvSwitch](bonding)
-### [2.0. Khái niệm bonding](#bonddef)
+## [2. Bonding với OpenvSwitch](#bonding)
+### [2.0. Khái niệm bonding](#bond-def)
 ### [2.1. Kịch bản lab](#bond-topo)
 ### [2.2. Cấu hình](#bond-configure)
 ---
@@ -320,7 +320,7 @@ Ta thấy các frame 316, 320, 331, 334, 337, 341 là các bản tin tương ứ
 Thời gian reply đầu tiên không quá lâu như lần ping trước đó vì flow trên vẫn còn "hiệu lực".
 
 ## <a name="bonding"></a> 2. Bonding trong OpenvSwitch
-### <name="bonddef"></a> 2.0. Sơ lược về bonding
+### <a name="bond-def"></a> 2.0. Sơ lược về bonding
 Bonding hay còn gọi là **port forwarding** hoặc **link aggregation** là việc kết hợp nhiều NIC thành một NIC logic duy nhất nhằm cân bằng tải, tăng thông lượng, tăng khả năng chịu lỗi (fault tolerance) của hệ thống.
 - Bonding cho phép hai hay nhiều interface (còn gọi là "slave" khi thực hiện cấu hình bonding) chia sẻ lưu lượng mạng. Ở góc nhìn mức cao, các interface được liên kết với nhau thành một port logic duy nhất nhưng chúng có băng thông tổng cộng của nhiều thiết bị.
 	- Ví dụ: 2 card mạng vật lý 1Gbps khi được bond với nhau được xem như một card với tốc độ 2Gbps.
@@ -347,14 +347,14 @@ Cấu hình balnace-tcp kết hợp LACP được khuyên dùng vì nhiều lu�
 
 ![](images/Labs/bonding/balance-tcp.png)
 
-### <name="bond-topo"></a> 2.1. Kịch bản lab
+### <a name="bond-topo"></a> 2.1. Kịch bản lab
 - Kiểm tra tính năng link Aggregation và LACP với OVS theo mô hình sau:
 	- Dùng OVS tạo hai switch ảo **br0**, **br1** và tạo 2 port trên mỗi switch.
 	- Tiến hành nối các port giữa các switch thành 2 đường dự phòng hỗ trợ nhau như hình minh họa. Tiến hành bond 2 port trên mỗi switch. Để kiểm tra tính dự phòng, tạo 2 máy ảo, mỗi máy ảo cắm vào một switch ảo như trên. Tiến hành ping giữa hai máy, kiểm tra kết nối khi ta ngắt một trong hai đường kết nối.
 
 ![](images/Labs/bonding/topo1.jpeg)
 
-### <name="bond-configure"></a> 2.2. Cấu hình LACP với OpenvSwitch
+### <a name="bond-configure"></a> 2.2. Cấu hình LACP với OpenvSwitch
 #### Trước hết, ta thực hiện cấu hình 2 switch ảo **br0** và **br1** với các port internal nối giữa 2 switch 	như topo.
 - Tạo 2 bridge **br0** và **br1**
 ```sh
