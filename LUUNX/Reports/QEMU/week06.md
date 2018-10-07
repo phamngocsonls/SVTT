@@ -57,17 +57,17 @@ Tìm hiểu về chế độ system emulation của QEMU.
 
 ### High Level Overview
 
-QEMU là một phần mềm, khi hoạt động nó chạy như một tiến trình trên máy chủ. Mỗi máy ảo khi được ảo hóa bằng QEMU sẽ tương ứng với một tiến trình QEMU chạy độc lập.
+QEMU là một phần mềm, khi hoạt động, nó chạy như một tiến trình trên máy chủ. Mỗi máy ảo khi được ảo hóa bằng QEMU sẽ tương ứng với một tiến trình QEMU chạy độc lập.
 
 ![.](../src-image/w6_1.PNG)
 
-Khi một tiến trình QEMU khởi chạy, nó sẽ tạo trường cho máy ảo, khởi động hệ điều hành máy ảo. Đồng thời khi máy ảo tắt (do shutdown, poweroff), tiến trình QEMU sẽ bị hủy theo. Tuy nhiên trong trường hợp máy ảo reboot, tiến trình QEMU sẽ tiếp tục hoạt động.
+Khi một tiến trình QEMU khởi chạy, nó sẽ tạo môi trường hoạt động cho máy ảo, khởi động hệ điều hành máy ảo. Đồng thời khi máy ảo tắt (do shutdown, poweroff), tiến trình QEMU sẽ bị hủy theo. Tuy nhiên trong trường hợp máy ảo reboot, tiến trình QEMU sẽ tiếp tục hoạt động.
 
 QEMU là một tiến trình, nó sẽ được cấp phát không gian địa chỉ nhớ (RAM) riêng. Máy ảo chạy trên tiến trình QEMU sẽ xem RAM của QEMU như physical RAM.
 
 ![.](../src-image/w6_2.PNG)
 
-Từ góc nhìn hệ thống , qemu là một tiến trình được chạy và lên lịch thông thường. Các máy ảo chạy trên một máy chủ thông qua các tiến trình QEMU không biết nhau và hệ điều hành máy chủ cũng không thể can thiệp sâu vào dữ liệu và các tiến trình bên trong máy ảo. Tiến trình QEMU đảm nhiệm hai nhiệm vụ chính là thực thi guest code và ảo hóa các thiết bị. Để thực hiện được các công việc này, qemu sẽ được xây dựng dựa trên một kiến trúc định hướng sự kiện kèm theo các luồng chạy song song.
+Từ góc nhìn hệ thống , QEMU là một tiến trình được chạy và lên lịch thông thường. Các máy ảo chạy trên một máy chủ thông qua các tiến trình QEMU không biết đến nhau và hệ điều hành máy chủ cũng không thể can thiệp sâu vào dữ liệu và các tiến trình bên trong máy ảo. Tiến trình QEMU đảm nhiệm hai nhiệm vụ chính là thực thi guest code và ảo hóa các thiết bị. Để thực hiện được các công việc này, qemu sẽ được xây dựng dựa trên một kiến trúc định hướng sự kiện kèm theo các luồng chạy song song.
 
 
 
@@ -82,10 +82,11 @@ Các file quan trọng trong quá trình chạy QEMU bao gồm /vl.c, /cpus.c, /
 
 QEMU thực hiện phỏng tạo các phần cứng ảo cho máy ảo. Các file source code đảm nhận nhiệm vụ này nằm trong thư mục /hw của source code.
 
-Kế đến, thực hiện việc dịch động (Dynamic Translation) từ guest code sang host code, QEMU sử dụng Tiny Code Generator. Để thực hiện công việc, TCG cần nắm rõ kiến trúc tập lệnh của máy chủ (host) và máy ảo (target). Các source code phục vụ công việc này nằm trong các thư mục /target và /tcg. Trong đó /target/xxx là thư mục lưu source code phục vụ kiểu kiến trúc máy đích xxx . Ví dụ /target/i386 . Còn thư mục /tcg lưu trữ các file source của TCG và source code kiến trúc tập lệnh máy chủ. 
+Kế đến, thực hiện việc dịch động (Dynamic Translation) từ guest code sang host code, QEMU sử dụng công cụ mặc định là Tiny Code Generator. Để thực hiện công việc, TCG cần nắm rõ kiến trúc tập lệnh của máy chủ (host) và máy ảo (target). Các source code phục vụ công việc này nằm trong các thư mục /target và /tcg. Trong đó /target/xxx là thư mục lưu source code phục vụ kiểu kiến trúc máy ảo xxx . Ví dụ /target/i386 . Còn thư mục /tcg lưu trữ các file source của TCG và source code kiến trúc tập lệnh máy chủ. 
 
 
 ### Internal
+
 Việc chạy một máy ảo bao gồm thực thi guest code, điều khiển bộ định thời, chạy các I/O, và phản hồi lại các lệnh giám sát hệ thống. Thực hiện tất cả điều này yêu cầu một kiến trúc phù hợp. Có hai kiến trúc phù hợp cho câc chương trình cần phản hồi sự kiện đến từ nhiều tài nguyên:
 
 * Parallel Architecture: Chia công việc thành các tiến trình (processes) hoặc các luồng (threads) và thực thi song song.
@@ -118,9 +119,9 @@ Khi một file descriptor trở nên sẵn sàng, một bộ định thời hế
 
 Các sự kiện đến bao gồm 3 nhóm:
 
-* các IOthread hệ thống xử lý bằng hàm os_host_main_loop_wait()
-* sự kiện đến từ slirp (liên quan đến -netdev) xử lý bằng slirp_pollfds_fill() và slirp_pollfds_fill()
-* nhóm non-fd services
+* các IOthread hệ thống được xử lý bằng hàm os_host_main_loop_wait()
+* sự kiện đến từ slirp (liên quan đến -netdev truy cập qua mạng) xử lý bằng slirp_pollfds_fill() và slirp_pollfds_fill()
+* nhóm non-fd services tác động đến 2 nhóm trên.
   * timers
   * bottom halves
   
@@ -131,8 +132,7 @@ Vòng main_loop_wait() sẽ thực hiện lặp 3 công việc:
 * Dispatch: Thực thi lệnh tương ứng cho file descriptor ready (phản hồi từ poll) hoặc timer-expired, BH 
 
 
-Trong vòng lặp main_loop_wait() để thực hiện nhận phản hồi sự kiện, QEMU sử dụng thư viện GLib cung cấp các công cụ và kiểu dữ liệu cần thiết GMainContext, GArray, Gsource để thực hiện poll() các sự kiện đến và phản hồi chính xác yêu cầu.
-
+Trong vòng lặp điều hướng sự kiện, để thực hiện nhận và phản hồi sự kiện, QEMU sử dụng thư viện GLib cung cấp các công cụ và kiểu dữ liệu cần thiết GMainContext, GArray, Gsource và các phương phức khác của GLib để thực hiện poll các sự kiện đến và phản hồi chính xác yêu cầu.
 
 ![.](../src-image/w6_3.PNG)
 
@@ -150,6 +150,8 @@ Các hàm được gọi
 
 call main
 
+  call qemu_init_main_loop
+  
   call mainloop time 1
          call main_loop_should_exit
          exit main_loop_should_exit return true 
@@ -197,7 +199,7 @@ main() /* file vl.c */
 
 /* Khởi tạo các biến */
 /* Đọc yêu cầu từ lệnh chạy máy ảo. Ví Dụ: qemu-system-x86_64 -cdrom DOS.iso -hda image.qcow2 */
-/* Khởi tạo các thiết bị phần cứng ảo hóa gồm RAM, CPU, VGA, Accelerator, Timers, Bluetooth, 
+/* Khởi tạo các thiết bị phần cứng ảo hóa gồm RAM, CPU, VGA, Timers, Bluetooth, 
 *  USB, sound hardware,... và các worker thread, khởi tạo accelerator (mặc định là tcg, hoặc kvm, hax, xen,...) */
 
 /* Khởi tạo các biến cho main_loop */
@@ -275,10 +277,10 @@ main_loop_should_exit() /* file vl.c */
 
 
 
-main_loop_wait() /* file util/m.c */
+main_loop_wait() /* file util/main-loop.c */
 {
 
-/* Khởi tạo lại GArray cho main_loop_wait*/
+/* Khởi tạo GArray cho main_loop_wait*/
 
 /* Khởi tạo poll cho slirp */
 slirp_pollfds_fill();
