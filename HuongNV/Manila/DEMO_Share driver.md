@@ -246,7 +246,7 @@ Yêu cầu khi sử dụng Generic driver là phải cấu hình nova, neutron v
 
 Trước khi create share với Generic driver, DHSS(driver_handles_share_servers) phải được enabled, phải define ít nhất 1 image, 1 network và 1 share-network để sử dụng cho việc create a share-server
 
-- 1. Thực hiện khởi tạo một share-type với DHSS=True
+- Thực hiện khởi tạo một share-type với DHSS=True
 
 ![Imgur](https://i.imgur.com/rvb9KKZ.png)
 
@@ -254,15 +254,15 @@ Trước khi create share với Generic driver, DHSS(driver_handles_share_server
 default_share_type là tên share-type 
 ```
 
-- 2. Thực hiện khởi tạo một share server image, image này chứa share service với NFS packages
+- Thực hiện khởi tạo một share server image, image này chứa share service với NFS packages
 
 ![Imgur](https://i.imgur.com/G8YNGJK.png)
 
-- 3. Thực hiện liệt kê các network
+- Thực hiện liệt kê các network
 
 ![Imgur](https://i.imgur.com/mOi4cDI.png)
 
-- 4. Thực hiện khởi tạo share-network
+- Thực hiện khởi tạo share-network
 
 ![Imgur](https://i.imgur.com/HquRPa6.png)
 
@@ -271,7 +271,7 @@ default_share_type là tên share-type
 - Khi khởi tạo share-network thành công, sẽ có một mạng và subnet mới được tạo ra, chúng ta có thể kiểm tra bằng cách sử dụng neutron net-list
 ```
 
-- 5. Chính sửa file cấu hình `/etc/manila/manila.conf` như sau:
+- Chính sửa file cấu hình `/etc/manila/manila.conf` như sau:
 
 ```
 enabled_share_backends= generic1 #generic1 là tên phần backend  
@@ -302,19 +302,19 @@ Thực hiện restart lại dịch vụ manila-share và kiểm tra lại list c
 # manila service-list
 ```
 
-- 6. Thực hiện Khởi tạo share server sử dụng giao thức NFS, có tên là demo-share1 và có kích thước là 1GB
+- Thực hiện Khởi tạo share server sử dụng giao thức NFS, có tên là demo-share1 và có kích thước là 1GB
 
 ![Imgur](https://i.imgur.com/N3II2ta.png)
 
-- 7. Thực hiện access-allow tới instance
+- Thực hiện access-allow tới instance
 
 ![Imgur](https://i.imgur.com/67tEvqX.png)
 
-- 8. Xác định đường dẫn để có thể mount share, sử dụng `manila show demo-share1`
+- Xác định đường dẫn để có thể mount share, sử dụng `manila show demo-share1`
 
 ![Imgur](https://i.imgur.com/geeM02F.png)
 
-- 9. Truy cập tới instance và thực hiện mount share
+- Truy cập tới instance và thực hiện mount share
 
 ```
 mount -vt nfs 10.254.0.6:/shares/share-0bfd69a1-27f0-4ef5-af17-7cd50bce6550
