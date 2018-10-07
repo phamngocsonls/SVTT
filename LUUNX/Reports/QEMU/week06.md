@@ -314,7 +314,7 @@ GMainContext *context = g_main_context_default();
 /* Lấy quyền truy cập global GMainContext */
 g_main_context_acquire(context);
 
-/* Cài đặt file decriptors cho GLib */
+/*Prepare fds */
 glib_pollfds_fill(&timeout);
 
 qemu_mutex_unlock_iothread();
