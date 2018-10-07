@@ -213,6 +213,3 @@ Xem thông tin chi tiết về share network vừa khởi tạo, run
 
 ![Imgur](https://i.imgur.com/Bckei5B.png)
 
-<a name="5"></a>
-
-# 5. Security services
