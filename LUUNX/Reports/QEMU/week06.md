@@ -200,7 +200,8 @@ main() /* file vl.c */
 /* Khởi tạo các biến */
 /* Đọc yêu cầu từ lệnh chạy máy ảo. Ví Dụ: qemu-system-x86_64 -cdrom DOS.iso -hda image.qcow2 */
 /* Khởi tạo các thiết bị phần cứng ảo hóa gồm RAM, CPU, VGA, Timers, Bluetooth, 
-*  USB, sound hardware,... và các worker thread, khởi tạo accelerator (mặc định là tcg, hoặc kvm, hax, xen,...) */
+*  USB, sound hardware,... và các worker thread, khởi tạo accelerator 
+*  (mặc định là tcg, hoặc kvm, hax, xen,...) */
 
 /* Khởi tạo các biến cho main_loop */
 qemu_int_main_loop();
@@ -230,7 +231,7 @@ qemu_int_main_loop() /* file util/main-loop.c */
 /* Khởi tạo Bottom Half */
     qemu_notify_bh = qemu_bh_new(notify_event_cb, NULL);
     
-/* Khởi tạo GSource  - Tìm hiểu thêm */
+/* Khởi tạo GSource  - Tìm hiểu s */
     gpollfds = g_array_new(FALSE, FALSE, sizeof(GPollFD));
     src = aio_get_g_source(qemu_aio_context);
     g_source_set_name(src, "aio-context");
@@ -313,17 +314,19 @@ GMainContext *context = g_main_context_default();
 /* Lấy quyền truy cập global GMainContext */
 g_main_context_acquire(context);
 
-
+/* Cài đặt file decriptors cho GLib */
 glib_pollfds_fill(&timeout);
 
 qemu_mutex_unlock_iothread();
 replay_mutex_unlock();
 
+/* ppoll hoặc g_poll các fds */
 ret = qemu_poll_ns((GPollFD *)gpollfds->data, gpollfds->len, timeout);
 
 replay_mutex_lock();
 qemu_mutex_lock_iothread();
 
+/* Dispatch fds */
 glib_pollfds_poll();
 
 /* Trả quyền truy cập global GMainContext*/
