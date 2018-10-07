@@ -17,7 +17,6 @@
     - [3.7 Share types](#37)
     - [3.8 Share servers](#38)
 - [4. Networking](#4)
-- [5. Security services](#5)
 
 
 <a name="1"></a>
@@ -122,7 +121,7 @@ Snapshot là một bản copy của share. Snapshot có thể được sử dụ
 
 Một share network là một đối tượng được định nghĩa bởi một project mà báo cho Manila về security và cấu hình mạng cho một nhóm của các share. Share network chỉ thích hợp cho backend quản lý share server. Một share network bao gồm các dịch vụ bảo mật, network và subnet.
 
-<a name=""35></a>
+<a name="35"></a>
 
 ## 3.5 Security Services
 - Định nghĩa, thiết lập rules cho việc xác thực, truy cập vào file share(ví dụ: Có thể khai báo các rules thông qua các external service: LDAP, Active Directory, Kerberos)
