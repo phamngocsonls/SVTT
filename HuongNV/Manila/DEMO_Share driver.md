@@ -5,7 +5,7 @@
 - [1. LVM share driver](#1)
     - [1.1 Vai trò của LVM](#11)
     - [1.2 Các thành phần trong LVM](#12)
-    - [1.3 Cấu hình manila-share với LVM](13)
+    - [1.3 Cấu hình manila-share với LVM](#13)
 
 
 <a name="1"></a>
@@ -156,7 +156,9 @@ manila service-list
 
 ```
 manila type-create lvm False
+```
 
+```
 # lvm: Tên share-type mà chúng ta muốn tạo
 # False: Disable driver_handles_share_server
 ```
@@ -165,7 +167,9 @@ manila type-create lvm False
 
 ```
 manila type-key lvm set share_backend_name=LVM
+```
 
+```
 # lvm: Là share-type vừa tạo ở trên
 # LVM: Backend vừa tạo ở trên
 ```
@@ -179,7 +183,7 @@ manila extra-specs-list
 7. Tạo một share dùng giao thưc NFS kích thước 4GB, sử dụng backend `lvm` và đặt tên là `share-lvm-1`
 
 ```
-manila create nfs 4 --name share-lvm-1 --share-type lvm
+manila create nfs 4 --name share1 --share-type lvm
 ```
 
 ```
@@ -192,11 +196,13 @@ manila create nfs 4 --name share-lvm-1 --share-type lvm
 8. Thực hiện kiểm tra đường dẫn của share vừa tạo để có thể mount tới VM, đường dẫn tại mục `path`
 
 ```
-manila show share-lvm-1
+manila show share1
 
 # share-lvm-1 là tên của share vừa create ở trên
 
 ```
+![Imgur](https://i.imgur.com/2n9bqBt.png)
+
 
 Kiểm tra các share vừa tạo
 
@@ -206,6 +212,27 @@ manila list
 
 # Allow access to the share
 
+Để VM có thể mount được, ta cần cầu hính `access-allow` dựa theo địa chỉ IP của instance
 
+```
+manila access-allow share1 ip INSTANCE_IP
+```
+
+![Imgur](https://i.imgur.com/9sMJlqv.png)
+
+
+# Mount the share on a compute instance
+
+Login vào instance và create 1 folder
+
+```
+mkdir ~/test_folder
+```
+
+Mount NFS share,, sử dụng đường dẫn path như ở trên đề cập
+
+```
+mount -vt nfs 10.0.0.41:/var/lib/manila/mnt/share-8e13a98f-c310-41df-ac90-fc8bce4910b8 ~/test_folder
+```
 
 
