@@ -12,7 +12,7 @@ Trong chế độ này, QEMU cho phép chạy các chương trình được biê
 
 * System emulation
 
-Trong chế độ này, QEMU phỏng tạo (Emulator) một hệ thống máy tính hoàn chỉnh, bao gồm các thiết bị ngoại vi. Nó có thể được dụng để tạo ra nhiều máy tính ảo trên một máy tính thật. QEMU có thể chạy nhiều hệ điều hành khách, bao gồm Linux, Solaris, Microsoft Windows, DOS và BSD. Nó hỗ trợ tập lệnh nhiều kiểu kiến trúc, bao gồm x86, MIPS, ARMv7, ARMv8, PowerPC, SPARC, ETRAX CRIS và MicroBlaze.
+Trong chế độ này, QEMU phỏng tạo (Emulate) một hệ thống máy tính hoàn chỉnh, bao gồm các thiết bị ngoại vi. Nó có thể được dụng để tạo ra nhiều máy tính ảo trên một máy tính thật. QEMU có thể chạy nhiều hệ điều hành khách, bao gồm Linux, Solaris, Microsoft Windows, DOS và BSD. Nó hỗ trợ tập lệnh nhiều kiểu kiến trúc, bao gồm x86, MIPS, ARMv7, ARMv8, PowerPC, SPARC, ETRAX CRIS và MicroBlaze.
 
 * KVM Hosting
 
@@ -114,7 +114,7 @@ Nhiệm vụ của main_loop_wait() bao gồm:
 * Chạy các bộ định thời
 * Chạy các Bottom-Half (BH)
 
-Khi một file descriptor trở nên sẵn sàng, một bộ định thời hết hạn hoặc một BH được lên lịch chạy, vòng lặp sẽ khởi tạo một lời gọi để phản hồi lại sự kiện trên. Để thực hiện điều này, qemu sử dụng các loại system call như select(2), pool(2) hoặc epool(2).
+Khi một file descriptor trở nên sẵn sàng, một bộ định thời hết hạn hoặc một BH được lên lịch chạy, vòng lặp sẽ khởi tạo một lời gọi để phản hồi lại sự kiện trên. Để thực hiện điều này, qemu sử dụng các loại system call như select(2), pool(2) hoặc ppool(2).
 
 
 Các sự kiện đến bao gồm 3 nhóm:
@@ -141,7 +141,7 @@ Cụ thể, thông qua quá trình debug source code, các hàm được gọi l
 Lệnh khởi chạy máy ảo với file DOS.iso chứa hệ điều hành DOS
 
 ```
-time qemu-system-x86_64 -cdrom DOS.iso
+qemu-system-x86_64 -cdrom DOS.iso
 ```
 
 Các hàm được gọi
@@ -190,9 +190,9 @@ exit main
 
 Mô hình vòng lặp main loop
 
-![.]()
 
-```c
+
+```C
 
 main() /* file vl.c */
 {
