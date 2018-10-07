@@ -210,6 +210,8 @@ Kiểm tra các share vừa tạo
 manila list
 ```
 
+![Imgur](https://i.imgur.com/ifT02N7.png)
+
 # Allow access to the share
 
 Để VM có thể mount được, ta cần cầu hính `access-allow` dựa theo địa chỉ IP của instance
