@@ -6,6 +6,7 @@
     - [1.1 Vai trò của LVM](#11)
     - [1.2 Các thành phần trong LVM](#12)
     - [1.3 Cấu hình manila-share với LVM](#13)
+- [2. Generic driver](#2)
 
 
 <a name="1"></a>
@@ -237,6 +238,87 @@ Mount NFS share,, sử dụng đường dẫn path như ở trên đề cập
 mount -vt nfs 10.0.0.41:/var/lib/manila/mnt/share-8e13a98f-c310-41df-ac90-fc8bce4910b8 ~/test_folder
 ```
 
+<a name="2"></a>
+
+# 2. Generic driver
+
+Yêu cầu khi sử dụng Generic driver là phải cấu hình nova, neutron và cinder trong file cấu hình `/etc/manila/manila.conf` trên node manila-share, trên node manila-share phải cài đặt L2 Agent
+
+Trước khi create share với Generic driver, DHSS(driver_handles_share_servers) phải được enabled, phải define ít nhất 1 image, 1 network và 1 share-network để sử dụng cho việc create a share-server
+
+- 1. Thực hiện khởi tạo một share-type với DHSS=True
+
+![Imgur](https://i.imgur.com/rvb9KKZ.png)
+
+```
+default_share_type là tên share-type 
+```
+
+- 2. Thực hiện khởi tạo một share server image, image này chứa share service với NFS packages
+
+![Imgur](https://i.imgur.com/G8YNGJK.png)
+
+- 3. Thực hiện liệt kê các network
+
+![Imgur](https://i.imgur.com/mOi4cDI.png)
+
+- 4. Thực hiện khởi tạo share-network
+
+![Imgur](https://i.imgur.com/HquRPa6.png)
+
+```
+- Net-id và subnet-id có thể dễ dàng lấy được qua mục liệt kê network ở trên bằng câu lệnh neutron net-list
+- Khi khởi tạo share-network thành công, sẽ có một mạng và subnet mới được tạo ra, chúng ta có thể kiểm tra bằng cách sử dụng neutron net-list
+```
+
+- 5. Chính sửa file cấu hình `/etc/manila/manila.conf` như sau:
+
+```
+enabled_share_backends= generic1 #generic1 là tên phần backend  
+enabled_share_protocols=NFS,CIFS #giao thức cho phép
+default_share_type = generic     # Driver sử dụng là Generic
+```
+
+Khai báo cấu hình backend như sau:
+
+```
+[generic1]
+share_backend_name = GENERIC-1  
+share_driver = manila.share.drivers.generic.GenericShareDriver  
+driver_handles_share_servers = True  
+service_instance_flavor_id = 100  
+service_image_name = manila-service-image  
+service_instance_user = manila  
+service_instance_password = manila
+connect_share_server_to_tenant_network = True
+#interface_driver = manila.network.linux.interface.BridgeInterfaceDriver # nếu sử dụng LinuxBridge thì uncomment
+interface_driver = manila.network.linux.interface.OVSInterfaceDriver  
+```
+
+Thực hiện restart lại dịch vụ manila-share và kiểm tra lại list các service
+
+```
+# service manila-share restart
+# manila service-list
+```
+
+- 6. Thực hiện Khởi tạo share server sử dụng giao thức NFS, có tên là demo-share1 và có kích thước là 1GB
+
+![Imgur](https://i.imgur.com/N3II2ta.png)
+
+- 7. Thực hiện access-allow tới instance
+
+![Imgur](https://i.imgur.com/67tEvqX.png)
+
+- 8. Xác định đường dẫn để có thể mount share, sử dụng `manila show demo-share1`
+
+![Imgur](https://i.imgur.com/geeM02F.png)
+
+- 9. Truy cập tới instance và thực hiện mount share
+
+```
+mount -vt nfs 10.254.0.6:/shares/share-0bfd69a1-27f0-4ef5-af17-7cd50bce6550
+```
 
 
 # Tài liệu tham khảo
@@ -244,3 +326,4 @@ mount -vt nfs 10.0.0.41:/var/lib/manila/mnt/share-8e13a98f-c310-41df-ac90-fc8bce
 - https://qiita.com/tksarah/items/3368b6e502ce5092340b
 - https://docs.openstack.org/project-install-guide/shared-file-systems/newton/post-install.html#post-install
 - https://qiita.com/makisyu/items/0a84e8f905fddd8fd074
+- http://alesnosek.com/blog/2016/05/22/test-driving-openstack-manila/
