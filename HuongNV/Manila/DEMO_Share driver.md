@@ -198,7 +198,7 @@ manila create nfs 4 --name share1 --share-type lvm
 ```
 manila show share1
 
-# share-lvm-1 là tên của share vừa create ở trên
+# share1 là tên của share vừa create ở trên
 
 ```
 ![Imgur](https://i.imgur.com/2n9bqBt.png)
