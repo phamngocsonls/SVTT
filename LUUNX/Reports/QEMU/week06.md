@@ -317,12 +317,14 @@ g_main_context_acquire(context);
 /*Prepare fds */
 glib_pollfds_fill(&timeout);
 
+/* Mở khóa iothread */
 qemu_mutex_unlock_iothread();
 replay_mutex_unlock();
 
 /* ppoll hoặc g_poll các fds */
 ret = qemu_poll_ns((GPollFD *)gpollfds->data, gpollfds->len, timeout);
 
+/* Khóa iothread và quay lại mainloop*/
 replay_mutex_lock();
 qemu_mutex_lock_iothread();
 
