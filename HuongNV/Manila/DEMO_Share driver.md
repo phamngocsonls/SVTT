@@ -238,3 +238,9 @@ mount -vt nfs 10.0.0.41:/var/lib/manila/mnt/share-8e13a98f-c310-41df-ac90-fc8bce
 ```
 
 
+
+# Tài liệu tham khảo
+
+- https://qiita.com/tksarah/items/3368b6e502ce5092340b
+- https://docs.openstack.org/project-install-guide/shared-file-systems/newton/post-install.html#post-install
+- https://qiita.com/makisyu/items/0a84e8f905fddd8fd074
