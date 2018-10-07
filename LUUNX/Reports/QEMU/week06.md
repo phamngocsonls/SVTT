@@ -38,14 +38,15 @@ Cài đặt QEMU từ source code
 Mở terminal, gõ lệnh
 
 ```shell
-sudo apt install zlib1-dev flex bison
+sudo apt install zlib1-dev flex bison libcanberra-gtk*
 wget https://download.qemu.org/qemu-3.0.0.tar.xz
 tar xvJf qemu-3.0.0.tar.xz
 cd qemu-3.0.0
 mkdir build
 cd build
 ../configure --enable-debug
-sudo make && make install
+time sudo make
+sudo make install
 ```
 
 
@@ -67,6 +68,8 @@ QEMU là một tiến trình, nó sẽ được cấp phát không gian địa c
 ![.](../src-image/w6_2.PNG)
 
 Từ góc nhìn hệ thống , qemu là một tiến trình được chạy và lên lịch thông thường. Các máy ảo chạy trên một máy chủ thông qua các tiến trình QEMU không biết nhau và hệ điều hành máy chủ cũng không thể can thiệp sâu vào dữ liệu và các tiến trình bên trong máy ảo. Tiến trình QEMU đảm nhiệm hai nhiệm vụ chính là thực thi guest code và ảo hóa các thiết bị. Để thực hiện được các công việc này, qemu sẽ được xây dựng dựa trên một kiến trúc định hướng sự kiện kèm theo các luồng chạy song song.
+
+
 
 ### Source Code
 * Địa chỉ source code QEMU:
@@ -90,7 +93,9 @@ Việc chạy một máy ảo bao gồm thực thi guest code, điều khiển b
 
 QEMU sử dụng kiến trúc hybrid bao gồm event-driven đi cùng các luồng. Điều này là hợp lý vì một vòng lặp sự kiện đơn không phù hợp với kiểu CPU đa lõi của máy chủ khi nó chỉ có một luồng thực thi đơn. Thêm vào đó, thi thoảng, sẽ đơn giản hơn nếu viết các luồng riêng cho việc thực thi các công việc riêng biệt hơn là tích hợp tất cả vào một kiến trúc event-driven. Tuy nhiên, lõi của QEMU là kiến trúc event-driven và phần lớn code thực thi theo kiểu kiến trúc đó.
 
-#### Event-driven
+![.](../src-image/w6_5.PNG)
+
+#### Main Loop
 
 Kiến trúc event-driven tập trung vào một vòng lặp sự kiện chính, tại đó, các sự kiện sẽ được điều hướng tới thủ tục giải quyết nó.
 
@@ -130,8 +135,118 @@ Vòng main_loop_wait() sẽ thực hiện lặp 3 công việc:
 * Dispatch: Thực thi lệnh tương ứng cho file descriptor ready (phản hồi từ poll) hoặc timer-expired, BH 
 
 ![.](../src-image/w6_3.PNG)
- 
 
+Cụ thể, thông qua quá trình debug source code, các hàm được gọi lần lượt khi chạy máy ảo bao gồm
+
+Lệnh khởi chạy máy ảo với file DOS.iso chứa hệ điều hành DOS
+
+```
+time qemu-system-x86_64 -cdrom DOS.iso
+```
+
+Các hàm được gọi
+
+```
+
+call main
+
+  call mainloop time 1
+         call main_loop_should_exit
+         exit main_loop_should_exit return true 
+  exit mainloop
+
+  call mainloop time 2
+         call main_loop_should_exit
+         exit main_loop_should_exit return false
+
+
+         call main_loop_wait time 1
+                  call os_host_main_loop_wait
+                  exit os_host_main_loop_wait
+         exit main_loop_wait
+
+
+         call main_loop_wait time 2
+                  call os_host_main_loop_wait
+                  exit os_host_main_loop_wait
+         exit main_loop_wait
+.
+.
+.
+
+
+         call main_loop_wait time n
+                  call os_host_main_loop_wait
+                  exit os_host_main_loop_wait
+         exit main_loop_wait
+
+  exit mainloop
+  
+exit main
+
+```
+
+Mô hình vòng lặp main loop
+![.]()
+
+```c
+
+main() /* file vl.c */
+{
+
+/* Khởi tạo các biến */
+/* Đọc yêu cầu từ lệnh chạy máy ảo. Ví Dụ: qemu-system-x86_64 -cdrom DOS.iso -hda image.qcow2 */
+/* Khởi tạo các thiết bị phần cứng ảo hóa gồm RAM, CPU, VGA, Accelerator, Timers, Bluetooth, 
+*  USB, sound hardware,... */
+
+mainloop(); 
+
+/* Sau khi thoát khỏi vòng lặp main_loop, tiến hành làm sạch bộ nhớ trước khi đóng tiến trình QEMU */
+
+
+}
+
+mainloop() /* file vl.c */
+{
+/* Kiểm tra điều kiện dừng trước khi lặp vòng lặp tạo main_loop_wait*/
+while (!main_loop_should_exit()) 
+				{
+        main_loop_wait(false);
+    }
+
+}
+
+main_loop_should_exit() /* file vl.c */
+{
+/* Kiểm tra điều kiện dừng vòng lặp main_loop_wait()*/
+/* Các lý do dừng vòng lặp
+*
+* Khởi chạy mainloop lần đầu khi đang cấu hình máy ảo preconfig_exit_requested = true
+* Yêu cầu shutdown từ qemu_shutdown_requested()
+*/
+
+/* Thực thi các công việc khác khi nhận các request khác với điều kiện dừng*/
+/*
+* qemu_debug_requested()
+* qemu_suspend_requested()
+* qemu_reset_requested()
+* qemu_wakeup_requested()
+* qemu_powerdown_requested()
+* qemu_vmstop_requested()
+*
+*/
+
+}
+
+main_loop_wait() /* file util/m.c */
+{
+
+
+}
+
+```
+
+### Accelerator : KVM
 
 
 
