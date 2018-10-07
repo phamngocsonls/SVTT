@@ -116,14 +116,10 @@ Nhiệm vụ của main_loop_wait() bao gồm:
 Khi một file descriptor trở nên sẵn sàng, một bộ định thời hết hạn hoặc một BH được lên lịch chạy, vòng lặp sẽ khởi tạo một lời gọi để phản hồi lại sự kiện trên. Để thực hiện điều này, qemu sử dụng các loại system call như select(2), pool(2) hoặc epool(2).
 
 
-Trong tài liệu Improve the QEMU Event Loop, Fam Zheng, KVM Forum 2015, hoạt động của main_loop_wait() được trình bày giản lược. Các sự kiện đến bao gồm 3 nhóm:
+Các sự kiện đến bao gồm 3 nhóm:
 
-* các IOthread thông thường
-* nhóm các dispatched fd events
-  * aio: block I/O, ioeventfd
-  * iohandler: net, nbd, audio, ui, vfio, ... 
-  * slirp: -net user 
-  * chardev
+* các IOthread hệ thống xử lý bằng hàm os_host_main_loop_wait()
+* sự kiện đến từ slirp (liên quan đến -netdev) xử lý bằng slirp_pollfds_fill() và slirp_pollfds_fill()
 * nhóm non-fd services
   * timers
   * bottom halves
@@ -133,6 +129,10 @@ Vòng main_loop_wait() sẽ thực hiện lặp 3 công việc:
 * Prepare: nạp các file descriptor cho system call poll
 * Poll: Gọi system call poll
 * Dispatch: Thực thi lệnh tương ứng cho file descriptor ready (phản hồi từ poll) hoặc timer-expired, BH 
+
+
+Trong vòng lặp main_loop_wait() để thực hiện nhận phản hồi sự kiện, QEMU sử dụng thư viện GLib cung cấp các công cụ và kiểu dữ liệu cần thiết GMainContext, GArray, Gsource để thực hiện poll() các sự kiện đến và phản hồi chính xác yêu cầu.
+
 
 ![.](../src-image/w6_3.PNG)
 
@@ -187,6 +187,7 @@ exit main
 ```
 
 Mô hình vòng lặp main loop
+
 ![.]()
 
 ```c
@@ -197,16 +198,50 @@ main() /* file vl.c */
 /* Khởi tạo các biến */
 /* Đọc yêu cầu từ lệnh chạy máy ảo. Ví Dụ: qemu-system-x86_64 -cdrom DOS.iso -hda image.qcow2 */
 /* Khởi tạo các thiết bị phần cứng ảo hóa gồm RAM, CPU, VGA, Accelerator, Timers, Bluetooth, 
-*  USB, sound hardware,... */
+*  USB, sound hardware,... và các worker thread, khởi tạo accelerator (mặc định là tcg, hoặc kvm, hax, xen,...) */
 
-mainloop(); 
+/* Khởi tạo các biến cho main_loop */
+qemu_int_main_loop();
+
+/* Vào vòng lặp main_loop();
+main_loop(); 
 
 /* Sau khi thoát khỏi vòng lặp main_loop, tiến hành làm sạch bộ nhớ trước khi đóng tiến trình QEMU */
 
 
 }
 
-mainloop() /* file vl.c */
+qemu_int_main_loop() /* file util/main-loop.c */
+{
+
+    GSource *src;
+    Error *local_error = NULL;
+
+/* Khởi tạo timer */
+    init_clocks(qemu_timer_notify_cb);
+/* Khởi tạo signal handler */
+    ret = qemu_signal_init();
+
+/* Khởi tạo AIO context */
+    qemu_aio_context = aio_context_new(&local_error);
+
+/* Khởi tạo Bottom Half */
+    qemu_notify_bh = qemu_bh_new(notify_event_cb, NULL);
+    
+/* Khởi tạo GSource  - Tìm hiểu thêm */
+    gpollfds = g_array_new(FALSE, FALSE, sizeof(GPollFD));
+    src = aio_get_g_source(qemu_aio_context);
+    g_source_set_name(src, "aio-context");
+    g_source_attach(src, NULL);
+    g_source_unref(src);
+    src = iohandler_get_g_source();
+    g_source_set_name(src, "io-handler");
+    g_source_attach(src, NULL);
+    g_source_unref(src);
+
+}
+
+main_loop() /* file vl.c */
 {
 /* Kiểm tra điều kiện dừng trước khi lặp vòng lặp tạo main_loop_wait*/
 while (!main_loop_should_exit()) 
@@ -221,7 +256,7 @@ main_loop_should_exit() /* file vl.c */
 /* Kiểm tra điều kiện dừng vòng lặp main_loop_wait()*/
 /* Các lý do dừng vòng lặp
 *
-* Khởi chạy mainloop lần đầu khi đang cấu hình máy ảo preconfig_exit_requested = true
+* Khởi chạy main_loop lần đầu khi đang cấu hình máy ảo preconfig_exit_requested = true
 * Yêu cầu shutdown từ qemu_shutdown_requested()
 */
 
@@ -238,15 +273,67 @@ main_loop_should_exit() /* file vl.c */
 
 }
 
+
+
 main_loop_wait() /* file util/m.c */
 {
 
+/* Khởi tạo lại GArray cho main_loop_wait*/
+
+/* Khởi tạo poll cho slirp */
+slirp_pollfds_fill();
+
+/* Luôn luôn kiểm tra timer và bottom half*/
+
+/* Vào hàm poll cho các IOthread hệ thống */
+os_host_main_loop_wait();
+
+/* poll cho slirp */
+slirp_pollfds_poll();
 
 }
 
+
+/* Tìm hiểu sau */
+slirp_pollfds_fill()
+{};
+slirp_pollfds_poll()
+{};
+
+
+static int os_host_main_loop_wait(int64_t timeout)
+{
+
+/* Tạo con trỏ tới global GMainContext */
+GMainContext *context = g_main_context_default();
+
+
+/* Lấy quyền truy cập global GMainContext */
+g_main_context_acquire(context);
+
+
+glib_pollfds_fill(&timeout);
+
+qemu_mutex_unlock_iothread();
+replay_mutex_unlock();
+
+ret = qemu_poll_ns((GPollFD *)gpollfds->data, gpollfds->len, timeout);
+
+replay_mutex_lock();
+qemu_mutex_lock_iothread();
+
+glib_pollfds_poll();
+
+/* Trả quyền truy cập global GMainContext*/
+g_main_context_release(context);
+
+}
+
+
 ```
 
-### Accelerator : KVM
+### Accelerator
+// Tìm hiểu sau
 
 
 
