@@ -1,5 +1,4 @@
 # OVS LABS (cont)
-## [0. Bổ túc kiến thức network](#botuc)
 ## [1. OpenvSwitch với Mininet](#tongquan)
 ### [1.1. Một số topo cơ bản](#basic)
 ### [1.2. Kiểm tra Flow Table](#flowtb)
@@ -358,25 +357,25 @@ Cấu hình balnace-tcp kết hợp LACP được khuyên dùng vì nhiều lu�
 #### Trước hết, ta thực hiện cấu hình 2 switch ảo **br0** và **br1** với các port internal nối giữa 2 switch 	như topo.
 - Tạo 2 bridge **br0** và **br1**
 ```sh
-ovs-vsctl add-br br0
-ovs-vsctl add-br br1
+sudo ovs-vsctl add-br br0
+sudo ovs-vsctl add-br br1
 ```
 - Tạo các bond interface trên các bridge **br0** và **br1**, kích hoạt sẵn giao thức lacp
 ```sh
-ovs-vsctl add-bond br0 bond0 e0 e1 lacp=active
-ovs-vsctl add-bond br1 bond1 e2 e3 lacp=active
+sudo ovs-vsctl add-bond br0 bond0 e0 e1 lacp=active
+sudo ovs-vsctl add-bond br1 bond1 e2 e3 lacp=active
 ```
 - Tạo các liên kết internal giữa hai bridge (**e0-e2**, **e1-e3**)
 ```sh
-ovs-vsctl set interface e0 type=patch options:peer=e2
-ovs-vsctl set interface e2 type=patch options:peer=e0
-ovs-vsctl set interface e1 type=patch options:peer=e3
-ovs-vsctl set interface e3 type=patch options:peer=e1
+sudo ovs-vsctl set interface e0 type=patch options:peer=e2
+sudo ovs-vsctl set interface e2 type=patch options:peer=e0
+sudo ovs-vsctl set interface e1 type=patch options:peer=e3
+sudo ovs-vsctl set interface e3 type=patch options:peer=e1
 ```
 - Kiểm tra lại cấu hình bonding
 ```sh
-ovs-appctl bond/show bond0
-ovs-appctl bond/show bond1
+sudo ovs-appctl bond/show bond0
+sudo ovs-appctl bond/show bond1
 ```
 
 ![](images/Labs/bonding/bond0.png)
