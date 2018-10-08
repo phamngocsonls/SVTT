@@ -1,9 +1,13 @@
 # OVS LABS (cont)
-## [0. Giới thiệu về Mininet](#tongquan)
-### [0.1. Một số topo cơ bản](#basic)
-### [0.2. Kiểm tra Flow Table](#flowtb)
+## [1. OpenvSwitch với Mininet](#tongquan)
+### [1.1. Một số topo cơ bản](#basic)
+### [1.2. Kiểm tra Flow Table](#flowtb)
+## [2. Bonding với OpenvSwitch](#bond)
+### [2.0. Khái niệm bonding](#bond-def)
+### [2.1. Kịch bản lab](#bond-topo)
+### [2.2. Cấu hình](#bond-config)
 ---
-## <a name="tongquan"></a> 0. Giới thiệu về Mininet
+## <a name="tongquan"></a> 1. OVS với Mininet
 Mininet là phần mềm giả lập mạng cho phép tạo switch, host và kết nối giữa chúng để phục vụ mục đích kiểm thử.
 
 ### Cài đặt Mininet
@@ -65,8 +69,8 @@ Các options cụ thể như sau:
 
 ![](images/Labs/Mininet/0_11.png)
 
-### <a name="basic"></a> 0.1. Một số topo cơ bản
-#### 0.1.1. Tạo topo với 4 host và 1 switch
+### <a name="basic"></a> 1.1. Một số topo cơ bản
+#### 1.1.1. Tạo topo với 4 host và 1 switch
 - Tạo topo: ```sudo mn --topo=single,4```
 
 ![](images/Labs/Mininet/1_0.png)
@@ -79,7 +83,7 @@ Các options cụ thể như sau:
 
 ![](images/Labs/Mininet/1_2.png)
 
-#### 0.1.2. Tạo topo tuyến tính với 4 nodes
+#### 1.1.2. Tạo topo tuyến tính với 4 nodes
 - Tạo topo: ```sudo mn --topo=linear,4```
 
 ![](images/Labs/Mininet/1_3.png)
@@ -164,7 +168,7 @@ mininet> sh ovs-vsctl show
 
 ```
 
-#### 0.1.3. Tạo topo dạng tree với 4 host và 3 switch
+#### 1.1.3. Tạo topo dạng tree với 4 host và 3 switch
 
 - Tạo topo với command ```sudo mn -topo=tree,2,2```
 
@@ -239,7 +243,7 @@ h2+--------+s2           |         s3+----------+h3
 
 ```
 
-### <a name="flowtb"></a> 0.2. Kiểm tra Flow Table
+### <a name="flowtb"></a> 1.2. Kiểm tra Flow Table
 #### Tạo topo gồm 4 host nối vào 1 switch, sử dụng tùy chọn ```--mac``` để giữ địa chỉ MAC cho các host
 
 ![](images/Labs/Mininet/2_0.png)
@@ -313,5 +317,91 @@ Ta thấy các frame 316, 320, 331, 334, 337, 341 là các bản tin tương ứ
 ![](images/Labs/Mininet/2_12.png)
 
 Thời gian reply đầu tiên không quá lâu như lần ping trước đó vì flow trên vẫn còn "hiệu lực".
+
+## <a name="bond"></a> 2. Bonding trong OpenvSwitch
+### <a name="bond-def"></a> 2.0. Sơ lược về bonding
+Bonding hay còn gọi là **port forwarding** hoặc **link aggregation** là việc kết hợp nhiều NIC thành một NIC logic duy nhất nhằm cân bằng tải, tăng thông lượng, tăng khả năng chịu lỗi (fault tolerance) của hệ thống.
+- Bonding cho phép hai hay nhiều interface (còn gọi là "slave" khi thực hiện cấu hình bonding) chia sẻ lưu lượng mạng. Ở góc nhìn mức cao, các interface được liên kết với nhau thành một port logic duy nhất nhưng chúng có băng thông tổng cộng của nhiều thiết bị.
+	- Ví dụ: 2 card mạng vật lý 1Gbps khi được bond với nhau được xem như một card với tốc độ 2Gbps.
+- Cấu hình bond cũng đem lại khả năng dự phòng, bond port sẽ không bị down chừng nào vẫn còn slave đang "sống".
+- Có nhiều chế độ thực hiện bonding nhưng openvswitch chỉ triển khai ba chế độ: **active-backup**, **balance-slb**, **balance-tcp**.
+
+### Active-Backup
+Là bond mode đơn giản nhất, dễ dàng cho phép kết nối với nhiều upstream switch mà không cần cấu hình thêm cho switch. Nhược điểm là traffic từ các VMs chỉ sử dụng duy nhất một active link trong bond. Tất cả các backup link không được sử dụng. Trong một hệ thống với dual 10 gigabit Ethernet adapter, thông lượng lớn nhất của tất cả các VMs chạy trên một node là 10Gbps.
+
+![](images/Labs/bonding/active-backup.png)
+
+Active-backup là bond mode mặc định. 
+
+### Balance-slb
+Balance-slb bond mode trong OVS sử dụng tất cả các links trong một bond và áp dụng đo lưu lượng (measured trafic load) để tái cân bằng traffic từ interface được sử dụng nhiều sang bớt interface khác. Khi thời gian bond-rebalance kết thúc, OVS sử dụng lưu lượng đã được đo (measured load) cho mỗi source MAC hash để mở rộng traffic giữa các links trong bond.
+
+Lưu lượng (traffic) từ MAC source hash (MAC nguồn đã băm) có thể được chuyển tới liên kết ít active hơn để cân bằng hơn trong việc sử dụng các liên kết thành viên trong bond. Mỗi card mạng của máy ảo sử dụng duy nhất một slave interface trong đường bond, tuy nhiên lưu lượng từ nhiều máy ảo (xử lý với nhiều địa chỉ MAC nguồn) được phân tán trên các interface thành viên của đường bond tùy theo thuật toán băm. Như vậy, một node có 2 interface tốc độ 10Gbps, tổng thông lượng mà các VMs có thể sử dụng sẽ tăng lên 20Gbps, trong khi mỗi VM có thể sử dụng thông lượng tối đa là 10Gbps.s
+
+![](images/Labs/bonding/balance-slb.png)
+
+### Balance-tcp
+Để có thể tận dụng được hoàn toàn lợi thế về băng thông được cung cấp khi sử dụng nhiều liên kết với các switch từ các máy ảo đơn lẻ, OVS buộc phải cấu hình sử dụng LACP (Link Aggregation Control Protocol) và balance-tcp. Tuy nhiên, trong cấu hình này, LACP và balance-tcp yêu cầu phải cấu hình switch. Với LACP, nhiều liên kết tách biệt trên các switch vật lý được đối xử như một liên kết layer-2 duy nhất. Lưu lượng có thể bị chia ra nhiều liên kết trong mô hình active-active dựa trên thuật toán băm lưu lượng (traffic hashing). Lưu lượng có thể được cân bằng giữa các thành viên của liên kết bond mà không liên quan gì tới bảng MAC trên switch, bởi vì các uplink được xem như một liên kết layer-2 duy nhất. 
+Cấu hình balnace-tcp kết hợp LACP được khuyên dùng vì nhiều luồng dữ liệu từ Layer 4 (transport) từ một VM có thể sử dụng được băng thông của tất cả các uplink (các liên kết thành viên của bond). Do đó, nếu như một máy có 2 card 10Gbps khi cấu hình bonding chế độ balance-tcp kết hợp với LACP, các TCP stream từ một máy ảo trên đó có thể sử dụng băng thông tối đa là 20Gbps thay vì chỉ là 10Gbps khi cấu hình balance-slb.
+
+![](images/Labs/bonding/balance-tcp.png)
+
+### <a name="bond-topo"></a> 2.1. Kịch bản lab
+- Kiểm tra tính năng link Aggregation và LACP với OVS theo mô hình sau:
+	- Dùng OVS tạo hai switch ảo **br0**, **br1** và tạo 2 port trên mỗi switch.
+	- Tiến hành nối các port giữa các switch thành 2 đường dự phòng hỗ trợ nhau như hình minh họa. Tiến hành bond 2 port trên mỗi switch. Để kiểm tra tính dự phòng, tạo 2 máy ảo, mỗi máy ảo cắm vào một switch ảo như trên. Tiến hành ping giữa hai máy, kiểm tra kết nối khi ta ngắt một trong hai đường kết nối.
+
+![](images/Labs/bonding/topo1.jpeg)
+
+### <a name="bond-config"></a> 2.2. Cấu hình LACP với OpenvSwitch
+#### Trước hết, ta thực hiện cấu hình 2 switch ảo **br0** và **br1** với các port internal nối giữa 2 switch 	như topo.
+- Tạo 2 bridge **br0** và **br1**
+```sh
+sudo ovs-vsctl add-br br0
+sudo ovs-vsctl add-br br1
+```
+- Tạo các bond interface trên các bridge **br0** và **br1**, kích hoạt sẵn giao thức lacp
+```sh
+sudo ovs-vsctl add-bond br0 bond0 e0 e1 lacp=active
+sudo ovs-vsctl add-bond br1 bond1 e2 e3 lacp=active
+```
+- Tạo các liên kết internal giữa hai bridge (**e0-e2**, **e1-e3**)
+```sh
+sudo ovs-vsctl set interface e0 type=patch options:peer=e2
+sudo ovs-vsctl set interface e2 type=patch options:peer=e0
+sudo ovs-vsctl set interface e1 type=patch options:peer=e3
+sudo ovs-vsctl set interface e3 type=patch options:peer=e1
+```
+- Kiểm tra lại cấu hình bonding
+```sh
+sudo ovs-appctl bond/show bond0
+sudo ovs-appctl bond/show bond1
+```
+
+![](images/Labs/bonding/bond0.png)
+
+![](images/Labs/bonding/bond1.png)
+
+Ta thấy, liên kết **active** đang là **e0-e2**.
+
+#### Tạo các máy ảo gắn vào 2 bridge br0 và br1
+Trong mô hình này, ta sử dụng 2 máy ảo:
+- VM0: gán vào bridge **br0**, thiết lập địa chỉ IP tĩnh: 10.10.10.160/24
+- VM2: gán vào bridge **br1**, thiết lập địa chỉ IP tĩnh: 10.10.10.164/24
+
+Ban đầu ta thực hiện ping giữa hai máy ảo **VM0** và **VM2** kết quả ping có phản hồi bình thường
+
+![](images/Labs/bonding/ping1.png)
+
+Tiếp đó, vẫn giữ trạng thái ping giữa hai máy ảo, đồng thời chỉnh sửa cấu hình sai, mục đích là cố ý gây ra sự cố trên đường link internal đang active (**e0-e2**). Ta sẽ cấu hình peer **e0** với interface **br1** trên bridge **br1**.
+
+```sh
+sudo ovs-vsctl set interface e0 type=patch options=peer:br1
+```
+
+Sau một khoảng thời gian sau khi thực hiện cấu hình ngắt kết nối **e0-e2**, hiện tượng mất kết nối giữa hai máy xảy ra. Tuy nhiên, do cấu hình bonding **active-backup** kết hợp với lacp, liên kết **e1-e3** được kích hoạt thay thế cho kết nối đã mất, cho phép thiết lập lại kết nối giữa hai máy ảo.
+
+![](images/Labs/bonding/bond0-1.png)
+![](images/Labs/bonding/bond1-1.png)
 
 
