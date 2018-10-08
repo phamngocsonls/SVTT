@@ -45,6 +45,7 @@ ENABLE_VERBOSE_LOG_LEVEL=True
 
 # Manila
 enable_plugin manila https://github.com/openstack/manila
+enable_plugin manila-ui https://github.com/openstack/manila-ui
 
 # Neutron ML2 with OpenVSwitch
 Q_PLUGIN=ml2

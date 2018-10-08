@@ -16,7 +16,7 @@
     - [3.6 Storage Pool](#36)
     - [3.7 Share types](#37)
     - [3.8 Share servers](#38)
-- [4. Manila Network plugin](#4)
+- [4. Networking](#4)
 
 
 <a name="1"></a>
@@ -34,7 +34,7 @@ Ví dụ sau đây miêu tả 2 file share giữa các VM với nhau. `Marketing
 ![Imgur](https://i.imgur.com/1W0mccx.png)
 
 
-<a name="11"><?a>
+<a name="11"></a>
 
 ## 1.1 How Manila work
 
@@ -121,7 +121,7 @@ Snapshot là một bản copy của share. Snapshot có thể được sử dụ
 
 Một share network là một đối tượng được định nghĩa bởi một project mà báo cho Manila về security và cấu hình mạng cho một nhóm của các share. Share network chỉ thích hợp cho backend quản lý share server. Một share network bao gồm các dịch vụ bảo mật, network và subnet.
 
-<a name=""35></a>
+<a name="35"></a>
 
 ## 3.5 Security Services
 - Định nghĩa, thiết lập rules cho việc xác thực, truy cập vào file share(ví dụ: Có thể khai báo các rules thông qua các external service: LDAP, Active Directory, Kerberos)
@@ -160,5 +160,56 @@ A share server là một thực thể nhằm quản lý các chia sẻ trên m�
 
 <a name="4"></a>
 
-# 4. Manila Network plugin
+# 4. Networking 
+
+Khác với Openstack Block Storage service, Shared File Systems service cần kết nối tới Networking service. The share service required the option to self-manage share servers. Để xác thực và ủy quyền cho client, ta có thể cấu hình dịch vụ Shared File Systems service làm việc với các dịch vụ xác thực như LDAP, Kerberos hay là Microsoft Active Directory
+
+## Share network
+
+Một share network là một đối tượng được định nghĩa bởi một project mà báo cho Manila về security và cấu hình mạng cho một nhóm của các share. Share network chỉ thích hợp cho backend quản lý share server. Một share network bao gồm các dịch vụ bảo mật, network và subnet.
+
+## How to create share network
+
+Liệt kê các networks trong project
+
+![Imgur](https://i.imgur.com/exW2iO8.png)
+
+A share network chứa toàn bộ thông tin mà share server sử dụng để share giữa các host với nhau. Có thể khởi tạo và gán mối share với một share network cụ thể dựa trên ID của share network, qua đó instance có thể truy cập tới share mà ta vừa tạo
+
+Khi thực hiện khởi tạo một share network, ta có thể chỉ định một loại mạng cụ thể
+- Openstack Networking(neutron), chỉ định cụ thể network ID và subnet ID
+    - Plugin sử dụng `manila.network.nova_network_plugin.NeutronNetworkPlugin`
+- Legacy networking(nova-network), chỉ định cụ thể network ID
+    - Plugin sử dụng `manila.network.nova_network_plugin.NovaNetworkPlugin`
+
+Tham khảo thêm Network Plugin tại [Network plug-ins](https://docs.openstack.org/manila/pike/admin/shared-file-systems-network-plugins.html#shared-file-systems-network-plugins)
+
+A share network chứa một số thông tin như sau:
+- IP block in CIDR notation from which to allocate the network
+- IP version
+- Network type, ví dụ `vlan, vxlan, gre hoặc flat`
+
+Ví dụ khởi tạo một share network
+
+![Imgur](https://i.imgur.com/10LfYJv.png)
+
+```
+Segmentation_id, cidr, ip_version và network_type của share network vừa khởi tạo được set value tự động dựa theo network provider
+```
+
+Để check network list, run
+
+![Imgur](https://i.imgur.com/ei6ol4P.png)
+
+Nếu sử dụng generic driver với DHSS=True, trong topo network sẽ xuất hiện thêm một `manila_service_network` như sau
+
+![Imgur](https://i.imgur.com/9FrdLA8.png)
+
+Sử dụng commnand line để liệt kê các network hiện có, trong đó có manila_service_network vừa khởi tạo
+
+![Imgur](https://i.imgur.com/tTSfjHT.png)
+
+Xem thông tin chi tiết về share network vừa khởi tạo, run
+
+![Imgur](https://i.imgur.com/Bckei5B.png)
 
