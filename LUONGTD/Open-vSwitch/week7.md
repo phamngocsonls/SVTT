@@ -47,4 +47,4 @@ int main()
 
 Sử dụng Scitools Understand mô hình lại luồng lệnh trên:
 
-![](images/Labs/vswitchd/understand_1.png)
+![](images/vswitchd/understand_1.png)
