@@ -1,8 +1,8 @@
 # ovs-vswitchd
 
 ---
-## 1. Phân tích hàm main
-Trong file ```vswitchd/ovs-vswitchd.c```:
+## 1. Kiến trúc
+### 1.1. Phân tích hàm main trong file vswitchd/ovs-vswitchd.c:
 
 ```c
 int main()
@@ -45,6 +45,6 @@ int main()
 }
 ```
 
-Sử dụng Scitools Understand mô hình lại luồng lệnh trên:
+### 1.2. Sử dụng Scitools Understand vẽ Dependancy Graph của vswitchd:
 
 ![](images/vswitchd/understand_1.png)
