@@ -81,7 +81,7 @@ Qúa trình xử lý request như sau:
 
 ## 2.2 Share Creation Workflow without share server 
 
-[Imgur](https://i.imgur.com/mMIkKOb.png)
+![Imgur](https://i.imgur.com/mMIkKOb.png)
 
 1. Clients request to create share through REST API hoặc sử dụng python-manilaclient:
 Qúa trình xử lý request như sau:
