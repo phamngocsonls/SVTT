@@ -16,7 +16,9 @@
     - [3.6 Storage Pool](#36)
     - [3.7 Share types](#37)
     - [3.8 Share servers](#38)
+    - [3.9 Share replication](#39)
 - [4. Networking](#4)
+- [5. Security services](#5)
 
 
 <a name="1"></a>
@@ -34,7 +36,7 @@ Ví dụ sau đây miêu tả 2 file share giữa các VM với nhau. `Marketing
 ![Imgur](https://i.imgur.com/1W0mccx.png)
 
 
-<a name="11"></a>
+<a name="11"><?a>
 
 ## 1.1 How Manila work
 
@@ -80,7 +82,7 @@ Qúa trình xử lý request như sau:
 
 ## 2.2 Share Creation Workflow without share server 
 
-![Imgur](https://i.imgur.com/mMIkKOb.png)
+[Imgur](https://i.imgur.com/mMIkKOb.png)
 
 1. Clients request to create share through REST API hoặc sử dụng python-manilaclient:
 Qúa trình xử lý request như sau:
@@ -121,11 +123,78 @@ Snapshot là một bản copy của share. Snapshot có thể được sử dụ
 
 Một share network là một đối tượng được định nghĩa bởi một project mà báo cho Manila về security và cấu hình mạng cho một nhóm của các share. Share network chỉ thích hợp cho backend quản lý share server. Một share network bao gồm các dịch vụ bảo mật, network và subnet.
 
-<a name="35"></a>
+<a name=""35></a>
 
 ## 3.5 Security Services
 - Định nghĩa, thiết lập rules cho việc xác thực, truy cập vào file share(ví dụ: Có thể khai báo các rules thông qua các external service: LDAP, Active Directory, Kerberos)
 - Có thể khai báo Shares với multiple security services
+
+Ta có thể cấu hình seccurity services với một vài lựa chọn như sau:
+- A DNS IP address
+- Địa chỉ IP hoặc hostname
+- A domain
+- A user hoặc group user
+- Password cho từng user
+
+Thực hiện khởi tạo security services
+
+```
+usage: manila security-service-create [--dns-ip <dns_ip>] [--server <server>]
+                                      [--domain <domain>] [--user <user>]
+                                      [--password <password>] [--name <name>]
+                                      [--description <description>]
+                                      <type>
+```
+
+```
+- Type: Chỉ định loại service security là gì, có thể là 'ldap', 'kerberos' hoặc 'active_directory'
+- --dns-ip: Địa chỉ DNS sử dụng trong tenant's network
+- --server: Security service IP hoặc hostname
+- --name: Tên đặt cho service security
+```
+
+Ví dụ sau đây thực hiện tạo 1 service security với type là `ldap`
+
+![Imgur](https://i.imgur.com/Wicexcg.png)
+
+Chúng ta có thể liệt kê các service security đã tạo với command line như sau:
+
+```
+usage: manila security-service-list [--all-tenants [<0|1>]]
+                                    [--share-network <share_network>]
+                                    [--status <status>] [--name <name>]
+                                    [--type <type>] [--user <user>]
+                                    [--dns-ip <dns_ip>] [--server <server>]
+                                    [--domain <domain>] [--detailed [<0|1>]]
+                                    [--offset <offset>] [--limit <limit>]
+                                    [--columns <columns>]
+```
+
+```
+- --all-tenants [<0|1>]: Hiển thị tất cả service trong tất cả projects
+- --share-network <share_network>: Lọc service theo share network id hoặc theo tên
+- --status: Lọc theo trạng thái status
+-- name: Lọc theo tên của service
+```
+
+Thêm 1 service security vào một share network cụ thể nào đó, sử dụng
+
+```
+usage: manila share-network-security-service-add <share-network>
+                                                 <security-service>
+```
+
+```
+- share-network: Tên của share network hoặc ID share network mà ta muốn gán
+- security-service: Tên của service security hoặc ID được sử dụng để gán vào share-network
+```
+
+Trái ngược với việc add a security service with share network, ta có thể remove nó đi hoặc xóa đi, sử dụng command line
+
+```
+usage: manila security-service-delete <security-service>
+                                      [<security-service> ...]
+```
 
 <a name="36"></a>
 
@@ -156,6 +225,12 @@ Trông câu lệnh, **name** để thiết lập tên cho share type, **is_publi
 ## 3.8 Share servers
 
 A share server là một thực thể nhằm quản lý các chia sẻ trên một mạng cụ thể. 
+
+<a name="39"></a>
+
+## 3.9 Share replication
+
+////
 
 
 <a name="4"></a>
@@ -212,4 +287,3 @@ Sử dụng commnand line để liệt kê các network hiện có, trong đó c
 Xem thông tin chi tiết về share network vừa khởi tạo, run
 
 ![Imgur](https://i.imgur.com/Bckei5B.png)
-
