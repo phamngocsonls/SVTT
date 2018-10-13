@@ -100,11 +100,9 @@ openssl req -new -x509 -key glusterfs.key -subj /CN=huongngo -out glusterfs.pem
 cp glusterfs.pem glusterfs.ca
 ```
 
-Ta đã thực hiện tạo key và CA trên server. Thực hiện copy key và ca tới tất cả server glussterfs
+Ta đã thực hiện tạo key và CA trên server. Thực hiện copy key và ca tới tất cả server glussterfs. Ở đây ta tạo CA có `CN=huongngo` trên manila ta sẽ tạo access-allow cho CA của `huongngo` manila-share
 
-Ở đây ta tạo CA có `CN=huongngo` trên manila ta sẽ tạo access-allow cho CA của `huongngo` manila-share
-
-Cáu hình manila-share tại /etc/manila/manila.conf
+Cấu hình manila-share tại /etc/manila/manila.conf
 
 Enable backend glusternative và protocol GLUSSTERFS tại secssion [DEFAULT]
 
