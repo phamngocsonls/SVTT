@@ -1,0 +1,197 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Why Open vSwitch? &#8212; Open vSwitch 2.9.2 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Installing Open vSwitch" href="install/index.html" />
+    <link rel="prev" title="What Is Open vSwitch?" href="what-is-ovs.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="why-open-vswitch">
+<h1>Why Open vSwitch?<a class="headerlink" href="#why-open-vswitch" title="Permalink to this headline">¶</a></h1>
+<p>Hypervisors need the ability to bridge traffic between VMs and with the outside
+world. On Linux-based hypervisors, this used to mean using the built-in L2
+switch (the Linux bridge), which is fast and reliable. So, it is reasonable to
+ask why Open vSwitch is used.</p>
+<p>The answer is that Open vSwitch is targeted at multi-server virtualization
+deployments, a landscape for which the previous stack is not well suited. These
+environments are often characterized by highly dynamic end-points, the
+maintenance of logical abstractions, and (sometimes) integration with or
+offloading to special purpose switching hardware.</p>
+<p>The following characteristics and design considerations help Open vSwitch cope
+with the above requirements.</p>
+<div class="section" id="the-mobility-of-state">
+<h2>The mobility of state<a class="headerlink" href="#the-mobility-of-state" title="Permalink to this headline">¶</a></h2>
+<p>All network state associated with a network entity (say a virtual machine)
+should be easily identifiable and migratable between different hosts. This may
+include traditional “soft state” (such as an entry in an L2 learning table), L3
+forwarding state, policy routing state, ACLs, QoS policy, monitoring
+configuration (e.g. NetFlow, IPFIX, sFlow), etc.</p>
+<p>Open vSwitch has support for both configuring and migrating both slow
+(configuration) and fast network state between instances. For example, if a VM
+migrates between end-hosts, it is possible to not only migrate associated
+configuration (SPAN rules, ACLs, QoS) but any live network state (including,
+for example, existing state which may be difficult to reconstruct). Further,
+Open vSwitch state is typed and backed by a real data-model allowing for the
+development of structured automation systems.</p>
+</div>
+<div class="section" id="responding-to-network-dynamics">
+<h2>Responding to network dynamics<a class="headerlink" href="#responding-to-network-dynamics" title="Permalink to this headline">¶</a></h2>
+<p>Virtual environments are often characterized by high-rates of change. VMs
+coming and going, VMs moving backwards and forwards in time, changes to the
+logical network environments, and so forth.</p>
+<p>Open vSwitch supports a number of features that allow a network control system
+to respond and adapt as the environment changes. This includes simple
+accounting and visibility support such as NetFlow, IPFIX, and sFlow. But
+perhaps more useful, Open vSwitch supports a network state database (OVSDB)
+that supports remote triggers. Therefore, a piece of orchestration software can
+“watch” various aspects of the network and respond if/when they change. This is
+used heavily today, for example, to respond to and track VM migrations.</p>
+<p>Open vSwitch also supports OpenFlow as a method of exporting remote access to
+control traffic. There are a number of uses for this including global network
+discovery through inspection of discovery or link-state traffic (e.g. LLDP,
+CDP, OSPF, etc.).</p>
+</div>
+<div class="section" id="maintenance-of-logical-tags">
+<h2>Maintenance of logical tags<a class="headerlink" href="#maintenance-of-logical-tags" title="Permalink to this headline">¶</a></h2>
+<p>Distributed virtual switches (such as VMware vDS and Cisco’s Nexus 1000V) often
+maintain logical context within the network through appending or manipulating
+tags in network packets. This can be used to uniquely identify a VM (in a
+manner resistant to hardware spoofing), or to hold some other context that is
+only relevant in the logical domain. Much of the problem of building a
+distributed virtual switch is to efficiently and correctly manage these tags.</p>
+<p>Open vSwitch includes multiple methods for specifying and maintaining tagging
+rules, all of which are accessible to a remote process for orchestration.
+Further, in many cases these tagging rules are stored in an optimized form so
+they don’t have to be coupled with a heavyweight network device. This allows,
+for example, thousands of tagging or address remapping rules to be configured,
+changed, and migrated.</p>
+<p>In a similar vein, Open vSwitch supports a GRE implementation that can handle
+thousands of simultaneous GRE tunnels and supports remote configuration for
+tunnel creation, configuration, and tear-down. This, for example, can be used
+to connect private VM networks in different data centers.</p>
+</div>
+<div class="section" id="hardware-integration">
+<h2>Hardware integration<a class="headerlink" href="#hardware-integration" title="Permalink to this headline">¶</a></h2>
+<p>Open vSwitch’s forwarding path (the in-kernel datapath) is designed to be
+amenable to “offloading” packet processing to hardware chipsets, whether housed
+in a classic hardware switch chassis or in an end-host NIC. This allows for the
+Open vSwitch control path to be able to both control a pure software
+implementation or a hardware switch.</p>
+<p>There are many ongoing efforts to port Open vSwitch to hardware chipsets. These
+include multiple merchant silicon chipsets (Broadcom and Marvell), as well as a
+number of vendor-specific platforms. The “Porting” section in the documentation
+discusses how one would go about making such a port.</p>
+<p>The advantage of hardware integration is not only performance within
+virtualized environments. If physical switches also expose the Open vSwitch
+control abstractions, both bare-metal and virtualized hosting environments can
+be managed using the same mechanism for automated network control.</p>
+</div>
+<div class="section" id="summary">
+<h2>Summary<a class="headerlink" href="#summary" title="Permalink to this headline">¶</a></h2>
+<p>In many ways, Open vSwitch targets a different point in the design space than
+previous hypervisor networking stacks, focusing on the need for automated and
+dynamic network control in large-scale Linux-based virtualization environments.</p>
+<p>The goal with Open vSwitch is to keep the in-kernel code as small as possible
+(as is necessary for performance) and to re-use existing subsystems when
+applicable (for example Open vSwitch uses the existing QoS stack). As of Linux
+3.3, Open vSwitch is included as a part of the kernel and packaging for the
+userspace utilities are available on most popular distributions.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../contents.html">
+              <img class="logo" src="../_static/logo.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="../contents.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Why Open vSwitch?</a><ul>
+<li><a class="reference internal" href="#the-mobility-of-state">The mobility of state</a></li>
+<li><a class="reference internal" href="#responding-to-network-dynamics">Responding to network dynamics</a></li>
+<li><a class="reference internal" href="#maintenance-of-logical-tags">Maintenance of logical tags</a></li>
+<li><a class="reference internal" href="#hardware-integration">Hardware integration</a></li>
+<li><a class="reference internal" href="#summary">Summary</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../contents.html">Documentation overview</a><ul>
+  <li><a href="index.html">Getting Started</a><ul>
+      <li>Previous: <a href="what-is-ovs.html" title="previous chapter">What Is Open vSwitch?</a></li>
+      <li>Next: <a href="install/index.html" title="next chapter">Installing Open vSwitch</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/intro/why-ovs.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, The Open vSwitch Development Community.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.4</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="../_sources/intro/why-ovs.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

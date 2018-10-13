@@ -1,0 +1,275 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>ovs-test &#8212; Open vSwitch 2.9.2 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="ovs-vlan-test" href="ovs-vlan-test.8.html" />
+    <link rel="prev" title="Reference Guide" href="index.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="ovs-test">
+<h1>ovs-test<a class="headerlink" href="#ovs-test" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="synopsis">
+<h2>Synopsis<a class="headerlink" href="#synopsis" title="Permalink to this headline">¶</a></h2>
+<p><strong>ovs-test</strong> -s <em>port</em></p>
+<dl class="docutils">
+<dt><strong>ovs-test</strong> -c <em>server1</em> <em>server2</em> [<strong>-b</strong> <em>targetbandwidth</em>] [<strong>-i</strong> <em>testinterval</em>] [<strong>-d</strong>]</dt>
+<dd>[<strong>-l</strong> <em>vlantag</em>] [<strong>-t</strong> <em>tunnelmodes</em>]</dd>
+</dl>
+</div>
+<div class="section" id="description">
+<h2>Description<a class="headerlink" href="#description" title="Permalink to this headline">¶</a></h2>
+<p>The <strong class="program">ovs-test</strong> program may be used to check for problems sending
+802.1Q or GRE traffic that Open vSwitch may uncover. These problems, for
+example, can occur when Open vSwitch is used to send 802.1Q traffic through
+physical interfaces running certain drivers of certain Linux kernel versions.
+To run a test, configure IP addresses on <cite>server1</cite> and <cite>server2</cite> for interfaces
+you intended to test. These interfaces could also be already configured OVS
+bridges that have a physical interface attached to them. Then, on one of the
+nodes, run <strong class="program">ovs-test</strong> in server mode and on the other node run it in
+client mode. The client will connect to <strong class="program">ovs-test</strong> server and schedule
+tests between both of them. The <strong class="program">ovs-test</strong> client will perform UDP and
+TCP tests.</p>
+<p>UDP tests can report packet loss and achieved bandwidth for various datagram
+sizes. By default target bandwidth for UDP tests is 1Mbit/s.</p>
+<p>TCP tests report only achieved bandwidth, because kernel TCP stack takes care
+of flow control and packet loss. TCP tests are essential to detect potential
+TSO related issues.</p>
+<p>To determine whether Open vSwitch is encountering any problems, the user must
+compare packet loss and achieved bandwidth in a setup where traffic is being
+directly sent and in one where it is not. If in the 802.1Q or L3 tunneled tests
+both <strong class="program">ovs-test</strong> processes are unable to communicate or the achieved
+bandwidth is much lower compared to direct setup, then, most likely, Open
+vSwitch has encountered a pre-existing kernel or driver bug.</p>
+<p>Some examples of the types of problems that may be encountered are:</p>
+<ul class="simple">
+<li>When NICs use VLAN stripping on receive they must pass a pointer to a
+<cite>vlan_group</cite> when reporting the stripped tag to the networking core. If no
+<cite>vlan_group</cite> is in use then some drivers just drop the extracted tag.
+Drivers are supposed to only enable stripping if a <cite>vlan_group</cite> is registered
+but not all of them do that.</li>
+<li>On receive, some drivers handle priority tagged packets specially and don’t
+pass the tag onto the network stack at all, so Open vSwitch never has a
+chance to see it.</li>
+<li>Some drivers size their receive buffers based on whether a <cite>vlan_group</cite> is
+enabled, meaning that a maximum size packet with a VLAN tag will not fit if
+no <cite>vlan_group</cite> is configured.</li>
+<li>On transmit, some drivers expect that VLAN acceleration will be used if it is
+available, which can only be done if a <cite>vlan_group</cite> is configured. In these
+cases, the driver may fail to parse the packet and correctly setup checksum
+offloading or TSO.</li>
+</ul>
+<dl class="docutils">
+<dt>Client Mode</dt>
+<dd>An <strong class="program">ovs-test</strong> client will connect to two <strong class="program">ovs-test</strong> servers
+and will ask them to exchange test traffic. It is also possible to spawn an
+<strong class="program">ovs-test</strong> server automatically from the client.</dd>
+<dt>Server Mode</dt>
+<dd>To conduct tests, two <strong class="program">ovs-test</strong> servers must be running on two
+different hosts where the client can connect. The actual test traffic is
+exchanged only between both <strong class="program">ovs-test</strong> servers. It is recommended
+that both servers have their IP addresses in the same subnet, otherwise one
+would have to make sure that routing is set up correctly.</dd>
+</dl>
+</div>
+<div class="section" id="options">
+<h2>Options<a class="headerlink" href="#options" title="Permalink to this headline">¶</a></h2>
+<dl class="option">
+<dt id="cmdoption-ovs-test-s">
+<code class="descname">-s</code><code class="descclassname"> &lt;port&gt;</code><code class="descclassname">, </code><code class="descname">--server</code><code class="descclassname"> &lt;port&gt;</code><a class="headerlink" href="#cmdoption-ovs-test-s" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run in server mode and wait for the client to establish XML RPC Control
+Connection on this TCP port. It is recommended to have <cite>ethtool(8)</cite>
+installed on the server so that it could retrieve information about the NIC
+driver.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-ovs-test-c">
+<code class="descname">-c</code><code class="descclassname"> &lt;server1&gt; &lt;server2&gt;</code><code class="descclassname">, </code><code class="descname">--client</code><code class="descclassname"> &lt;server1&gt; &lt;server2&gt;</code><a class="headerlink" href="#cmdoption-ovs-test-c" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run in client mode and schedule tests between <cite>server1</cite> and <cite>server2</cite>,
+where each server must be given in the following format:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">OuterIP</span><span class="p">[:</span><span class="n">OuterPort</span><span class="p">],</span><span class="n">InnerIP</span><span class="p">[</span><span class="o">/</span><span class="n">Mask</span><span class="p">][:</span><span class="n">InnerPort</span><span class="p">]</span><span class="o">.</span>
+</pre></div>
+</div>
+<p>The <cite>OuterIP</cite> must be already assigned to the physical interface which is
+going to be tested. This is the IP address where client will try to
+establish XML RPC connection. If <cite>OuterIP</cite> is 127.0.0.1 then client will
+automatically spawn a local instance of <strong class="program">ovs-test</strong> server.
+OuterPort is TCP port where server is listening for incoming XML/RPC
+control connections to schedule tests (by default it is 15531). The
+<strong class="program">ovs-test</strong> will automatically assign <cite>InnerIP[/Mask]</cite> to the
+interfaces that will be created on the fly for testing purposes. It is
+important that <cite>InnerIP[/Mask]</cite> does not interfere with already existing IP
+addresses on both <strong class="program">ovs-test</strong> servers and client. InnerPort is port
+which will be used by server to listen for test traffic that will be
+encapsulated (by default it is 15532).</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-ovs-test-b">
+<code class="descname">-b</code><code class="descclassname"> &lt;targetbandwidth&gt;</code><code class="descclassname">, </code><code class="descname">--bandwidth</code><code class="descclassname"> &lt;targetbandwidth&gt;</code><a class="headerlink" href="#cmdoption-ovs-test-b" title="Permalink to this definition">¶</a></dt>
+<dd><p>Target bandwidth for UDP tests. The targetbandwidth must be given in bits
+per second. It is possible to use postfix <cite>M</cite> or <cite>K</cite> to alter the target
+bandwidth magnitude.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-ovs-test-i">
+<code class="descname">-i</code><code class="descclassname"> &lt;testinterval&gt;</code><code class="descclassname">, </code><code class="descname">--interval</code><code class="descclassname"> &lt;testinterval&gt;</code><a class="headerlink" href="#cmdoption-ovs-test-i" title="Permalink to this definition">¶</a></dt>
+<dd><p>How long each test should run. By default 5 seconds.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-ovs-test-h">
+<code class="descname">-h</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--help</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-ovs-test-h" title="Permalink to this definition">¶</a></dt>
+<dd><p>Prints a brief help message to the console.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-ovs-test-v">
+<code class="descname">-V</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--version</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-ovs-test-v" title="Permalink to this definition">¶</a></dt>
+<dd><p>Prints version information to the console.</p>
+</dd></dl>
+
+<p>The following test modes are supported by <strong class="program">ovs-test</strong>. It is possible
+to combine multiple of them in a single <strong class="program">ovs-test</strong> invocation.</p>
+<dl class="option">
+<dt id="cmdoption-ovs-test-d">
+<code class="descname">-d</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--direct</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-ovs-test-d" title="Permalink to this definition">¶</a></dt>
+<dd><p>Perform direct tests between both OuterIP addresses. These tests could be
+used as a reference to compare 802.1Q or L3 tunneling test results.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-ovs-test-l">
+<code class="descname">-l</code><code class="descclassname"> &lt;vlantag&gt;</code><code class="descclassname">, </code><code class="descname">--vlan-tag</code><code class="descclassname"> &lt;vlantag&gt;</code><a class="headerlink" href="#cmdoption-ovs-test-l" title="Permalink to this definition">¶</a></dt>
+<dd><p>Perform 802.1Q tests between both servers. These tests will create a
+temporary OVS bridge, if necessary, and attach a VLAN tagged port to
+it for testing purposes.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-ovs-test-t">
+<code class="descname">-t</code><code class="descclassname"> &lt;tunnelmodes&gt;</code><code class="descclassname">, </code><code class="descname">--tunnel-modes</code><code class="descclassname"> &lt;tunnelmodes&gt;</code><a class="headerlink" href="#cmdoption-ovs-test-t" title="Permalink to this definition">¶</a></dt>
+<dd><p>Perform L3 tunneling tests. The given argument is a comma sepa‐ rated
+string that specifies all the L3 tunnel modes that should be tested (e.g.
+gre). The L3 tunnels are terminated on interface that has the OuterIP
+address assigned.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="examples">
+<h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
+<p>On host 1.2.3.4 start <strong class="program">ovs-test</strong> in server mode:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ovs</span><span class="o">-</span><span class="n">test</span> <span class="o">-</span><span class="n">s</span> <span class="mi">15531</span>
+</pre></div>
+</div>
+<p>On host 1.2.3.5 start <strong class="program">ovs-test</strong> in client mode and do direct, VLAN
+and GRE tests between both nodes:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ovs</span><span class="o">-</span><span class="n">test</span> <span class="o">-</span><span class="n">c</span> <span class="mf">127.0</span><span class="o">.</span><span class="mf">0.1</span><span class="p">,</span><span class="mf">1.1</span><span class="o">.</span><span class="mf">1.1</span><span class="o">/</span><span class="mi">30</span> <span class="mf">1.2</span><span class="o">.</span><span class="mf">3.4</span><span class="p">,</span><span class="mf">1.1</span><span class="o">.</span><span class="mf">1.2</span><span class="o">/</span><span class="mi">30</span> <span class="o">-</span><span class="n">d</span> <span class="o">-</span><span class="n">l</span> <span class="mi">123</span> <span class="o">-</span><span class="n">t</span>
+<span class="n">gre</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="see-also">
+<h2>See Also<a class="headerlink" href="#see-also" title="Permalink to this headline">¶</a></h2>
+<p><cite>ovs-vswitchd(8)</cite>, <cite>ovs-ofctl(8)</cite>, <cite>ovs-vsctl(8)</cite>, <strong class="program">ovs-vlan-test</strong>,
+<cite>ethtool(8)</cite>, <cite>uname(1)</cite></p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../contents.html">
+              <img class="logo" src="../_static/logo.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="../contents.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">ovs-test</a><ul>
+<li><a class="reference internal" href="#synopsis">Synopsis</a></li>
+<li><a class="reference internal" href="#description">Description</a></li>
+<li><a class="reference internal" href="#options">Options</a></li>
+<li><a class="reference internal" href="#examples">Examples</a></li>
+<li><a class="reference internal" href="#see-also">See Also</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../contents.html">Documentation overview</a><ul>
+  <li><a href="index.html">Reference Guide</a><ul>
+      <li>Previous: <a href="index.html" title="previous chapter">Reference Guide</a></li>
+      <li>Next: <a href="ovs-vlan-test.8.html" title="next chapter">ovs-vlan-test</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/ref/ovs-test.8.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, The Open vSwitch Development Community.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.4</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="../_sources/ref/ovs-test.8.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -1,0 +1,375 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>C IDL Compound Indexes &#8212; Open vSwitch 2.9.2 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="OVN Gateway High Availability Plan" href="high-availability.html" />
+    <link rel="prev" title="Tracing packets inside Open vSwitch" href="tracing.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="c-idl-compound-indexes">
+<h1>C IDL Compound Indexes<a class="headerlink" href="#c-idl-compound-indexes" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="introduction">
+<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
+<p>This document describes the design and usage of the C IDL Compound
+Indexes feature, which allows OVSDB client applications to efficiently
+search table contents using arbitrary sets of column values in a generic
+way.</p>
+<p>This feature is implemented entirely in the client IDL, requiring no changes
+to the OVSDB Server, OVSDB Protocol (OVSDB RFC (RFC 7047)) or additional
+interaction with the OVSDB server.</p>
+<p>Please note that in this document, the term “index” refers to the common
+database term defined as “a data structure that facilitates data
+retrieval”. Unless stated otherwise, the definition for index from the
+OVSDB RFC (RFC 7047) is not used.</p>
+</div>
+<div class="section" id="typical-use-cases">
+<h2>Typical Use Cases<a class="headerlink" href="#typical-use-cases" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="fast-lookups">
+<h3>Fast lookups<a class="headerlink" href="#fast-lookups" title="Permalink to this headline">¶</a></h3>
+<p>Depending on the topology, the route table of a network device could
+manage thousands of routes. Commands such as “show ip route &lt;<em>specific
+route</em>&gt;” would need to do a sequential lookup of the routing table to
+find the specific route. With an index created, the lookup time could be
+faster.</p>
+<p>This same scenario could be applied to other features such as Access
+List rules and even interfaces lists.</p>
+</div>
+<div class="section" id="lexicographic-order">
+<h3>Lexicographic order<a class="headerlink" href="#lexicographic-order" title="Permalink to this headline">¶</a></h3>
+<p>There are a number of cases in which retrieving data in a particular
+lexicographic order is needed. For example, SNMP. When an administrator
+or even a NMS would like to retrieve data from a specific device, it’s
+possible that they will request data from full tables instead of just
+specific values.  Also, they would like to have this information displayed
+in lexicographic order. This operation could be done by the SNMP daemon or
+by the CLI, but it would be better if the database could provide the
+data ready for consumption. Also, duplicate efforts by different
+processes will be avoided. Another use case for requesting data in
+lexicographic order is for user interfaces (web or CLI) where it would
+be better and quicker if the DB sends the data sorted instead of letting
+each process to sort the data by itself.</p>
+</div>
+</div>
+<div class="section" id="implementation-design">
+<h2>Implementation Design<a class="headerlink" href="#implementation-design" title="Permalink to this headline">¶</a></h2>
+<p>This feature maintains a collection of indexes per table. The application
+can create any number of indexes per table.</p>
+<p>An index can be defined over any number of columns, and supports the
+following options:</p>
+<ul class="simple">
+<li>Add a column with type string, boolean, uuid, integer or real (using
+default comparators).</li>
+<li>Select ordering direction of a column (ascending or descending, must
+be selected when creating the index).</li>
+<li>Use a custom ordering comparator (eg: treat a string column like a IP,
+or sort by the value of the “config” key in a map column).</li>
+</ul>
+<p>For querying the index the user needs to create a cursor. That cursor
+points to a position in the index. The user can then use the cursor to
+perform lookups (by key) and/or get the subsequent rows. The user can
+also compare the current value of the cursor to a record.</p>
+<p>For lookups, the user needs to provide a key to be used for locating the
+specific rows that meet his criteria. This key could be an IP address, a
+MAC address, an ACL rule, etc. When the information is found in the data
+structure the user’s cursor is updated to point to the row. If several
+rows match the query then the user can easily get the next row in sequence
+by updating the cursor.</p>
+<p>For accessing data in lexicographic order, the user can use the ranged
+iterators. Those iterators need a cursor and “from” and “to” values to
+define a range.</p>
+<p>The indexes maintain a pointer to the row in the local replica, avoiding
+the need to make additional copies of the data and thereby minimizing any
+additional memory and CPU overhead for their maintenance. It is intended
+that creating and maintaining indexes should be very cheap.</p>
+<p>Another potential issue is the time needed to create the data structure
+and the time needed to add/remove elements. The indexes are always
+synchronized with the replica. For this reason is VERY IMPORTANT that
+the comparison functions (built-in and user provided) are FAST.</p>
+<p>Skiplists are used as the primary data structure for the implementation of
+indexes. Indexes therefore have an expected <code class="docutils literal notranslate"><span class="pre">O(log(n))</span></code> cost when
+inserting, deleting or modifiying a row, <code class="docutils literal notranslate"><span class="pre">O(log(n))</span></code> when retrieving
+a row by key, and O(1) when retrieving the first or next row.</p>
+<p>Indexes are maintained incrementally in the replica as notifications of
+database changes are received from the OVSDB server, as shown in the
+following diagram.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>               <span class="o">+---------------------------------------------------------+</span>
+               <span class="o">|</span>                                                         <span class="o">|</span>
+    <span class="o">+-------------+</span><span class="n">Client</span> <span class="n">changes</span> <span class="n">to</span> <span class="n">data</span>                            <span class="n">IDL</span> <span class="o">|</span>
+    <span class="o">|</span>          <span class="o">|</span>                                                         <span class="o">|</span>
+<span class="o">+---</span><span class="n">v</span><span class="o">---+</span>      <span class="o">|</span>                                                         <span class="o">|</span>
+<span class="o">|</span> <span class="n">OVSDB</span> <span class="o">+---------&gt;</span><span class="n">OVSDB</span> <span class="n">Notification</span>                                    <span class="o">|</span>
+<span class="o">+-------+</span>      <span class="o">|</span>   <span class="o">+</span>                                                     <span class="o">|</span>
+               <span class="o">|</span>   <span class="o">|</span>   <span class="o">+------------+</span>                                    <span class="o">|</span>
+               <span class="o">|</span>   <span class="o">|</span>   <span class="o">|</span>            <span class="o">|</span>                                    <span class="o">|</span>
+               <span class="o">|</span>   <span class="o">|</span>   <span class="o">|</span> <span class="n">Insert</span> <span class="n">Row</span> <span class="o">+----&gt;</span> <span class="n">Insert</span> <span class="n">row</span> <span class="n">to</span> <span class="n">indexes</span>         <span class="o">|</span>
+               <span class="o">|</span>   <span class="o">|</span>   <span class="o">|</span>            <span class="o">|</span>                   <span class="o">^</span>                <span class="o">|</span>
+               <span class="o">|</span>   <span class="o">+-&gt;</span> <span class="o">|</span> <span class="n">Modify</span> <span class="n">Row</span> <span class="o">+-------------------+</span>                <span class="o">|</span>
+               <span class="o">|</span>       <span class="o">|</span>            <span class="o">|</span>                   <span class="n">v</span>                <span class="o">|</span>
+               <span class="o">|</span>       <span class="o">|</span> <span class="n">Delete</span> <span class="n">Row</span> <span class="o">+----&gt;</span> <span class="n">Delete</span> <span class="n">row</span> <span class="kn">from</span> <span class="nn">indexes</span>       <span class="o">|</span>
+               <span class="o">|</span>       <span class="o">|</span>            <span class="o">|</span>                                    <span class="o">|</span>
+               <span class="o">|</span>       <span class="o">+----+-------+</span>                                    <span class="o">|</span>
+               <span class="o">|</span>            <span class="o">|</span>                                            <span class="o">|</span>
+               <span class="o">|</span>            <span class="o">+-&gt;</span> <span class="n">IDL</span> <span class="n">Replica</span>                              <span class="o">|</span>
+               <span class="o">|</span>                                                         <span class="o">|</span>
+               <span class="o">+---------------------------------------------------------+</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="c-idl-api">
+<h2>C IDL API<a class="headerlink" href="#c-idl-api" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="index-creation">
+<h3>Index Creation<a class="headerlink" href="#index-creation" title="Permalink to this headline">¶</a></h3>
+<p>Each index must be created with the function <code class="docutils literal notranslate"><span class="pre">ovsdb_idl_create_index()</span></code>.
+After an index has been created the user can add one or more columns to it,
+using <code class="docutils literal notranslate"><span class="pre">ovsdb_idl_index_add_column</span></code>. All indexes must be created wiith all
+columns added BEFORE the first call to ovsdb_idl_run().</p>
+<div class="section" id="index-creation-example">
+<h4>Index Creation Example<a class="headerlink" href="#index-creation-example" title="Permalink to this headline">¶</a></h4>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">/*</span> <span class="n">Define</span> <span class="n">a</span> <span class="n">custom</span> <span class="n">comparator</span> <span class="k">for</span> <span class="n">the</span> <span class="n">column</span> <span class="s2">&quot;stringField&quot;</span> <span class="ow">in</span> <span class="n">table</span>
+ <span class="o">*</span> <span class="s2">&quot;Test&quot;</span><span class="o">.</span> <span class="p">(</span><span class="n">Note</span> <span class="n">that</span> <span class="n">custom</span> <span class="n">comparison</span> <span class="n">functions</span> <span class="n">are</span> <span class="ow">not</span> <span class="n">often</span>
+ <span class="o">*</span> <span class="n">necessary</span><span class="o">.</span><span class="p">)</span>
+ <span class="o">*/</span>
+<span class="nb">int</span> <span class="n">stringField_comparator</span><span class="p">(</span><span class="n">const</span> <span class="n">void</span> <span class="o">*</span><span class="n">a</span><span class="p">,</span> <span class="n">const</span> <span class="n">void</span> <span class="o">*</span><span class="n">b</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="n">struct</span> <span class="n">ovsrec_test</span> <span class="o">*</span><span class="n">AAA</span><span class="p">,</span> <span class="o">*</span><span class="n">BBB</span><span class="p">;</span>
+    <span class="n">AAA</span> <span class="o">=</span> <span class="p">(</span><span class="n">struct</span> <span class="n">ovsrec_test</span> <span class="o">*</span><span class="p">)</span><span class="n">a</span><span class="p">;</span>
+    <span class="n">BBB</span> <span class="o">=</span> <span class="p">(</span><span class="n">struct</span> <span class="n">ovsrec_test</span> <span class="o">*</span><span class="p">)</span><span class="n">b</span><span class="p">;</span>
+    <span class="k">return</span> <span class="n">strcmp</span><span class="p">(</span><span class="n">AAA</span><span class="o">-&gt;</span><span class="n">stringField</span><span class="p">,</span> <span class="n">BBB</span><span class="o">-&gt;</span><span class="n">stringField</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="n">void</span> <span class="n">init_idl</span><span class="p">(</span><span class="n">struct</span> <span class="n">ovsdb_idl</span> <span class="o">**</span><span class="p">,</span> <span class="n">char</span> <span class="o">*</span><span class="n">remote</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="o">/*</span> <span class="n">Add</span> <span class="n">the</span> <span class="n">columns</span> <span class="n">to</span> <span class="n">the</span> <span class="n">IDL</span> <span class="o">*/</span>
+    <span class="o">*</span><span class="n">idl</span> <span class="o">=</span> <span class="n">ovsdb_idl_create</span><span class="p">(</span><span class="n">remote</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">ovsrec_idl_class</span><span class="p">,</span> <span class="n">false</span><span class="p">,</span> <span class="n">true</span><span class="p">);</span>
+    <span class="n">ovsdb_idl_add_table</span><span class="p">(</span><span class="o">*</span><span class="n">idl</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">ovsrec_table_test</span><span class="p">);</span>
+    <span class="n">ovsdb_idl_add_column</span><span class="p">(</span><span class="o">*</span><span class="n">idl</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">ovsrec_test_col_stringField</span><span class="p">);</span>
+    <span class="n">ovsdb_idl_add_column</span><span class="p">(</span><span class="o">*</span><span class="n">idl</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">ovsrec_test_col_numericField</span><span class="p">);</span>
+    <span class="n">ovsdb_idl_add_column</span><span class="p">(</span><span class="o">*</span><span class="n">idl</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">ovsrec_test_col_enumField</span><span class="p">);</span>
+    <span class="n">ovsdb_idl_add_column</span><span class="p">(</span><span class="o">*</span><span class="n">idl</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">ovsrec_test_col_boolField</span><span class="p">);</span>
+
+    <span class="o">/*</span> <span class="n">Create</span> <span class="n">an</span> <span class="n">index</span><span class="o">.</span>
+     <span class="o">*</span> <span class="n">This</span> <span class="n">index</span> <span class="ow">is</span> <span class="n">created</span> <span class="n">using</span> <span class="p">(</span><span class="n">stringField</span><span class="p">,</span> <span class="n">numericField</span><span class="p">)</span> <span class="k">as</span> <span class="n">key</span><span class="o">.</span>
+     <span class="o">*</span> <span class="n">Also</span> <span class="n">shows</span> <span class="n">the</span> <span class="n">usage</span> <span class="n">of</span> <span class="n">some</span> <span class="n">arguments</span> <span class="n">of</span> <span class="n">add</span> <span class="n">column</span><span class="p">,</span> <span class="n">although</span>
+     <span class="o">*</span> <span class="k">for</span> <span class="n">a</span> <span class="n">string</span> <span class="n">column</span> <span class="n">it</span> <span class="ow">is</span> <span class="n">unnecesary</span> <span class="n">to</span> <span class="k">pass</span> <span class="n">a</span> <span class="n">custom</span> <span class="n">comparator</span><span class="o">.</span>
+     <span class="o">*/</span>
+    <span class="n">struct</span> <span class="n">ovsdb_idl_index</span> <span class="o">*</span><span class="n">index</span><span class="p">;</span>
+    <span class="n">index</span> <span class="o">=</span> <span class="n">ovsdb_idl_create_index</span><span class="p">(</span><span class="o">*</span><span class="n">idl</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">ovsrec_table_test</span><span class="p">,</span>
+                                   <span class="s2">&quot;by_stringField&quot;</span><span class="p">);</span>
+    <span class="n">ovsdb_idl_index_add_column</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">ovsrec_test_col_stringField</span><span class="p">,</span>
+                               <span class="n">OVSDB_INDEX_ASC</span><span class="p">,</span> <span class="n">stringField_comparator</span><span class="p">);</span>
+    <span class="n">ovsdb_idl_index_add_column</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">ovsrec_test_col_numericField</span><span class="p">,</span>
+                               <span class="n">OVSDB_INDEX_DESC</span><span class="p">,</span> <span class="n">NULL</span><span class="p">);</span>
+    <span class="o">/*</span> <span class="n">Done</span><span class="o">.</span> <span class="o">*/</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="section" id="index-usage">
+<h2>Index Usage<a class="headerlink" href="#index-usage" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="iterators">
+<h3>Iterators<a class="headerlink" href="#iterators" title="Permalink to this headline">¶</a></h3>
+<p>The recommended way to do queries is using a “ranged foreach”, an “equal
+foreach” or a “full foreach” over an index. The mechanism works as
+follows:</p>
+<ol class="arabic simple">
+<li>Create a cursor.</li>
+<li>Create index row objects with index columns set to desired search key
+values (one is needed for equality iterators, two for range iterators,
+a search key is not needed for the full index iterator).</li>
+<li>Pass the cursor, an iteration variable, and the key values to the iterator.</li>
+<li>Use the values within iterator loop.</li>
+</ol>
+<p>To create the cursor for the example, we use the following code:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ovsdb_idl_index_cursor</span> <span class="n">my_cursor</span><span class="p">;</span>
+<span class="n">ovsdb_idl_initialize_cursor</span><span class="p">(</span><span class="n">idl</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">ovsrec_table_test</span><span class="p">,</span> <span class="s2">&quot;by_stringField&quot;</span><span class="p">,</span>
+                            <span class="o">&amp;</span><span class="n">my_cursor</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>Now the cursor can be used to perform queries. The library implements three
+different iterators: a range iterator, an equality iterator and a full index
+iterator. The range iterator receives two values and iterates over all
+rows with values that are within that range (inclusive of the two values
+defining the range). The equality iterator iterates over all rows that exactly
+match the value passed. The full index iterator iterates over all rows in the
+index, in an order determined by the comparison function and configured
+direction (ascending or descending).</p>
+<p>Note that indexes are <em>sorted by the “concatenation” of the values in
+all indexed columns</em>, so the ranged iterator returns all the values
+between “from.col1 from.col2 … from.coln” and “to.col1 to.col2 …
+to.coln”, <em>NOT the rows with a value in column 1 between from.col1 and
+to.col1, and so on</em>.</p>
+<p>The iterators are macros especific to each table. An example of the use
+these iterators follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">/*</span>
+ <span class="o">*</span> <span class="n">Equality</span> <span class="n">iterator</span><span class="p">;</span> <span class="n">iterates</span> <span class="n">over</span> <span class="nb">all</span> <span class="n">the</span> <span class="n">records</span> <span class="n">equal</span> <span class="n">to</span> <span class="s2">&quot;value&quot;</span><span class="o">.</span>
+ <span class="o">*/</span>
+<span class="n">ovsrec_test</span> <span class="o">*</span><span class="n">value</span><span class="p">,</span> <span class="o">*</span><span class="n">record</span><span class="p">;</span>
+<span class="n">value</span> <span class="o">=</span> <span class="n">ovsrec_test_index_init_row</span><span class="p">(</span><span class="n">idl</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">ovsrec_table_test</span><span class="p">);</span>
+<span class="n">ovsrec_test_index_set_stringField</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="s2">&quot;hello world&quot;</span><span class="p">);</span>
+<span class="n">OVSREC_TEST_FOR_EACH_EQUAL</span> <span class="p">(</span><span class="n">record</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">my_cursor</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span> <span class="p">{</span>
+    <span class="o">/*</span> <span class="n">Can</span> <span class="k">return</span> <span class="n">zero</span><span class="p">,</span> <span class="n">one</span> <span class="ow">or</span> <span class="n">more</span> <span class="n">records</span> <span class="o">*/</span>
+    <span class="k">assert</span><span class="p">(</span><span class="n">strcmp</span><span class="p">(</span><span class="n">record</span><span class="o">-&gt;</span><span class="n">stringField</span><span class="p">,</span> <span class="s2">&quot;hello world&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">);</span>
+    <span class="n">printf</span><span class="p">(</span><span class="s2">&quot;Found one record with </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">record</span><span class="o">-&gt;</span><span class="n">stringField</span><span class="p">);</span>
+<span class="p">}</span>
+<span class="n">ovsrec_test_index_destroy_row</span><span class="p">(</span><span class="n">value</span><span class="p">);</span>
+
+<span class="o">/*</span>
+ <span class="o">*</span> <span class="n">Range</span> <span class="n">iterator</span><span class="p">;</span> <span class="n">iterates</span> <span class="n">over</span> <span class="nb">all</span> <span class="n">records</span> <span class="n">between</span> <span class="n">two</span> <span class="n">values</span>
+ <span class="o">*</span> <span class="p">(</span><span class="n">inclusive</span><span class="p">)</span><span class="o">.</span>
+ <span class="o">*/</span>
+<span class="n">ovsrec_test</span> <span class="o">*</span><span class="n">value_from</span><span class="p">,</span> <span class="o">*</span><span class="n">value_to</span><span class="p">;</span>
+<span class="n">value_from</span> <span class="o">=</span> <span class="n">ovsrec_test_index_init_row</span><span class="p">(</span><span class="n">idl</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">ovsrec_table_test</span><span class="p">);</span>
+<span class="n">value_to</span> <span class="o">=</span> <span class="n">ovsrec_test_index_init_row</span><span class="p">(</span><span class="n">idl</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">ovsrec_table_test</span><span class="p">);</span>
+
+<span class="n">ovsrec_test_index_set_stringField</span><span class="p">(</span><span class="n">value_from</span><span class="p">,</span> <span class="s2">&quot;aaa&quot;</span><span class="p">);</span>
+<span class="n">ovsrec_test_index_set_stringField</span><span class="p">(</span><span class="n">value_to</span><span class="p">,</span> <span class="s2">&quot;mmm&quot;</span><span class="p">);</span>
+<span class="n">OVSREC_TEST_FOR_EACH_RANGE</span> <span class="p">(</span><span class="n">record</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">my_cursor</span><span class="p">,</span> <span class="n">value_from</span><span class="p">,</span> <span class="n">value_to</span><span class="p">)</span> <span class="p">{</span>
+    <span class="o">/*</span> <span class="n">Can</span> <span class="k">return</span> <span class="n">zero</span><span class="p">,</span> <span class="n">one</span> <span class="ow">or</span> <span class="n">more</span> <span class="n">records</span> <span class="o">*/</span>
+    <span class="k">assert</span><span class="p">(</span><span class="n">strcmp</span><span class="p">(</span><span class="s2">&quot;aaa&quot;</span><span class="p">,</span> <span class="n">record</span><span class="o">-&gt;</span><span class="n">stringField</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">);</span>
+    <span class="k">assert</span><span class="p">(</span><span class="n">strcmp</span><span class="p">(</span><span class="n">record</span><span class="o">-&gt;</span><span class="n">stringField</span><span class="p">,</span> <span class="s2">&quot;mmm&quot;</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">);</span>
+    <span class="n">printf</span><span class="p">(</span><span class="s2">&quot;Found one record with </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">record</span><span class="o">-&gt;</span><span class="n">stringField</span><span class="p">);</span>
+<span class="p">}</span>
+<span class="n">ovsrec_test_index_destroy_row</span><span class="p">(</span><span class="n">value_from</span><span class="p">);</span>
+<span class="n">ovsrec_test_index_destroy_row</span><span class="p">(</span><span class="n">value_to</span><span class="p">);</span>
+
+<span class="o">/*</span>
+ <span class="o">*</span> <span class="n">Index</span> <span class="n">iterator</span><span class="p">;</span> <span class="n">iterates</span> <span class="n">over</span> <span class="nb">all</span> <span class="n">nodes</span> <span class="ow">in</span> <span class="n">the</span> <span class="n">index</span><span class="p">,</span> <span class="ow">in</span> <span class="n">order</span>
+ <span class="o">*</span> <span class="n">determined</span> <span class="n">by</span> <span class="n">comparison</span> <span class="n">function</span> <span class="ow">and</span> <span class="n">configured</span> <span class="n">order</span> <span class="p">(</span><span class="n">ascending</span>
+ <span class="o">*</span> <span class="ow">or</span> <span class="n">descending</span><span class="p">)</span><span class="o">.</span>
+ <span class="o">*/</span>
+<span class="n">OVSREC_TEST_FOR_EACH_BYINDEX</span> <span class="p">(</span><span class="n">record</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">my_cursor</span><span class="p">)</span> <span class="p">{</span>
+    <span class="o">/*</span> <span class="n">Can</span> <span class="k">return</span> <span class="n">zero</span><span class="p">,</span> <span class="n">one</span> <span class="ow">or</span> <span class="n">more</span> <span class="n">records</span> <span class="o">*/</span>
+    <span class="n">printf</span><span class="p">(</span><span class="s2">&quot;Found one record with </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">record</span><span class="o">-&gt;</span><span class="n">stringField</span><span class="p">);</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="general-index-access">
+<h3>General Index Access<a class="headerlink" href="#general-index-access" title="Permalink to this headline">¶</a></h3>
+<p>While the currently defined iterators are suitable for many use cases, it is
+also possible to create custom iterators using the more general API on which
+the existing iterators have been built. This API includes the following
+functions, declared in “lib/ovsdb-idl.h”:</p>
+<ol class="arabic simple">
+<li><code class="docutils literal notranslate"><span class="pre">ovsrec_&lt;table&gt;_index_compare()</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">ovsrec_&lt;table&gt;_index_next()</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">ovsrec_&lt;table&gt;_index_find()</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">ovsrec_&lt;table&gt;_index_forward_to()</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">ovsrec_&lt;table&gt;_index_get_data()</span></code></li>
+</ol>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../contents.html">
+              <img class="logo" src="../_static/logo.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="../contents.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">C IDL Compound Indexes</a><ul>
+<li><a class="reference internal" href="#introduction">Introduction</a></li>
+<li><a class="reference internal" href="#typical-use-cases">Typical Use Cases</a><ul>
+<li><a class="reference internal" href="#fast-lookups">Fast lookups</a></li>
+<li><a class="reference internal" href="#lexicographic-order">Lexicographic order</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#implementation-design">Implementation Design</a></li>
+<li><a class="reference internal" href="#c-idl-api">C IDL API</a><ul>
+<li><a class="reference internal" href="#index-creation">Index Creation</a><ul>
+<li><a class="reference internal" href="#index-creation-example">Index Creation Example</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#index-usage">Index Usage</a><ul>
+<li><a class="reference internal" href="#iterators">Iterators</a></li>
+<li><a class="reference internal" href="#general-index-access">General Index Access</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../contents.html">Documentation overview</a><ul>
+  <li><a href="index.html">Deep Dive</a><ul>
+      <li>Previous: <a href="tracing.html" title="previous chapter">Tracing packets inside Open vSwitch</a></li>
+      <li>Next: <a href="high-availability.html" title="next chapter">OVN Gateway High Availability Plan</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/topics/idl-compound-indexes.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, The Open vSwitch Development Community.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.4</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="../_sources/topics/idl-compound-indexes.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

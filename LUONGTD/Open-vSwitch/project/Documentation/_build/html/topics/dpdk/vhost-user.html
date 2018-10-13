@@ -1,0 +1,560 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>DPDK vHost User Ports &#8212; Open vSwitch 2.9.2 documentation</title>
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" src="../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="DPDK Ring Ports" href="ring.html" />
+    <link rel="prev" title="The DPDK Datapath" href="index.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="dpdk-vhost-user-ports">
+<h1>DPDK vHost User Ports<a class="headerlink" href="#dpdk-vhost-user-ports" title="Permalink to this headline">¶</a></h1>
+<p>The DPDK datapath provides DPDK-backed vHost user ports as a primary way to
+interact with guests. For more information on vHost User, refer to the <a class="reference external" href="http://git.qemu-project.org/?p=qemu.git;a=blob;f=docs/specs/vhost-user.txt;h=7890d7169;hb=HEAD">QEMU
+documentation</a> on same.</p>
+<div class="section" id="quick-example">
+<h2>Quick Example<a class="headerlink" href="#quick-example" title="Permalink to this headline">¶</a></h2>
+<p>This example demonstrates how to add two <code class="docutils literal notranslate"><span class="pre">dpdkvhostuserclient</span></code> ports to an
+existing bridge called <code class="docutils literal notranslate"><span class="pre">br0</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ ovs-vsctl add-port br0 dpdkvhostclient0 \
+    -- set Interface dpdkvhostclient0 type=dpdkvhostuserclient \
+       options:vhost-server-path=/tmp/dpdkvhostclient0
+$ ovs-vsctl add-port br0 dpdkvhostclient1 \
+    -- set Interface dpdkvhostclient1 type=dpdkvhostuserclient \
+       options:vhost-server-path=/tmp/dpdkvhostclient1
+</pre></div>
+</div>
+<p>For the above examples to work, an appropriate server socket must be created
+at the paths specified (<code class="docutils literal notranslate"><span class="pre">/tmp/dpdkvhostclient0</span></code> and
+<code class="docutils literal notranslate"><span class="pre">/tmp/dpdkvhostclient1</span></code>).  These sockets can be created with QEMU; see the
+<a class="reference internal" href="#dpdk-vhost-user-client"><span class="std std-ref">vhost-user client</span></a> section for details.</p>
+</div>
+<div class="section" id="vhost-user-vs-vhost-user-client">
+<h2>vhost-user vs. vhost-user-client<a class="headerlink" href="#vhost-user-vs-vhost-user-client" title="Permalink to this headline">¶</a></h2>
+<p>Open vSwitch provides two types of vHost User ports:</p>
+<ul class="simple">
+<li>vhost-user (<code class="docutils literal notranslate"><span class="pre">dpdkvhostuser</span></code>)</li>
+<li>vhost-user-client (<code class="docutils literal notranslate"><span class="pre">dpdkvhostuserclient</span></code>)</li>
+</ul>
+<p>vHost User uses a client-server model. The server creates/manages/destroys the
+vHost User sockets, and the client connects to the server. Depending on which
+port type you use, <code class="docutils literal notranslate"><span class="pre">dpdkvhostuser</span></code> or <code class="docutils literal notranslate"><span class="pre">dpdkvhostuserclient</span></code>, a different
+configuration of the client-server model is used.</p>
+<p>For vhost-user ports, Open vSwitch acts as the server and QEMU the client. This
+means if OVS dies, all VMs <strong>must</strong> be restarted. On the other hand, for
+vhost-user-client ports, OVS acts as the client and QEMU the server. This means
+OVS can die and be restarted without issue, and it is also possible to restart
+an instance itself. For this reason, vhost-user-client ports are the preferred
+type for all known use cases; the only limitation is that vhost-user client
+mode ports require QEMU version 2.7.  Ports of type vhost-user are currently
+deprecated and will be removed in a future release.</p>
+</div>
+<div class="section" id="vhost-user">
+<span id="dpdk-vhost-user"></span><h2>vhost-user<a class="headerlink" href="#vhost-user" title="Permalink to this headline">¶</a></h2>
+<div class="admonition important">
+<p class="first admonition-title">Important</p>
+<p class="last">Use of vhost-user ports requires QEMU &gt;= 2.2;  vhost-user ports are
+<em>deprecated</em>.</p>
+</div>
+<p>To use vhost-user ports, you must first add said ports to the switch. DPDK
+vhost-user ports can have arbitrary names with the exception of forward and
+backward slashes, which are prohibited. For vhost-user, the port type is
+<code class="docutils literal notranslate"><span class="pre">dpdkvhostuser</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ ovs-vsctl add-port br0 vhost-user-1 -- set Interface vhost-user-1 \
+    type=dpdkvhostuser
+</pre></div>
+</div>
+<p>This action creates a socket located at
+<code class="docutils literal notranslate"><span class="pre">/usr/local/var/run/openvswitch/vhost-user-1</span></code>, which you must provide to your
+VM on the QEMU command line.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>If you wish for the vhost-user sockets to be created in a sub-directory of
+<code class="docutils literal notranslate"><span class="pre">/usr/local/var/run/openvswitch</span></code>, you may specify this directory in the
+ovsdb like so:</p>
+<div class="last highlight-default notranslate"><div class="highlight"><pre><span></span>$ ovs-vsctl --no-wait \
+    set Open_vSwitch . other_config:vhost-sock-dir=subdir
+</pre></div>
+</div>
+</div>
+<p>Once the vhost-user ports have been added to the switch, they must be added to
+the guest. There are two ways to do this: using QEMU directly, or using
+libvirt.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">IOMMU is not supported with vhost-user ports.</p>
+</div>
+<div class="section" id="adding-vhost-user-ports-to-the-guest-qemu">
+<h3>Adding vhost-user ports to the guest (QEMU)<a class="headerlink" href="#adding-vhost-user-ports-to-the-guest-qemu" title="Permalink to this headline">¶</a></h3>
+<p>To begin, you must attach the vhost-user device sockets to the guest. To do
+this, you must pass the following parameters to QEMU:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">-</span><span class="n">chardev</span> <span class="n">socket</span><span class="p">,</span><span class="nb">id</span><span class="o">=</span><span class="n">char1</span><span class="p">,</span><span class="n">path</span><span class="o">=/</span><span class="n">usr</span><span class="o">/</span><span class="n">local</span><span class="o">/</span><span class="n">var</span><span class="o">/</span><span class="n">run</span><span class="o">/</span><span class="n">openvswitch</span><span class="o">/</span><span class="n">vhost</span><span class="o">-</span><span class="n">user</span><span class="o">-</span><span class="mi">1</span>
+<span class="o">-</span><span class="n">netdev</span> <span class="nb">type</span><span class="o">=</span><span class="n">vhost</span><span class="o">-</span><span class="n">user</span><span class="p">,</span><span class="nb">id</span><span class="o">=</span><span class="n">mynet1</span><span class="p">,</span><span class="n">chardev</span><span class="o">=</span><span class="n">char1</span><span class="p">,</span><span class="n">vhostforce</span>
+<span class="o">-</span><span class="n">device</span> <span class="n">virtio</span><span class="o">-</span><span class="n">net</span><span class="o">-</span><span class="n">pci</span><span class="p">,</span><span class="n">mac</span><span class="o">=</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">01</span><span class="p">,</span><span class="n">netdev</span><span class="o">=</span><span class="n">mynet1</span>
+</pre></div>
+</div>
+<p>where <code class="docutils literal notranslate"><span class="pre">vhost-user-1</span></code> is the name of the vhost-user port added to the switch.</p>
+<p>Repeat the above parameters for multiple devices, changing the chardev <code class="docutils literal notranslate"><span class="pre">path</span></code>
+and <code class="docutils literal notranslate"><span class="pre">id</span></code> as necessary. Note that a separate and different chardev <code class="docutils literal notranslate"><span class="pre">path</span></code>
+needs to be specified for each vhost-user device. For example you have a second
+vhost-user port named <code class="docutils literal notranslate"><span class="pre">vhost-user-2</span></code>, you append your QEMU command line with
+an additional set of parameters:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">-</span><span class="n">chardev</span> <span class="n">socket</span><span class="p">,</span><span class="nb">id</span><span class="o">=</span><span class="n">char2</span><span class="p">,</span><span class="n">path</span><span class="o">=/</span><span class="n">usr</span><span class="o">/</span><span class="n">local</span><span class="o">/</span><span class="n">var</span><span class="o">/</span><span class="n">run</span><span class="o">/</span><span class="n">openvswitch</span><span class="o">/</span><span class="n">vhost</span><span class="o">-</span><span class="n">user</span><span class="o">-</span><span class="mi">2</span>
+<span class="o">-</span><span class="n">netdev</span> <span class="nb">type</span><span class="o">=</span><span class="n">vhost</span><span class="o">-</span><span class="n">user</span><span class="p">,</span><span class="nb">id</span><span class="o">=</span><span class="n">mynet2</span><span class="p">,</span><span class="n">chardev</span><span class="o">=</span><span class="n">char2</span><span class="p">,</span><span class="n">vhostforce</span>
+<span class="o">-</span><span class="n">device</span> <span class="n">virtio</span><span class="o">-</span><span class="n">net</span><span class="o">-</span><span class="n">pci</span><span class="p">,</span><span class="n">mac</span><span class="o">=</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">02</span><span class="p">,</span><span class="n">netdev</span><span class="o">=</span><span class="n">mynet2</span>
+</pre></div>
+</div>
+<p>In addition,       QEMU must allocate the VM’s memory on hugetlbfs. vhost-user
+ports access a virtio-net device’s virtual rings and packet buffers mapping the
+VM’s physical memory on hugetlbfs. To enable vhost-user ports to map the VM’s
+memory into their process address space, pass the following parameters to
+QEMU:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">-</span><span class="nb">object</span> <span class="n">memory</span><span class="o">-</span><span class="n">backend</span><span class="o">-</span><span class="n">file</span><span class="p">,</span><span class="nb">id</span><span class="o">=</span><span class="n">mem</span><span class="p">,</span><span class="n">size</span><span class="o">=</span><span class="mi">4096</span><span class="n">M</span><span class="p">,</span><span class="n">mem</span><span class="o">-</span><span class="n">path</span><span class="o">=/</span><span class="n">dev</span><span class="o">/</span><span class="n">hugepages</span><span class="p">,</span><span class="n">share</span><span class="o">=</span><span class="n">on</span>
+<span class="o">-</span><span class="n">numa</span> <span class="n">node</span><span class="p">,</span><span class="n">memdev</span><span class="o">=</span><span class="n">mem</span> <span class="o">-</span><span class="n">mem</span><span class="o">-</span><span class="n">prealloc</span>
+</pre></div>
+</div>
+<p>Finally, you may wish to enable multiqueue support. This is optional but,
+should you wish to enable it, run:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>-chardev socket,id=char2,path=/usr/local/var/run/openvswitch/vhost-user-2
+-netdev type=vhost-user,id=mynet2,chardev=char2,vhostforce,queues=$q
+-device virtio-net-pci,mac=00:00:00:00:00:02,netdev=mynet2,mq=on,vectors=$v
+</pre></div>
+</div>
+<p>where:</p>
+<dl class="docutils">
+<dt><code class="docutils literal notranslate"><span class="pre">$q</span></code></dt>
+<dd>The number of queues</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">$v</span></code></dt>
+<dd>The number of vectors, which is <code class="docutils literal notranslate"><span class="pre">$q</span></code> * 2 + 2</dd>
+</dl>
+<p>The vhost-user interface will be automatically reconfigured with required
+number of rx and tx queues after connection of virtio device.  Manual
+configuration of <code class="docutils literal notranslate"><span class="pre">n_rxq</span></code> is not supported because OVS will work properly only
+if <code class="docutils literal notranslate"><span class="pre">n_rxq</span></code> will match number of queues configured in QEMU.</p>
+<p>A least 2 PMDs should be configured for the vswitch when using multiqueue.
+Using a single PMD will cause traffic to be enqueued to the same vhost queue
+rather than being distributed among different vhost queues for a vhost-user
+interface.</p>
+<p>If traffic destined for a VM configured with multiqueue arrives to the vswitch
+via a physical DPDK port, then the number of rxqs should also be set to at
+least 2 for that physical DPDK port. This is required to increase the
+probability that a different PMD will handle the multiqueue transmission to the
+guest using a different vhost queue.</p>
+<p>If one wishes to use multiple queues for an interface in the guest, the driver
+in the guest operating system must be configured to do so. It is recommended
+that the number of queues configured be equal to <code class="docutils literal notranslate"><span class="pre">$q</span></code>.</p>
+<p>For example, this can be done for the Linux kernel virtio-net driver with:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ ethtool -L &lt;DEV&gt; combined &lt;$q&gt;
+</pre></div>
+</div>
+<p>where:</p>
+<dl class="docutils">
+<dt><code class="docutils literal notranslate"><span class="pre">-L</span></code></dt>
+<dd>Changes the numbers of channels of the specified network device</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">combined</span></code></dt>
+<dd>Changes the number of multi-purpose channels.</dd>
+</dl>
+</div>
+<div class="section" id="adding-vhost-user-ports-to-the-guest-libvirt">
+<h3>Adding vhost-user ports to the guest (libvirt)<a class="headerlink" href="#adding-vhost-user-ports-to-the-guest-libvirt" title="Permalink to this headline">¶</a></h3>
+<p>To begin, you must change the user and group that qemu runs under, and restart
+libvirtd.</p>
+<ul>
+<li><p class="first">In <code class="docutils literal notranslate"><span class="pre">/etc/libvirt/qemu.conf</span></code> add/edit the following lines:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">user</span> <span class="o">=</span> <span class="s2">&quot;root&quot;</span>
+<span class="n">group</span> <span class="o">=</span> <span class="s2">&quot;root&quot;</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first">Finally, restart the libvirtd process, For example, on Fedora:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ systemctl restart libvirtd.service
+</pre></div>
+</div>
+</li>
+</ul>
+<p>Once complete, instantiate the VM. A sample XML configuration file is provided
+at the <a class="reference internal" href="#dpdk-vhost-user-xml"><span class="std std-ref">end of this file</span></a>. Save this file, then
+create a VM using this file:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ virsh create demovm.xml
+</pre></div>
+</div>
+<p>Once created, you can connect to the guest console:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ virsh console demovm
+</pre></div>
+</div>
+<p>The demovm xml configuration is aimed at achieving out of box performance on
+VM. These enhancements include:</p>
+<ul class="simple">
+<li>The vcpus are pinned to the cores of the CPU socket 0 using <code class="docutils literal notranslate"><span class="pre">vcpupin</span></code>.</li>
+<li>Configure NUMA cell and memory shared using <code class="docutils literal notranslate"><span class="pre">memAccess='shared'</span></code>.</li>
+<li>Disable <code class="docutils literal notranslate"><span class="pre">mrg_rxbuf='off'</span></code></li>
+</ul>
+<p>Refer to the <a class="reference external" href="http://libvirt.org/formatdomain.html">libvirt documentation</a>
+for more information.</p>
+</div>
+</div>
+<div class="section" id="vhost-user-client">
+<span id="dpdk-vhost-user-client"></span><h2>vhost-user-client<a class="headerlink" href="#vhost-user-client" title="Permalink to this headline">¶</a></h2>
+<div class="admonition important">
+<p class="first admonition-title">Important</p>
+<p class="last">Use of vhost-user ports requires QEMU &gt;= 2.7</p>
+</div>
+<p>To use vhost-user-client ports, you must first add said ports to the switch.
+Like DPDK vhost-user ports, DPDK vhost-user-client ports can have mostly
+arbitrary names. However, the name given to the port does not govern the name
+of the socket device. Instead, this must be configured by the user by way of a
+<code class="docutils literal notranslate"><span class="pre">vhost-server-path</span></code> option. For vhost-user-client, the port type is
+<code class="docutils literal notranslate"><span class="pre">dpdkvhostuserclient</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ VHOST_USER_SOCKET_PATH=/path/to/socket
+$ ovs-vsctl add-port br0 vhost-client-1 \
+    -- set Interface vhost-client-1 type=dpdkvhostuserclient \
+         options:vhost-server-path=$VHOST_USER_SOCKET_PATH
+</pre></div>
+</div>
+<p>Once the vhost-user-client ports have been added to the switch, they must be
+added to the guest. Like vhost-user ports, there are two ways to do this: using
+QEMU directly, or using libvirt. Only the QEMU case is covered here.</p>
+<div class="section" id="adding-vhost-user-client-ports-to-the-guest-qemu">
+<h3>Adding vhost-user-client ports to the guest (QEMU)<a class="headerlink" href="#adding-vhost-user-client-ports-to-the-guest-qemu" title="Permalink to this headline">¶</a></h3>
+<p>Attach the vhost-user device sockets to the guest. To do this, you must pass
+the following parameters to QEMU:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>-chardev socket,id=char1,path=$VHOST_USER_SOCKET_PATH,server
+-netdev type=vhost-user,id=mynet1,chardev=char1,vhostforce
+-device virtio-net-pci,mac=00:00:00:00:00:01,netdev=mynet1
+</pre></div>
+</div>
+<p>where <code class="docutils literal notranslate"><span class="pre">vhost-user-1</span></code> is the name of the vhost-user port added to the switch.</p>
+<p>If the corresponding <code class="docutils literal notranslate"><span class="pre">dpdkvhostuserclient</span></code> port has not yet been configured
+in OVS with <code class="docutils literal notranslate"><span class="pre">vhost-server-path=/path/to/socket</span></code>, QEMU will print a log
+similar to the following:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">QEMU</span> <span class="n">waiting</span> <span class="k">for</span> <span class="n">connection</span> <span class="n">on</span><span class="p">:</span> <span class="n">disconnected</span><span class="p">:</span><span class="n">unix</span><span class="p">:</span><span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">socket</span><span class="p">,</span><span class="n">server</span>
+</pre></div>
+</div>
+<p>QEMU will wait until the port is created sucessfully in OVS to boot the VM.
+One benefit of using this mode is the ability for vHost ports to ‘reconnect’ in
+event of the switch crashing or being brought down. Once it is brought back up,
+the vHost ports will reconnect automatically and normal service will resume.</p>
+</div>
+<div class="section" id="vhost-user-client-iommu-support">
+<h3>vhost-user-client IOMMU Support<a class="headerlink" href="#vhost-user-client-iommu-support" title="Permalink to this headline">¶</a></h3>
+<p>vhost IOMMU is a feature which restricts the vhost memory that a virtio device
+can access, and as such is useful in deployments in which security is a
+concern.</p>
+<p>IOMMU support may be enabled via a global config value,
+<code class="docutils literal notranslate"><span class="pre">`vhost-iommu-support`</span></code>. Setting this to true enables vhost IOMMU support for
+all vhost ports when/where available:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ ovs-vsctl set Open_vSwitch . other_config:vhost-iommu-support=true
+</pre></div>
+</div>
+<p>The default value is false.</p>
+<div class="admonition important">
+<p class="first admonition-title">Important</p>
+<p class="last">Changing this value requires restarting the daemon.</p>
+</div>
+<div class="admonition important">
+<p class="first admonition-title">Important</p>
+<p class="last">Enabling the IOMMU feature also enables the vhost user reply-ack protocol;
+this is known to work on QEMU v2.10.0, but is buggy on older versions
+(2.7.0 - 2.9.0, inclusive). Consequently, the IOMMU feature is disabled by
+default (and should remain so if using the aforementioned versions of
+QEMU). Starting with QEMU v2.9.1, vhost-iommu-support can safely be
+enabled, even without having an IOMMU device, with no performance penalty.</p>
+</div>
+</div>
+</div>
+<div class="section" id="dpdk-in-the-guest">
+<span id="dpdk-testpmd"></span><h2>DPDK in the Guest<a class="headerlink" href="#dpdk-in-the-guest" title="Permalink to this headline">¶</a></h2>
+<p>The DPDK <code class="docutils literal notranslate"><span class="pre">testpmd</span></code> application can be run in guest VMs for high speed packet
+forwarding between vhostuser ports. DPDK and testpmd application has to be
+compiled on the guest VM. Below are the steps for setting up the testpmd
+application in the VM.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Support for DPDK in the guest requires QEMU &gt;= 2.2</p>
+</div>
+<p>To begin, instantiate a guest as described in <a class="reference internal" href="#dpdk-vhost-user"><span class="std std-ref">vhost-user</span></a> or
+<a class="reference internal" href="#dpdk-vhost-user-client"><span class="std std-ref">vhost-user-client</span></a>. Once started, connect to the VM, download the
+DPDK sources to VM and build DPDK:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ cd /root/dpdk/
+$ wget http://fast.dpdk.org/rel/dpdk-17.11.2.tar.xz
+$ tar xf dpdk-17.11.2.tar.xz
+$ export DPDK_DIR=/root/dpdk/dpdk-stable-17.11.2
+$ export DPDK_TARGET=x86_64-native-linuxapp-gcc
+$ export DPDK_BUILD=$DPDK_DIR/$DPDK_TARGET
+$ cd $DPDK_DIR
+$ make install T=$DPDK_TARGET DESTDIR=install
+</pre></div>
+</div>
+<p>Build the test-pmd application:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ cd app/test-pmd
+$ export RTE_SDK=$DPDK_DIR
+$ export RTE_TARGET=$DPDK_TARGET
+$ make
+</pre></div>
+</div>
+<p>Setup huge pages and DPDK devices using UIO:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ sysctl vm.nr_hugepages=1024
+$ mkdir -p /dev/hugepages
+$ mount -t hugetlbfs hugetlbfs /dev/hugepages  # only if not already mounted
+$ modprobe uio
+$ insmod $DPDK_BUILD/kmod/igb_uio.ko
+$ $DPDK_DIR/usertools/dpdk-devbind.py --status
+$ $DPDK_DIR/usertools/dpdk-devbind.py -b igb_uio 00:03.0 00:04.0
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>vhost ports pci ids can be retrieved using:</p>
+<div class="last highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">lspci</span> <span class="o">|</span> <span class="n">grep</span> <span class="n">Ethernet</span>
+</pre></div>
+</div>
+</div>
+<p>Finally, start the application:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># TODO</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="sample-xml">
+<span id="dpdk-vhost-user-xml"></span><h2>Sample XML<a class="headerlink" href="#sample-xml" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">domain</span> <span class="nb">type</span><span class="o">=</span><span class="s1">&#39;kvm&#39;</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="n">name</span><span class="o">&gt;</span><span class="n">demovm</span><span class="o">&lt;/</span><span class="n">name</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="n">uuid</span><span class="o">&gt;</span><span class="mi">4</span><span class="n">a9b3f53</span><span class="o">-</span><span class="n">fa2a</span><span class="o">-</span><span class="mi">47</span><span class="n">f3</span><span class="o">-</span><span class="n">a757</span><span class="o">-</span><span class="n">dd87720d9d1d</span><span class="o">&lt;/</span><span class="n">uuid</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="n">memory</span> <span class="n">unit</span><span class="o">=</span><span class="s1">&#39;KiB&#39;</span><span class="o">&gt;</span><span class="mi">4194304</span><span class="o">&lt;/</span><span class="n">memory</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="n">currentMemory</span> <span class="n">unit</span><span class="o">=</span><span class="s1">&#39;KiB&#39;</span><span class="o">&gt;</span><span class="mi">4194304</span><span class="o">&lt;/</span><span class="n">currentMemory</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="n">memoryBacking</span><span class="o">&gt;</span>
+    <span class="o">&lt;</span><span class="n">hugepages</span><span class="o">&gt;</span>
+      <span class="o">&lt;</span><span class="n">page</span> <span class="n">size</span><span class="o">=</span><span class="s1">&#39;2&#39;</span> <span class="n">unit</span><span class="o">=</span><span class="s1">&#39;M&#39;</span> <span class="n">nodeset</span><span class="o">=</span><span class="s1">&#39;0&#39;</span><span class="o">/&gt;</span>
+    <span class="o">&lt;/</span><span class="n">hugepages</span><span class="o">&gt;</span>
+  <span class="o">&lt;/</span><span class="n">memoryBacking</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="n">vcpu</span> <span class="n">placement</span><span class="o">=</span><span class="s1">&#39;static&#39;</span><span class="o">&gt;</span><span class="mi">2</span><span class="o">&lt;/</span><span class="n">vcpu</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="n">cputune</span><span class="o">&gt;</span>
+    <span class="o">&lt;</span><span class="n">shares</span><span class="o">&gt;</span><span class="mi">4096</span><span class="o">&lt;/</span><span class="n">shares</span><span class="o">&gt;</span>
+    <span class="o">&lt;</span><span class="n">vcpupin</span> <span class="n">vcpu</span><span class="o">=</span><span class="s1">&#39;0&#39;</span> <span class="n">cpuset</span><span class="o">=</span><span class="s1">&#39;4&#39;</span><span class="o">/&gt;</span>
+    <span class="o">&lt;</span><span class="n">vcpupin</span> <span class="n">vcpu</span><span class="o">=</span><span class="s1">&#39;1&#39;</span> <span class="n">cpuset</span><span class="o">=</span><span class="s1">&#39;5&#39;</span><span class="o">/&gt;</span>
+    <span class="o">&lt;</span><span class="n">emulatorpin</span> <span class="n">cpuset</span><span class="o">=</span><span class="s1">&#39;4,5&#39;</span><span class="o">/&gt;</span>
+  <span class="o">&lt;/</span><span class="n">cputune</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="n">os</span><span class="o">&gt;</span>
+    <span class="o">&lt;</span><span class="nb">type</span> <span class="n">arch</span><span class="o">=</span><span class="s1">&#39;x86_64&#39;</span> <span class="n">machine</span><span class="o">=</span><span class="s1">&#39;pc&#39;</span><span class="o">&gt;</span><span class="n">hvm</span><span class="o">&lt;/</span><span class="nb">type</span><span class="o">&gt;</span>
+    <span class="o">&lt;</span><span class="n">boot</span> <span class="n">dev</span><span class="o">=</span><span class="s1">&#39;hd&#39;</span><span class="o">/&gt;</span>
+  <span class="o">&lt;/</span><span class="n">os</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="n">features</span><span class="o">&gt;</span>
+    <span class="o">&lt;</span><span class="n">acpi</span><span class="o">/&gt;</span>
+    <span class="o">&lt;</span><span class="n">apic</span><span class="o">/&gt;</span>
+  <span class="o">&lt;/</span><span class="n">features</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="n">cpu</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;host-model&#39;</span><span class="o">&gt;</span>
+    <span class="o">&lt;</span><span class="n">model</span> <span class="n">fallback</span><span class="o">=</span><span class="s1">&#39;allow&#39;</span><span class="o">/&gt;</span>
+    <span class="o">&lt;</span><span class="n">topology</span> <span class="n">sockets</span><span class="o">=</span><span class="s1">&#39;2&#39;</span> <span class="n">cores</span><span class="o">=</span><span class="s1">&#39;1&#39;</span> <span class="n">threads</span><span class="o">=</span><span class="s1">&#39;1&#39;</span><span class="o">/&gt;</span>
+    <span class="o">&lt;</span><span class="n">numa</span><span class="o">&gt;</span>
+      <span class="o">&lt;</span><span class="n">cell</span> <span class="nb">id</span><span class="o">=</span><span class="s1">&#39;0&#39;</span> <span class="n">cpus</span><span class="o">=</span><span class="s1">&#39;0-1&#39;</span> <span class="n">memory</span><span class="o">=</span><span class="s1">&#39;4194304&#39;</span> <span class="n">unit</span><span class="o">=</span><span class="s1">&#39;KiB&#39;</span> <span class="n">memAccess</span><span class="o">=</span><span class="s1">&#39;shared&#39;</span><span class="o">/&gt;</span>
+    <span class="o">&lt;/</span><span class="n">numa</span><span class="o">&gt;</span>
+  <span class="o">&lt;/</span><span class="n">cpu</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="n">on_poweroff</span><span class="o">&gt;</span><span class="n">destroy</span><span class="o">&lt;/</span><span class="n">on_poweroff</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="n">on_reboot</span><span class="o">&gt;</span><span class="n">restart</span><span class="o">&lt;/</span><span class="n">on_reboot</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="n">on_crash</span><span class="o">&gt;</span><span class="n">destroy</span><span class="o">&lt;/</span><span class="n">on_crash</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="n">devices</span><span class="o">&gt;</span>
+    <span class="o">&lt;</span><span class="n">emulator</span><span class="o">&gt;/</span><span class="n">usr</span><span class="o">/</span><span class="nb">bin</span><span class="o">/</span><span class="n">qemu</span><span class="o">-</span><span class="n">system</span><span class="o">-</span><span class="n">x86_64</span><span class="o">&lt;/</span><span class="n">emulator</span><span class="o">&gt;</span>
+    <span class="o">&lt;</span><span class="n">disk</span> <span class="nb">type</span><span class="o">=</span><span class="s1">&#39;file&#39;</span> <span class="n">device</span><span class="o">=</span><span class="s1">&#39;disk&#39;</span><span class="o">&gt;</span>
+      <span class="o">&lt;</span><span class="n">driver</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;qemu&#39;</span> <span class="nb">type</span><span class="o">=</span><span class="s1">&#39;qcow2&#39;</span> <span class="n">cache</span><span class="o">=</span><span class="s1">&#39;none&#39;</span><span class="o">/&gt;</span>
+      <span class="o">&lt;</span><span class="n">source</span> <span class="n">file</span><span class="o">=</span><span class="s1">&#39;/root/CentOS7_x86_64.qcow2&#39;</span><span class="o">/&gt;</span>
+      <span class="o">&lt;</span><span class="n">target</span> <span class="n">dev</span><span class="o">=</span><span class="s1">&#39;vda&#39;</span> <span class="n">bus</span><span class="o">=</span><span class="s1">&#39;virtio&#39;</span><span class="o">/&gt;</span>
+    <span class="o">&lt;/</span><span class="n">disk</span><span class="o">&gt;</span>
+    <span class="o">&lt;</span><span class="n">interface</span> <span class="nb">type</span><span class="o">=</span><span class="s1">&#39;vhostuser&#39;</span><span class="o">&gt;</span>
+      <span class="o">&lt;</span><span class="n">mac</span> <span class="n">address</span><span class="o">=</span><span class="s1">&#39;00:00:00:00:00:01&#39;</span><span class="o">/&gt;</span>
+      <span class="o">&lt;</span><span class="n">source</span> <span class="nb">type</span><span class="o">=</span><span class="s1">&#39;unix&#39;</span> <span class="n">path</span><span class="o">=</span><span class="s1">&#39;/usr/local/var/run/openvswitch/dpdkvhostuser0&#39;</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;client&#39;</span><span class="o">/&gt;</span>
+       <span class="o">&lt;</span><span class="n">model</span> <span class="nb">type</span><span class="o">=</span><span class="s1">&#39;virtio&#39;</span><span class="o">/&gt;</span>
+      <span class="o">&lt;</span><span class="n">driver</span> <span class="n">queues</span><span class="o">=</span><span class="s1">&#39;2&#39;</span><span class="o">&gt;</span>
+        <span class="o">&lt;</span><span class="n">host</span> <span class="n">mrg_rxbuf</span><span class="o">=</span><span class="s1">&#39;on&#39;</span><span class="o">/&gt;</span>
+      <span class="o">&lt;/</span><span class="n">driver</span><span class="o">&gt;</span>
+    <span class="o">&lt;/</span><span class="n">interface</span><span class="o">&gt;</span>
+    <span class="o">&lt;</span><span class="n">interface</span> <span class="nb">type</span><span class="o">=</span><span class="s1">&#39;vhostuser&#39;</span><span class="o">&gt;</span>
+      <span class="o">&lt;</span><span class="n">mac</span> <span class="n">address</span><span class="o">=</span><span class="s1">&#39;00:00:00:00:00:02&#39;</span><span class="o">/&gt;</span>
+      <span class="o">&lt;</span><span class="n">source</span> <span class="nb">type</span><span class="o">=</span><span class="s1">&#39;unix&#39;</span> <span class="n">path</span><span class="o">=</span><span class="s1">&#39;/usr/local/var/run/openvswitch/dpdkvhostuser1&#39;</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;client&#39;</span><span class="o">/&gt;</span>
+      <span class="o">&lt;</span><span class="n">model</span> <span class="nb">type</span><span class="o">=</span><span class="s1">&#39;virtio&#39;</span><span class="o">/&gt;</span>
+      <span class="o">&lt;</span><span class="n">driver</span> <span class="n">queues</span><span class="o">=</span><span class="s1">&#39;2&#39;</span><span class="o">&gt;</span>
+        <span class="o">&lt;</span><span class="n">host</span> <span class="n">mrg_rxbuf</span><span class="o">=</span><span class="s1">&#39;on&#39;</span><span class="o">/&gt;</span>
+      <span class="o">&lt;/</span><span class="n">driver</span><span class="o">&gt;</span>
+    <span class="o">&lt;/</span><span class="n">interface</span><span class="o">&gt;</span>
+    <span class="o">&lt;</span><span class="n">serial</span> <span class="nb">type</span><span class="o">=</span><span class="s1">&#39;pty&#39;</span><span class="o">&gt;</span>
+      <span class="o">&lt;</span><span class="n">target</span> <span class="n">port</span><span class="o">=</span><span class="s1">&#39;0&#39;</span><span class="o">/&gt;</span>
+    <span class="o">&lt;/</span><span class="n">serial</span><span class="o">&gt;</span>
+    <span class="o">&lt;</span><span class="n">console</span> <span class="nb">type</span><span class="o">=</span><span class="s1">&#39;pty&#39;</span><span class="o">&gt;</span>
+      <span class="o">&lt;</span><span class="n">target</span> <span class="nb">type</span><span class="o">=</span><span class="s1">&#39;serial&#39;</span> <span class="n">port</span><span class="o">=</span><span class="s1">&#39;0&#39;</span><span class="o">/&gt;</span>
+    <span class="o">&lt;/</span><span class="n">console</span><span class="o">&gt;</span>
+  <span class="o">&lt;/</span><span class="n">devices</span><span class="o">&gt;</span>
+<span class="o">&lt;/</span><span class="n">domain</span><span class="o">&gt;</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="vhost-user-dequeue-zero-copy-experimental">
+<h2>vhost-user Dequeue Zero Copy (experimental)<a class="headerlink" href="#vhost-user-dequeue-zero-copy-experimental" title="Permalink to this headline">¶</a></h2>
+<p>Normally when dequeuing a packet from a vHost User device, a memcpy operation
+must be used to copy that packet from guest address space to host address
+space. This memcpy can be removed by enabling dequeue zero-copy like so:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ ovs-vsctl add-port br0 dpdkvhostuserclient0 -- set Interface \
+    dpdkvhostuserclient0 type=dpdkvhostuserclient \
+    options:vhost-server-path=/tmp/dpdkvhostclient0 \
+    options:dq-zero-copy=true
+</pre></div>
+</div>
+<p>With this feature enabled, a reference (pointer) to the packet is passed to
+the host, instead of a copy of the packet. Removing this memcpy can give a
+performance improvement for some use cases, for example switching large packets
+between different VMs. However additional packet loss may be observed.</p>
+<p>Note that the feature is disabled by default and must be explicitly enabled
+by setting the <code class="docutils literal notranslate"><span class="pre">dq-zero-copy</span></code> option to <code class="docutils literal notranslate"><span class="pre">true</span></code> while specifying the
+<code class="docutils literal notranslate"><span class="pre">vhost-server-path</span></code> option as above. If you wish to split out the command
+into multiple commands as below, ensure <code class="docutils literal notranslate"><span class="pre">dq-zero-copy</span></code> is set before
+<code class="docutils literal notranslate"><span class="pre">vhost-server-path</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ ovs-vsctl set Interface dpdkvhostuserclient0 options:dq-zero-copy=true
+$ ovs-vsctl set Interface dpdkvhostuserclient0 \
+    options:vhost-server-path=/tmp/dpdkvhostclient0
+</pre></div>
+</div>
+<p>The feature is only available to <code class="docutils literal notranslate"><span class="pre">dpdkvhostuserclient</span></code> port types.</p>
+<p>A limitation exists whereby if packets from a vHost port with
+<code class="docutils literal notranslate"><span class="pre">dq-zero-copy=true</span></code> are destined for a <code class="docutils literal notranslate"><span class="pre">dpdk</span></code> type port, the number of tx
+descriptors (<code class="docutils literal notranslate"><span class="pre">n_txq_desc</span></code>) for that port must be reduced to a smaller number,
+128 being the recommended value. This can be achieved by issuing the following
+command:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ ovs-vsctl set Interface dpdkport options:n_txq_desc=128
+</pre></div>
+</div>
+<p>Note: The sum of the tx descriptors of all <code class="docutils literal notranslate"><span class="pre">dpdk</span></code> ports the VM will send to
+should not exceed 128. For example, in case of a bond over two physical ports
+in balance-tcp mode, one must divide 128 by the number of links in the bond.</p>
+<p>Refer to <a class="reference internal" href="../../intro/install/dpdk.html#dpdk-queues-sizes"><span class="std std-ref">DPDK Physical Port Queue Sizes</span></a> for more information.</p>
+<p>The reason for this limitation is due to how the zero copy functionality is
+implemented. The vHost device’s ‘tx used vring’, a virtio structure used for
+tracking used ie. sent descriptors, will only be updated when the NIC frees
+the corresponding mbuf. If we don’t free the mbufs frequently enough, that
+vring will be starved and packets will no longer be processed. One way to
+ensure we don’t encounter this scenario, is to configure <code class="docutils literal notranslate"><span class="pre">n_txq_desc</span></code> to a
+small enough number such that the ‘mbuf free threshold’ for the NIC will be hit
+more often and thus free mbufs more frequently. The value of 128 is suggested,
+but values of 64 and 256 have been tested and verified to work too, with
+differing performance characteristics. A value of 512 can be used too, if the
+virtio queue size in the guest is increased to 1024 (available to configure in
+QEMU versions v2.10 and greater). This value can be set like so:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ qemu-system-x86_64 ... -chardev socket,id=char1,path=&lt;sockpath&gt;,server
+  -netdev type=vhost-user,id=mynet1,chardev=char1,vhostforce
+  -device virtio-net-pci,mac=00:00:00:00:00:01,netdev=mynet1,
+  tx_queue_size=1024
+</pre></div>
+</div>
+<p>Because of this limitation, this feature is considered ‘experimental’.</p>
+<p>The feature currently does not fully work with QEMU &gt;= v2.7 due to a bug in
+DPDK which will be addressed in an upcoming release. The patch to fix this
+issue can be found on
+<a class="reference external" href="http://dpdk.org/dev/patchwork/patch/32198/">Patchwork</a></p>
+<p>Further information can be found in the
+<a class="reference external" href="http://dpdk.readthedocs.io/en/v17.11/prog_guide/vhost_lib.html">DPDK documentation</a></p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../contents.html">
+              <img class="logo" src="../../_static/logo.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="../../contents.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">DPDK vHost User Ports</a><ul>
+<li><a class="reference internal" href="#quick-example">Quick Example</a></li>
+<li><a class="reference internal" href="#vhost-user-vs-vhost-user-client">vhost-user vs. vhost-user-client</a></li>
+<li><a class="reference internal" href="#vhost-user">vhost-user</a><ul>
+<li><a class="reference internal" href="#adding-vhost-user-ports-to-the-guest-qemu">Adding vhost-user ports to the guest (QEMU)</a></li>
+<li><a class="reference internal" href="#adding-vhost-user-ports-to-the-guest-libvirt">Adding vhost-user ports to the guest (libvirt)</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#vhost-user-client">vhost-user-client</a><ul>
+<li><a class="reference internal" href="#adding-vhost-user-client-ports-to-the-guest-qemu">Adding vhost-user-client ports to the guest (QEMU)</a></li>
+<li><a class="reference internal" href="#vhost-user-client-iommu-support">vhost-user-client IOMMU Support</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#dpdk-in-the-guest">DPDK in the Guest</a></li>
+<li><a class="reference internal" href="#sample-xml">Sample XML</a></li>
+<li><a class="reference internal" href="#vhost-user-dequeue-zero-copy-experimental">vhost-user Dequeue Zero Copy (experimental)</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../contents.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Deep Dive</a><ul>
+  <li><a href="index.html">The DPDK Datapath</a><ul>
+      <li>Previous: <a href="index.html" title="previous chapter">The DPDK Datapath</a></li>
+      <li>Next: <a href="ring.html" title="next chapter">DPDK Ring Ports</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/topics/dpdk/vhost-user.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, The Open vSwitch Development Community.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.4</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="../../_sources/topics/dpdk/vhost-user.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

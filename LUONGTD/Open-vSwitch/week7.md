@@ -48,3 +48,22 @@ int main()
 ### 1.2. Sử dụng Scitools Understand vẽ Dependancy Graph của vswitchd:
 
 ![](images/vswitchd/understand_1.png)
+
+## 2. Unit tests
+Danh sách các ```ovs-vswitchd``` test:
+```sh
+$ make check TESTSUITEFLAGS="-l -k ovs-vswitchd"
+```
+```sh
+ NUM: 	FILE-NAME:LINE     		TEST-GROUP-NAME
+     
+ 846: 	ovs-vswitchd.at:7  		ovs-vswitchd detaches correctly with empty db
+ 847: 	ovs-vswitchd.at:36 		ovs-vswitchd -- stats-update-interval
+ 848: 	ovs-vswitchd.at:69 		ovs-vswitchd -- start additional ovs-vswitchd process
+ 849: 	ovs-vswitchd.at:94 		ovs-vswitchd -- switch over to another ovs-vswitchd process
+ 850: 	ovs-vswitchd.at:134 	ovs-vswitchd -- invalid database path
+ 851: 	ovs-vswitchd.at:159 	ovs-vswitchd -- set service controller
+ 852: 	ovs-vswitchd.at:176 	ovs-vswitchd -- Compatible with OVSDB server - w/o monitor_cond
+ 853: 	ovs-vswitchd.at:197 	ovs-vswitchd - do not create sockets with unsafe names
+ 854: 	ovs-vswitchd.at:230 	ovs-vswitchd - set datapath IDs
+```

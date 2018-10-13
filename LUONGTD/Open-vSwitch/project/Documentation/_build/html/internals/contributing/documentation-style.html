@@ -1,0 +1,569 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Open vSwitch Documentation Style &#8212; Open vSwitch 2.9.2 documentation</title>
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" src="../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Open vSwitch Library ABI Updates" href="libopenvswitch-abi.html" />
+    <link rel="prev" title="Open vSwitch Windows Datapath Coding Style" href="coding-style-windows.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="open-vswitch-documentation-style">
+<h1>Open vSwitch Documentation Style<a class="headerlink" href="#open-vswitch-documentation-style" title="Permalink to this headline">¶</a></h1>
+<p>This file describes the documentation style used in all documentation found in
+Open vSwitch. Documentation includes any documents found in <code class="docutils literal notranslate"><span class="pre">Documentation</span></code>
+along with any <code class="docutils literal notranslate"><span class="pre">README</span></code>, <code class="docutils literal notranslate"><span class="pre">MAINTAINERS</span></code>, or generally <code class="docutils literal notranslate"><span class="pre">rst</span></code> suffixed
+documents found in the project tree.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">This guide only applies to documentation for Open vSwitch v2.7. or greater.
+Previous versions of Open vSwitch used a combination of Markdown and raw
+plain text, and guidelines for these are not detailed here.</p>
+</div>
+<div class="section" id="restructuredtext-vs-sphinx">
+<h2>reStructuredText vs. Sphinx<a class="headerlink" href="#restructuredtext-vs-sphinx" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference external" href="http://docutils.sourceforge.net/rst.html">reStructuredText (rST)</a> is the syntax, while <a class="reference external" href="http://www.sphinx-doc.org/">Sphinx</a> is a documentation
+generator.  Sphinx introduces a number of extensions to rST, like the <code class="docutils literal notranslate"><span class="pre">:ref:</span></code>
+role, which can and should be used in documentation, but these will not work
+correctly on GitHub. As such, these extensions should not be used in any
+documentation in the root level, such as the <code class="docutils literal notranslate"><span class="pre">README</span></code>.</p>
+</div>
+<div class="section" id="rst-conventions">
+<h2>rST Conventions<a class="headerlink" href="#rst-conventions" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="basics">
+<h3>Basics<a class="headerlink" href="#basics" title="Permalink to this headline">¶</a></h3>
+<p>Many of the basic documentation guidelines match those of the
+<a class="reference internal" href="coding-style.html"><span class="doc">Open vSwitch Coding Style</span></a>.</p>
+<ul>
+<li><p class="first">Use reStructuredText (rST) for all documentation.</p>
+<p>Sphinx extensions can be used, but only for documentation in the
+<code class="docutils literal notranslate"><span class="pre">Documentation</span></code> folder.</p>
+</li>
+<li><p class="first">Limit lines at 79 characters.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">An exception to this rule is text within code-block elements that cannot
+be wrapped and links within references.</p>
+</div>
+</li>
+<li><p class="first">Use spaces for indentation.</p>
+</li>
+<li><p class="first">Match indentation levels.</p>
+<p>A change in indentation level usually signifies a change in content nesting,
+by either closing the existing level or introducing a new level.</p>
+</li>
+<li><p class="first">Avoid trailing spaces on lines.</p>
+</li>
+<li><p class="first">Include a license (see this file) in all docs.</p>
+</li>
+<li><p class="first">Most importantly, always build and display documentation before submitting
+changes! Docs aren’t unit testable, so visible inspection is necessary.</p>
+</li>
+</ul>
+</div>
+<div class="section" id="file-names">
+<h3>File Names<a class="headerlink" href="#file-names" title="Permalink to this headline">¶</a></h3>
+<ul>
+<li><p class="first">Use hyphens as space delimiters. For example: <code class="docutils literal notranslate"><span class="pre">my-readme-document.rst</span></code></p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">An exception to this rule is any man pages, which take an trailing number
+corresponding to the number of arguments required. This number is preceded
+by an underscore.</p>
+</div>
+</li>
+<li><p class="first">Use lowercase filenames.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">An exception to this rule is any documents found in the root-level of the
+project.</p>
+</div>
+</li>
+</ul>
+</div>
+<div class="section" id="titles">
+<h3>Titles<a class="headerlink" href="#titles" title="Permalink to this headline">¶</a></h3>
+<ul>
+<li><p class="first">Use the following headers levels.</p>
+<div class="line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">=======</span></code>  Heading 0 (reserved for the title in a document)</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">-------</span></code>  Heading 1</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">~~~~~~~</span></code>  Heading 2</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">+++++++</span></code>  Heading 3</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">'''''''</span></code>  Heading 4</div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Avoid using lower heading levels by rewriting and reorganizing the
+information.</p>
+</div>
+</li>
+<li><p class="first">Under- and overlines should be of the same length as that of the heading
+text.</p>
+</li>
+<li><p class="first">Use “title case” for headers.</p>
+</li>
+</ul>
+</div>
+<div class="section" id="code">
+<h3>Code<a class="headerlink" href="#code" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li>Use <code class="docutils literal notranslate"><span class="pre">::</span></code> to prefix code.</li>
+<li>Don’t use syntax highlighting such as <code class="docutils literal notranslate"><span class="pre">..</span> <span class="pre">highlight::</span> <span class="pre">&lt;syntax&gt;</span></code> or
+<code class="docutils literal notranslate"><span class="pre">code-block::</span> <span class="pre">&lt;syntax&gt;</span></code> because it depends on external <code class="docutils literal notranslate"><span class="pre">pygments</span></code>
+library.</li>
+<li>Prefix commands with <code class="docutils literal notranslate"><span class="pre">$</span></code>.</li>
+<li>Where possible, include fully-working snippets of code. If there
+pre-requisites, explain what they are and how to achieve them.</li>
+</ul>
+</div>
+<div class="section" id="admonitions">
+<h3>Admonitions<a class="headerlink" href="#admonitions" title="Permalink to this headline">¶</a></h3>
+<ul>
+<li><p class="first">Use admonitions to call attention to important information.:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">..</span> <span class="n">note</span><span class="p">::</span>
+
+   <span class="n">This</span> <span class="ow">is</span> <span class="n">a</span> <span class="n">sample</span> <span class="n">callout</span> <span class="k">for</span> <span class="n">some</span> <span class="n">useful</span> <span class="n">tip</span> <span class="ow">or</span> <span class="n">trick</span><span class="o">.</span>
+</pre></div>
+</div>
+<p>Example admonitions include: <code class="docutils literal notranslate"><span class="pre">warning</span></code>, <code class="docutils literal notranslate"><span class="pre">important</span></code>, <code class="docutils literal notranslate"><span class="pre">note</span></code>, <code class="docutils literal notranslate"><span class="pre">tip</span></code> or
+<code class="docutils literal notranslate"><span class="pre">seealso</span></code>.</p>
+</li>
+<li><p class="first">Use notes sparingly. Avoid having more than one per subsection.</p>
+</li>
+</ul>
+</div>
+<div class="section" id="tables">
+<h3>Tables<a class="headerlink" href="#tables" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li>Use either graphic tables, list tables or CSV tables.</li>
+</ul>
+<div class="section" id="graphic-tables">
+<h4>Graphic tables<a class="headerlink" href="#graphic-tables" title="Permalink to this headline">¶</a></h4>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">..</span> <span class="n">table</span><span class="p">::</span> <span class="n">OVS</span><span class="o">-</span><span class="n">Linux</span> <span class="n">kernel</span> <span class="n">compatibility</span>
+
+  <span class="o">============</span> <span class="o">==============</span>
+  <span class="n">Open</span> <span class="n">vSwitch</span> <span class="n">Linux</span> <span class="n">kernel</span>
+  <span class="o">============</span> <span class="o">==============</span>
+  <span class="mf">1.4</span><span class="o">.</span><span class="n">x</span>        <span class="mf">2.6</span><span class="o">.</span><span class="mi">18</span> <span class="n">to</span> <span class="mf">3.2</span>
+  <span class="mf">1.5</span><span class="o">.</span><span class="n">x</span>        <span class="mf">2.6</span><span class="o">.</span><span class="mi">18</span> <span class="n">to</span> <span class="mf">3.2</span>
+  <span class="mf">1.6</span><span class="o">.</span><span class="n">x</span>        <span class="mf">2.6</span><span class="o">.</span><span class="mi">18</span> <span class="n">to</span> <span class="mf">3.2</span>
+  <span class="o">============</span> <span class="o">==============</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">..</span> <span class="n">table</span><span class="p">::</span> <span class="n">OVS</span><span class="o">-</span><span class="n">Linux</span> <span class="n">kernel</span> <span class="n">compatibility</span>
+
+  <span class="o">+--------------+---------------+</span>
+  <span class="o">|</span> <span class="n">Open</span> <span class="n">vSwitch</span> <span class="o">|</span> <span class="n">Linux</span> <span class="n">kernel</span>  <span class="o">|</span>
+  <span class="o">+==============+===============+</span>
+  <span class="o">|</span> <span class="mf">1.4</span><span class="o">.</span><span class="n">x</span>        <span class="o">|</span> <span class="mf">2.6</span><span class="o">.</span><span class="mi">18</span> <span class="n">to</span> <span class="mf">3.2</span> <span class="o">|</span>
+  <span class="o">+--------------+---------------+</span>
+  <span class="o">|</span> <span class="mf">1.5</span><span class="o">.</span><span class="n">x</span>        <span class="o">|</span> <span class="mf">2.6</span><span class="o">.</span><span class="mi">18</span> <span class="n">to</span> <span class="mf">3.2</span> <span class="o">|</span>
+  <span class="o">+--------------+---------------+</span>
+  <span class="o">|</span> <span class="mf">1.6</span><span class="o">.</span><span class="n">x</span>        <span class="o">|</span> <span class="mf">2.6</span><span class="o">.</span><span class="mi">18</span> <span class="n">to</span> <span class="mf">3.2</span> <span class="o">|</span>
+  <span class="o">+--------------+---------------+</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The <code class="docutils literal notranslate"><span class="pre">table</span></code> role - <code class="docutils literal notranslate"><span class="pre">..</span> <span class="pre">table::</span> <span class="pre">&lt;name&gt;</span></code> -  can be safely omitted.</p>
+</div>
+</div>
+<div class="section" id="list-tables">
+<h4>List tables<a class="headerlink" href="#list-tables" title="Permalink to this headline">¶</a></h4>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">..</span> <span class="nb">list</span><span class="o">-</span><span class="n">table</span><span class="p">::</span> <span class="n">OVS</span><span class="o">-</span><span class="n">Linux</span> <span class="n">kernel</span> <span class="n">compatibility</span>
+   <span class="p">:</span><span class="n">widths</span><span class="p">:</span> <span class="mi">10</span> <span class="mi">15</span>
+   <span class="p">:</span><span class="n">header</span><span class="o">-</span><span class="n">rows</span><span class="p">:</span> <span class="mi">1</span>
+
+   <span class="o">*</span> <span class="o">-</span> <span class="n">Open</span> <span class="n">vSwitch</span>
+     <span class="o">-</span> <span class="n">Linux</span> <span class="n">kernel</span>
+   <span class="o">*</span> <span class="o">-</span> <span class="mf">1.4</span><span class="o">.</span><span class="n">x</span>
+     <span class="o">-</span> <span class="mf">2.6</span><span class="o">.</span><span class="mi">18</span> <span class="n">to</span> <span class="mf">3.2</span>
+   <span class="o">*</span> <span class="o">-</span> <span class="mf">1.5</span><span class="o">.</span><span class="n">x</span>
+     <span class="o">-</span> <span class="mf">2.6</span><span class="o">.</span><span class="mi">18</span> <span class="n">to</span> <span class="mf">3.2</span>
+   <span class="o">*</span> <span class="o">-</span> <span class="mf">1.6</span><span class="o">.</span><span class="n">x</span>
+     <span class="o">-</span> <span class="mf">2.6</span><span class="o">.</span><span class="mi">18</span> <span class="n">to</span> <span class="mf">3.2</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="csv-tables">
+<h4>CSV tables<a class="headerlink" href="#csv-tables" title="Permalink to this headline">¶</a></h4>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">..</span> <span class="n">csv</span><span class="o">-</span><span class="n">table</span><span class="p">::</span> <span class="n">OVS</span><span class="o">-</span><span class="n">Linux</span> <span class="n">kernel</span> <span class="n">compatibility</span>
+   <span class="p">:</span><span class="n">header</span><span class="p">:</span> <span class="n">Open</span> <span class="n">vSwitch</span><span class="p">,</span> <span class="n">Linux</span> <span class="n">kernel</span>
+   <span class="p">:</span><span class="n">widths</span><span class="p">:</span> <span class="mi">10</span> <span class="mi">15</span>
+
+   <span class="mf">1.4</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="mf">2.6</span><span class="o">.</span><span class="mi">18</span> <span class="n">to</span> <span class="mf">3.2</span>
+   <span class="mf">1.5</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="mf">2.6</span><span class="o">.</span><span class="mi">18</span> <span class="n">to</span> <span class="mf">3.2</span>
+   <span class="mf">1.6</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="mf">2.6</span><span class="o">.</span><span class="mi">18</span> <span class="n">to</span> <span class="mf">3.2</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="cross-referencing">
+<h3>Cross-referencing<a class="headerlink" href="#cross-referencing" title="Permalink to this headline">¶</a></h3>
+<ul>
+<li><p class="first">To link to an external file or document, include as a link.:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Here</span><span class="s1">&#39;s a `link &lt;http://openvswitch.org&gt;`__ to the Open vSwitch website.</span>
+
+
+<span class="n">Here</span><span class="s1">&#39;s a `link`_ in reference style.</span>
+
+<span class="o">..</span> <span class="n">_link</span><span class="p">:</span> <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">openvswitch</span><span class="o">.</span><span class="n">org</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first">You can also use citations.:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Refer</span> <span class="n">to</span> <span class="n">the</span> <span class="n">Open</span> <span class="n">vSwitch</span> <span class="n">documentation</span> <span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="n">_</span><span class="o">.</span>
+
+<span class="n">References</span>
+<span class="o">----------</span>
+
+<span class="o">..</span> <span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">openvswitch</span><span class="o">.</span><span class="n">org</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first">To cross-reference another doc, use the <code class="docutils literal notranslate"><span class="pre">doc</span></code> role.:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Here is a link to the :doc:`/README.rst`
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">This is a Sphinx extension. Do not use this in any top-level documents.</p>
+</div>
+</li>
+<li><p class="first">To cross-reference an arbitrary location in a doc, use the <code class="docutils literal notranslate"><span class="pre">ref</span></code> role.:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>.. _sample-crossref
+
+Title
+~~~~~
+
+Hello, world.
+
+Another Title
+~~~~~~~~~~~~~
+
+Here is a cross-reference to :ref:`sample-crossref`.
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">This is a Sphinx extension. Do not use this in any top-level documents.</p>
+</div>
+</li>
+</ul>
+</div>
+<div class="section" id="figures-and-other-media">
+<h3>Figures and Other Media<a class="headerlink" href="#figures-and-other-media" title="Permalink to this headline">¶</a></h3>
+<ul>
+<li><p class="first">All images should be in PNG format and compressed where possible. For PNG
+files, use OptiPNG and AdvanceCOMP’s <code class="docutils literal notranslate"><span class="pre">advpng</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ optipng -o7 -zm1-9 -i0 -strip all &lt;path_to_png&gt;
+$ advpng -z4 &lt;path_to_png&gt;
+</pre></div>
+</div>
+</li>
+<li><p class="first">Any ASCII text “images” should be included in code-blocks to preserve
+formatting</p>
+</li>
+<li><p class="first">Include other reStructuredText verbatim in a current document</p>
+</li>
+</ul>
+</div>
+<div class="section" id="comments">
+<h3>Comments<a class="headerlink" href="#comments" title="Permalink to this headline">¶</a></h3>
+<ul>
+<li><p class="first">Comments are indicated by means of the <code class="docutils literal notranslate"><span class="pre">..</span></code> marker.:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">..</span> <span class="n">TODO</span><span class="p">(</span><span class="n">stephenfin</span><span class="p">)</span> <span class="n">This</span> <span class="n">section</span> <span class="n">needs</span> <span class="n">some</span> <span class="n">work</span><span class="o">.</span> <span class="n">This</span> <span class="n">TODO</span> <span class="n">will</span> <span class="ow">not</span>
+   <span class="n">appear</span> <span class="ow">in</span> <span class="n">the</span> <span class="n">final</span> <span class="n">generated</span> <span class="n">document</span><span class="p">,</span> <span class="n">however</span><span class="o">.</span>
+</pre></div>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="man-pages">
+<h2>Man Pages<a class="headerlink" href="#man-pages" title="Permalink to this headline">¶</a></h2>
+<p>In addition to the above, man pages have some specific requirements:</p>
+<ul>
+<li><p class="first">You <strong>must</strong> define the following sections:</p>
+<ul class="simple">
+<li>Synopsis</li>
+<li>Description</li>
+<li>Options</li>
+</ul>
+<p>Note that <cite>NAME</cite> is not included - this is automatically generated by Sphinx
+and should not be manually defined. Also note that these do not need to be
+uppercase - Sphinx will do this automatically.</p>
+<p>Additional sections are allowed. Refer to <cite>man-pages(8)</cite> for information on
+the sections generally allowed.</p>
+</li>
+<li><p class="first">You <strong>must not</strong> define a <cite>NAME</cite> section.</p>
+<p>See above.</p>
+</li>
+<li><p class="first">The <cite>OPTIONS</cite> section must describe arguments and options using the
+<a class="reference external" href="http://www.sphinx-doc.org/en/stable/domains.html#directive-program">program</a> and <a class="reference external" href="http://www.sphinx-doc.org/en/stable/domains.html#directive-option">option</a> directives.</p>
+<p>This ensures the output is formatted correctly and that you can
+cross-reference various programs and commands from the documentation. For
+example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">..</span> <span class="n">program</span><span class="p">::</span> <span class="n">ovs</span><span class="o">-</span><span class="n">do</span><span class="o">-</span><span class="n">something</span>
+
+<span class="o">..</span> <span class="n">option</span><span class="p">::</span> <span class="o">-</span><span class="n">f</span><span class="p">,</span> <span class="o">--</span><span class="n">force</span>
+
+    <span class="n">Force</span> <span class="n">the</span> <span class="n">operation</span>
+
+<span class="o">..</span> <span class="n">option</span><span class="p">::</span> <span class="o">-</span><span class="n">b</span> <span class="o">&lt;</span><span class="n">bridge</span><span class="o">&gt;</span><span class="p">,</span> <span class="o">--</span><span class="n">bridge</span> <span class="o">&lt;</span><span class="n">bridge</span><span class="o">&gt;</span>
+
+    <span class="n">Name</span> <span class="ow">or</span> <span class="n">ID</span> <span class="n">of</span> <span class="n">bridge</span>
+</pre></div>
+</div>
+<div class="admonition important">
+<p class="first admonition-title">Important</p>
+<p class="last">Option argument names should be enclosed in angle brackets, as above.</p>
+</div>
+</li>
+<li><p class="first">Any references to the application or any other Open vSwitch application must
+be marked up using the <cite>program</cite> role.</p>
+<p>This allows for easy linking in the HTML output and correct formatting in the
+man page output. For example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>To do something, run :program:`ovs-do-something`.
+</pre></div>
+</div>
+</li>
+<li><p class="first">The man page must be included in the list of man page documents found in
+<a class="reference external" href="http://www.sphinx-doc.org/en/stable/config.html#confval-man_pages">conf.py</a></p>
+</li>
+</ul>
+<p>Refer to existing man pages, such as <a class="reference internal" href="../../ref/ovs-vlan-test.8.html"><span class="doc">ovs-vlan-test</span></a> for a worked
+example.</p>
+</div>
+<div class="section" id="writing-style">
+<h2>Writing Style<a class="headerlink" href="#writing-style" title="Permalink to this headline">¶</a></h2>
+<p>Follow these guidelines to ensure readability and consistency of the Open
+vSwitch documentation. These guidelines are based on the <a class="reference external" href="https://www.ibm.com/developerworks/library/styleguidelines/">/*IBM Style Guide/*</a>.</p>
+<ul>
+<li><p class="first">Use standard US English</p>
+<p>Use a spelling and grammar checking tool as necessary.</p>
+</li>
+<li><p class="first">Expand initialisms and acronyms on first usage.</p>
+<p>Commonly used terms like CPU or RAM are allowed.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="50%" />
+<col width="50%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Do not use</th>
+<th class="head">Do use</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>OVS is a virtual switch. OVS has…</td>
+<td>Open vSwitch (OVS) is a virtual switch. OVS has…</td>
+</tr>
+<tr class="row-odd"><td>The VTEP emulator is…</td>
+<td>The Virtual Tunnel Endpoint (VTEP) emulator is…</td>
+</tr>
+</tbody>
+</table>
+</li>
+<li><p class="first">Write in the active voice</p>
+<p>The subject should do the verb’s action, rather than be acted upon.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="50%" />
+<col width="50%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Do not use</th>
+<th class="head">Do use</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>A bridge is created by you</td>
+<td>Create a bridge</td>
+</tr>
+</tbody>
+</table>
+</li>
+<li><p class="first">Write in the present tense</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="50%" />
+<col width="50%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Do not use</th>
+<th class="head">Do use</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>Once the bridge is created, you can create a port</td>
+<td>Once the bridge is created, create a port</td>
+</tr>
+</tbody>
+</table>
+</li>
+<li><p class="first">Write in second person</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="50%" />
+<col width="50%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Do not use</th>
+<th class="head">Do use</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>To create a bridge, the user runs:</td>
+<td>To create a bridge, run:</td>
+</tr>
+</tbody>
+</table>
+</li>
+<li><p class="first">Keep sentences short and consise</p>
+</li>
+<li><p class="first">Eliminate needless politeness</p>
+<p>Avoid “please” and “thank you”</p>
+</li>
+</ul>
+</div>
+<div class="section" id="helpful-tools">
+<h2>Helpful Tools<a class="headerlink" href="#helpful-tools" title="Permalink to this headline">¶</a></h2>
+<p>There are a number of tools, online and offline, which can be used to preview
+documents are you edit them:</p>
+<ul>
+<li><p class="first"><a class="reference external" href="http://rst.ninjs.org/">rst.ninjs.org</a></p>
+<p>An online rST editor/previewer</p>
+</li>
+<li><p class="first"><a class="reference external" href="https://github.com/retext-project/retext">ReText</a></p>
+<p>A simple but powerful editor for Markdown and reStructuredText. ReText is
+written in Python.</p>
+</li>
+<li><p class="first"><a class="reference external" href="https://mg.pov.lt/restview/">restview</a></p>
+<p>A viewer for ReStructuredText documents that renders them on the fly.</p>
+</li>
+</ul>
+</div>
+<div class="section" id="useful-links">
+<h2>Useful Links<a class="headerlink" href="#useful-links" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><a class="reference external" href="http://docutils.sourceforge.net/docs/user/rst/quickref.html">Quick reStructuredText</a></li>
+<li><a class="reference external" href="http://www.sphinx-doc.org/en/master/usage/restructuredtext/index.html">Sphinx Documentation</a></li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../contents.html">
+              <img class="logo" src="../../_static/logo.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="../../contents.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Open vSwitch Documentation Style</a><ul>
+<li><a class="reference internal" href="#restructuredtext-vs-sphinx">reStructuredText vs. Sphinx</a></li>
+<li><a class="reference internal" href="#rst-conventions">rST Conventions</a><ul>
+<li><a class="reference internal" href="#basics">Basics</a></li>
+<li><a class="reference internal" href="#file-names">File Names</a></li>
+<li><a class="reference internal" href="#titles">Titles</a></li>
+<li><a class="reference internal" href="#code">Code</a></li>
+<li><a class="reference internal" href="#admonitions">Admonitions</a></li>
+<li><a class="reference internal" href="#tables">Tables</a><ul>
+<li><a class="reference internal" href="#graphic-tables">Graphic tables</a></li>
+<li><a class="reference internal" href="#list-tables">List tables</a></li>
+<li><a class="reference internal" href="#csv-tables">CSV tables</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#cross-referencing">Cross-referencing</a></li>
+<li><a class="reference internal" href="#figures-and-other-media">Figures and Other Media</a></li>
+<li><a class="reference internal" href="#comments">Comments</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#man-pages">Man Pages</a></li>
+<li><a class="reference internal" href="#writing-style">Writing Style</a></li>
+<li><a class="reference internal" href="#helpful-tools">Helpful Tools</a></li>
+<li><a class="reference internal" href="#useful-links">Useful Links</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../contents.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Open vSwitch Internals</a><ul>
+  <li><a href="index.html">Contributing to Open vSwitch</a><ul>
+      <li>Previous: <a href="coding-style-windows.html" title="previous chapter">Open vSwitch Windows Datapath Coding Style</a></li>
+      <li>Next: <a href="libopenvswitch-abi.html" title="next chapter">Open vSwitch Library ABI Updates</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/internals/contributing/documentation-style.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, The Open vSwitch Development Community.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.4</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="../../_sources/internals/contributing/documentation-style.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -1,0 +1,177 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Role Based Access Control &#8212; Open vSwitch 2.9.2 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="What’s New with OVS and OVN 2.8" href="ovn-news-2.8.html" />
+    <link rel="prev" title="OVN Gateway High Availability Plan" href="high-availability.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="role-based-access-control">
+<h1>Role Based Access Control<a class="headerlink" href="#role-based-access-control" title="Permalink to this headline">¶</a></h1>
+<p>Where SSL provides authentication when connecting to an OVS database, role
+based access control (RBAC) provides authorization to operations performed
+by clients connecting to an OVS database. RBAC allows for administrators to
+restrict the database operations a client may perform and thus enhance the
+security already provided by SSL.</p>
+<p>In theory, any OVS database could define RBAC roles and permissions, but at
+present only the OVN southbound database has the appropriate tables defined to
+facilitate RBAC.</p>
+<div class="section" id="mechanics">
+<h2>Mechanics<a class="headerlink" href="#mechanics" title="Permalink to this headline">¶</a></h2>
+<p>RBAC is intended to supplement SSL. In order to enable RBAC, the connection to
+the database must use SSL. Some permissions in RBAC are granted based on the
+certificate common name (CN) of the connecting client.</p>
+<p>RBAC is controlled with two database tables, RBAC_Role and RBAC_Permission.
+The RBAC_Permission table contains records that describe a set of permissions
+for a given table in the database.</p>
+<p>The RBAC_Permission table contains the following columns:</p>
+<dl class="docutils">
+<dt>table</dt>
+<dd>The table in the database for which permissions are being described.</dd>
+<dt>insert_delete</dt>
+<dd>Describes whether insertion and deletion of records is allowed.</dd>
+<dt>update</dt>
+<dd>A list of columns that are allowed to be updated.</dd>
+<dt>authorization</dt>
+<dd>A list of column names. One of the listed columns must match the SSL
+certificate CN in order for the attempted operation on the table to
+succeed. If a key-value pair is provided, then the key is the column name,
+and the value is the name of a key in that column. An empty string gives
+permission to all clients to perform operations.</dd>
+</dl>
+<p>The RBAC_Role table contains the following columns:</p>
+<dl class="docutils">
+<dt>name</dt>
+<dd>The name of the role being defined</dd>
+<dt>permissions</dt>
+<dd>A list of key-value pairs. The key is the name of a table in the database,
+and the value is a UUID of a record in the RBAC_Permission table that
+describes the permissions the role has for that table.</dd>
+</dl>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">All tables not explicitly referenced in an RBAC_Role record are read-only</p>
+</div>
+<p>In order to enable RBAC, specify the role name as an argument to the
+set-connection command for the database. As an example, to enable the
+“ovn-controller” role on the OVN southbound database, use the following
+command:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ ovn-sbctl set-connection role=ovn-controller ssl:192.168.0.1:6642
+</pre></div>
+</div>
+</div>
+<div class="section" id="pre-defined-roles">
+<h2>Pre-defined Roles<a class="headerlink" href="#pre-defined-roles" title="Permalink to this headline">¶</a></h2>
+<p>This section describes roles that have been defined internally by OVS/OVN.</p>
+<div class="section" id="ovn-controller">
+<h3>ovn-controller<a class="headerlink" href="#ovn-controller" title="Permalink to this headline">¶</a></h3>
+<p>The ovn-controller role is specified in the OVN southbound database and is
+intended for use by hypervisors running the ovn-controller daemon.
+ovn-controller connects to the OVN southbound database mostly to read
+information, but there are a few cases where ovn-controller also needs to
+write. The ovn-controller role was designed to allow for ovn-controllers
+to write to the southbound database only in places where it makes sense to do
+so. This way, if an intruder were to take over a hypervisor running
+ovn-controller, it is more difficult to compromise the entire overlay network.</p>
+<p>It is strongly recommended to set the ovn-controller role for the OVN
+southbound database to enhance security.</p>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../contents.html">
+              <img class="logo" src="../_static/logo.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="../contents.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Role Based Access Control</a><ul>
+<li><a class="reference internal" href="#mechanics">Mechanics</a></li>
+<li><a class="reference internal" href="#pre-defined-roles">Pre-defined Roles</a><ul>
+<li><a class="reference internal" href="#ovn-controller">ovn-controller</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../contents.html">Documentation overview</a><ul>
+  <li><a href="index.html">Deep Dive</a><ul>
+      <li>Previous: <a href="high-availability.html" title="previous chapter">OVN Gateway High Availability Plan</a></li>
+      <li>Next: <a href="ovn-news-2.8.html" title="next chapter">What’s New with OVS and OVN 2.8</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/topics/role-based-access-control.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, The Open vSwitch Development Community.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.4</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="../_sources/topics/role-based-access-control.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

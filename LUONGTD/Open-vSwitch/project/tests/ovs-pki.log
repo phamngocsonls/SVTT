@@ -1,0 +1,90 @@
+Generating a 2048 bit RSA private key
+.........+++
+..................................................................................................+++
+writing new private key to 'private/cakey.pem'
+-----
+Using configuration from ca.cnf
+Check that the request matches the signature
+Signature ok
+Certificate Details:
+        Serial Number: 1 (0x1)
+        Validity
+            Not Before: Oct 13 09:50:06 2018 GMT
+            Not After : Oct 10 09:50:06 2028 GMT
+        Subject:
+            countryName               = US
+            stateOrProvinceName       = CA
+            organizationName          = Open vSwitch
+            organizationalUnitName    = controllerca
+            commonName                = OVS controllerca CA Certificate (2018 Thg 10 13 16:50:05)
+Certificate is to be certified until Oct 10 09:50:06 2028 GMT (3650 days)
+
+Write out database with 1 new entries
+Data Base Updated
+Generating a 2048 bit RSA private key
+......+++
+.....+++
+writing new private key to 'private/cakey.pem'
+-----
+Using configuration from ca.cnf
+Check that the request matches the signature
+Signature ok
+Certificate Details:
+        Serial Number: 1 (0x1)
+        Validity
+            Not Before: Oct 13 09:50:06 2018 GMT
+            Not After : Oct 10 09:50:06 2028 GMT
+        Subject:
+            countryName               = US
+            stateOrProvinceName       = CA
+            organizationName          = Open vSwitch
+            organizationalUnitName    = switchca
+            commonName                = OVS switchca CA Certificate (2018 Thg 10 13 16:50:05)
+Certificate is to be certified until Oct 10 09:50:06 2028 GMT (3650 days)
+
+Write out database with 1 new entries
+Data Base Updated
+Generating RSA private key, 2048 bit long modulus
+............+++
+......................................................................................................................................................................................................................................................+++
+e is 65537 (0x10001)
+Using configuration from ca.cnf
+Check that the request matches the signature
+Signature ok
+Certificate Details:
+        Serial Number: 2 (0x2)
+        Validity
+            Not Before: Oct 13 09:50:06 2018 GMT
+            Not After : Oct 10 09:50:06 2028 GMT
+        Subject:
+            countryName               = US
+            stateOrProvinceName       = CA
+            organizationName          = Open vSwitch
+            organizationalUnitName    = Open vSwitch certifier
+            commonName                = tests/pki/test id:77bfb17a-a720-4c38-92b7-766017764434
+Certificate is to be certified until Oct 10 09:50:06 2028 GMT (3650 days)
+
+Write out database with 1 new entries
+Data Base Updated
+Generating RSA private key, 2048 bit long modulus
+.............................................+++
+..................................................+++
+e is 65537 (0x10001)
+Using configuration from ca.cnf
+Check that the request matches the signature
+Signature ok
+Certificate Details:
+        Serial Number: 3 (0x3)
+        Validity
+            Not Before: Oct 13 09:50:06 2018 GMT
+            Not After : Oct 10 09:50:06 2028 GMT
+        Subject:
+            countryName               = US
+            stateOrProvinceName       = CA
+            organizationName          = Open vSwitch
+            organizationalUnitName    = Open vSwitch certifier
+            commonName                = tests/pki/test2 id:5c1590b2-5db2-45be-998b-d9775a46629f
+Certificate is to be certified until Oct 10 09:50:06 2028 GMT (3650 days)
+
+Write out database with 1 new entries
+Data Base Updated

@@ -1,0 +1,1989 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>OVN OpenStack Tutorial &#8212; Open vSwitch 2.9.2 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Deep Dive" href="../topics/index.html" />
+    <link rel="prev" title="OVN Sandbox" href="ovn-sandbox.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="ovn-openstack-tutorial">
+<h1>OVN OpenStack Tutorial<a class="headerlink" href="#ovn-openstack-tutorial" title="Permalink to this headline">¶</a></h1>
+<p>This tutorial demonstrates how OVN works in an OpenStack “DevStack”
+environment.  It was tested with the “master” branches of DevStack and
+Open vSwitch near the beginning of May 2017.  Anyone using an earlier
+version is likely to encounter some differences.  In particular, we
+noticed some shortcomings in OVN utilities while writing the tutorial
+and pushed out some improvements, so it’s best to use recent Open
+vSwitch at least from that point of view.</p>
+<p>The goal of this tutorial is to demonstrate OVN in an end-to-end way,
+that is, to show how it works from the cloud management system at the
+top (in this case, OpenStack and specifically its Neutron networking
+subsystem), through the OVN northbound and southbound databases, to
+the bottom at the OVN local controller and Open vSwitch data plane.
+We hope that this demonstration makes it easier for users and
+potential users to understand how OVN works and how to debug and
+troubleshoot it.</p>
+<p>In addition to new material, this tutorial incorporates content from
+<code class="docutils literal notranslate"><span class="pre">testing.rst</span></code> in OpenStack networking-ovn, by Russell Bryant and
+others.  Without that example, this tutorial could not have been
+written.</p>
+<p>We provide enough details in the tutorial that you should be able to
+fully follow along, by creating a DevStack VM and cloning DevStack and
+so on.  If you want to do this, start out from <a class="reference internal" href="#setting-up-devstack">Setting Up DevStack</a>
+below.</p>
+<div class="section" id="setting-up-devstack">
+<h2>Setting Up DevStack<a class="headerlink" href="#setting-up-devstack" title="Permalink to this headline">¶</a></h2>
+<p>This section explains how to install DevStack, a kind of OpenStack
+packaging for developers, in a way that allows you to follow along
+with the tutorial in full.</p>
+<p>Unless you have a spare computer laying about, it’s easiest to install
+DevStacck in a virtual machine.  This tutorial was built using a VM
+implemented by KVM and managed by virt-manager.  I recommend
+configuring the VM configured for the x86-64 architecture, 4 GB RAM, 2
+VCPUs, and a 20 GB virtual disk.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>If you happen to run your Linux-based host with 32-bit userspace,
+then you will have some special issues, even if you use a 64-bit
+kernel:</p>
+<ul class="last">
+<li><p class="first">You may find that you can get 32-bit DevStack VMs to work to some
+extent, but I personally got tired of finding workarounds.  I
+recommend running your VMs in 64-bit mode.  To get this to work,
+I had to go to the CPUs tab for the VM configuration in
+virt-manager and change the CPU model from the one originally
+listed to “Hypervisor Default’ (it is curious that this is not
+the default!).</p>
+</li>
+<li><p class="first">On a host with 32-bit userspace, KVM supports VMs with at most
+2047 MB RAM.  This is adequate, barely, to start DevStack, but it
+is not enough to run multiple (nested) VMs.  To prevent
+out-of-memory failures, set up extra swap space in the guest.
+For example, to add 2 GB swap:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ sudo dd if=/dev/zero of=/swapfile bs=1M count=2048
+$ sudo mkswap /swapfile
+$ sudo swapon /swapfile
+</pre></div>
+</div>
+<p>and then add a line like this to <code class="docutils literal notranslate"><span class="pre">/etc/fstab</span></code> to add the new
+swap automatically upon reboot:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">/</span><span class="n">swapfile</span> <span class="n">swap</span> <span class="n">swap</span> <span class="n">defaults</span> <span class="mi">0</span> <span class="mi">0</span>
+</pre></div>
+</div>
+</li>
+</ul>
+</div>
+<p>Here are step-by-step instructions to get started:</p>
+<ol class="arabic">
+<li><p class="first">Install a VM.</p>
+<p>I tested these instructions with Centos 7.3.  Download the “minimal
+install” ISO and booted it.  The install is straightforward.  Be
+sure to enable networking, and set a host name, such as
+“ovn-devstack-1”.  Add a regular (non-root) user, and check the box
+“Make this user administrator”.  Also, set your time zone.</p>
+</li>
+<li><p class="first">You can SSH into the DevStack VM, instead of running from a
+console.  I recommend it because it’s easier to cut and paste
+commands into a terminal than a VM console.  You might also
+consider using a very wide terminal, perhaps 160 columns, to keep
+tables from wrapping.</p>
+<p>To improve convenience further, you can make it easier to log in
+with the following steps, which are optional:</p>
+<ol class="loweralpha">
+<li><p class="first">On your host, edit your <code class="docutils literal notranslate"><span class="pre">~/.ssh/config</span></code>, adding lines like
+the following:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Host</span> <span class="n">ovn</span><span class="o">-</span><span class="n">devstack</span><span class="o">-</span><span class="mi">1</span>
+      <span class="n">Hostname</span> <span class="n">VMIP</span>
+      <span class="n">User</span> <span class="n">VMUSER</span>
+</pre></div>
+</div>
+<p>where VMIP is the VM’s IP address and VMUSER is your username
+inside the VM.  (You can omit the <code class="docutils literal notranslate"><span class="pre">User</span></code> line if your
+username is the same in the host and the VM.)  After you do
+this, you can SSH to the VM by name, e.g. <code class="docutils literal notranslate"><span class="pre">ssh</span>
+<span class="pre">ovn-devstack-1</span></code>, and if command-line completion is set up in
+your host shell, you can shorten that to something like <code class="docutils literal notranslate"><span class="pre">ssh</span>
+<span class="pre">ovn</span></code> followed by hitting the Tab key.</p>
+</li>
+<li><p class="first">If you have SSH public key authentication set up, with an SSH
+agent, run on your host:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ ssh-copy-id ovn-devstack-1
+</pre></div>
+</div>
+<p>and type your password once.  Afterward, you can log in without
+typing your password again.</p>
+<p>(If you don’t already use SSH public key authentication and an
+agent, consider looking into it–it will save you time in the
+long run.)</p>
+</li>
+<li><p class="first">Optionally, inside the VM, append the following to your
+<code class="docutils literal notranslate"><span class="pre">~/.bash_profile</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>. $HOME/devstack/openrc admin
+</pre></div>
+</div>
+<p>It will save you running it by hand each time you log in.  But
+it also prints garbage to the console, which can screw up
+services like <code class="docutils literal notranslate"><span class="pre">ssh-copy-id</span></code>, so be careful.</p>
+</li>
+</ol>
+</li>
+</ol>
+<ol class="arabic" start="2">
+<li><p class="first">Boot into the installed system and log in as the regular user, then
+install Git:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ sudo yum install git
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>If you installed a 32-bit i386 guest (against the advice above),
+install a non-PAE kernel and reboot into it at this point:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ sudo yum install kernel-core kernel-devel
+$ sudo reboot
+</pre></div>
+</div>
+<p class="last">Be sure to select the non-PAE kernel from the list at boot.
+Without this step, DevStack will fail to install properly later.</p>
+</div>
+</li>
+<li><p class="first">Get copies of DevStack and OVN and set them up:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ git clone http://git.openstack.org/openstack-dev/devstack.git
+$ git clone http://git.openstack.org/openstack/networking-ovn.git
+$ cd devstack
+$ cp ../networking-ovn/devstack/local.conf.sample local.conf
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>If you installed a 32-bit i386 guest (against the advice above),
+at this point edit <code class="docutils literal notranslate"><span class="pre">local.conf</span></code> to add the following line:</p>
+<div class="last highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">CIRROS_ARCH</span><span class="o">=</span><span class="n">i386</span>
+</pre></div>
+</div>
+</div>
+</li>
+<li><p class="first">Initialize DevStack:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ ./stack.sh
+</pre></div>
+</div>
+<p>This will spew many screenfuls of text, and the first time you run
+it, it will download lots of software from the Internet.  The
+output should eventually end with something like this:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">This</span> <span class="ow">is</span> <span class="n">your</span> <span class="n">host</span> <span class="n">IP</span> <span class="n">address</span><span class="p">:</span> <span class="mf">172.16</span><span class="o">.</span><span class="mf">189.6</span>
+<span class="n">This</span> <span class="ow">is</span> <span class="n">your</span> <span class="n">host</span> <span class="n">IPv6</span> <span class="n">address</span><span class="p">:</span> <span class="p">::</span><span class="mi">1</span>
+<span class="n">Horizon</span> <span class="ow">is</span> <span class="n">now</span> <span class="n">available</span> <span class="n">at</span> <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="mf">172.16</span><span class="o">.</span><span class="mf">189.6</span><span class="o">/</span><span class="n">dashboard</span>
+<span class="n">Keystone</span> <span class="ow">is</span> <span class="n">serving</span> <span class="n">at</span> <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="mf">172.16</span><span class="o">.</span><span class="mf">189.6</span><span class="o">/</span><span class="n">identity</span><span class="o">/</span>
+<span class="n">The</span> <span class="n">default</span> <span class="n">users</span> <span class="n">are</span><span class="p">:</span> <span class="n">admin</span> <span class="ow">and</span> <span class="n">demo</span>
+<span class="n">The</span> <span class="n">password</span><span class="p">:</span> <span class="n">password</span>
+<span class="mi">2017</span><span class="o">-</span><span class="mi">03</span><span class="o">-</span><span class="mi">09</span> <span class="mi">15</span><span class="p">:</span><span class="mi">10</span><span class="p">:</span><span class="mf">54.117</span> <span class="o">|</span> <span class="n">stack</span><span class="o">.</span><span class="n">sh</span> <span class="n">completed</span> <span class="ow">in</span> <span class="mi">2110</span> <span class="n">seconds</span><span class="o">.</span>
+</pre></div>
+</div>
+<p>If there’s some kind of failure, you can restart by running
+<code class="docutils literal notranslate"><span class="pre">./stack.sh</span></code> again.  It won’t restart exactly where it left off,
+but steps up to the one where it failed will skip the download
+steps.  (Sometimes blindly restarting after a failure will allow it
+to succeed.)  If you reboot your VM, you need to rerun this
+command.  (If you run into trouble with <code class="docutils literal notranslate"><span class="pre">stack.sh</span></code> after
+rebooting your VM, try running <code class="docutils literal notranslate"><span class="pre">./unstack.sh</span></code>.)</p>
+<p>At this point you can navigate a web browser on your host to the
+Horizon dashboard URL.  Many OpenStack operations can be initiated
+from this UI.  Feel free to explore, but this tutorial focuses on
+the alternative command-line interfaces because they are easier to
+explain and to cut and paste.</p>
+</li>
+<li><p class="first">As of this writing, you need to run the following to fix a problem
+with using VM consoles from the OpenStack web instance:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ (cd /opt/stack/noVNC &amp;&amp; git checkout v0.6.0)
+</pre></div>
+</div>
+<p>See
+<a class="reference external" href="https://serenity-networks.com/how-to-fix-setkeycodes-00-and-unknown-key-pressed-console-errors-on-openstack/">https://serenity-networks.com/how-to-fix-setkeycodes-00-and-unknown-key-pressed-console-errors-on-openstack/</a>
+for more details.</p>
+</li>
+<li><p class="first">The firewall in the VM by default allows SSH access but not HTTP.
+You will probably want HTTP access to use the OpenStack web
+interface.  The following command enables that.  (It also enables
+every other kind of network access, so if you’re concerned about
+security then you might want to find a more targeted approach.)</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ sudo iptables -F
+</pre></div>
+</div>
+<p>(You need to re-run this if you reboot the VM.)</p>
+</li>
+<li><p class="first">To use OpenStack command line utilities in the tutorial, run:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ . ~/devstack/openrc admin
+</pre></div>
+</div>
+<p>This needs to be re-run each time you log in (but see the following
+section).</p>
+</li>
+</ol>
+</div>
+<div class="section" id="devstack-preliminaries">
+<h2>DevStack preliminaries<a class="headerlink" href="#devstack-preliminaries" title="Permalink to this headline">¶</a></h2>
+<p>Before we really jump in, let’s set up a couple of things in DevStack.
+This is the first real test that DevStack is working, so if you get
+errors from any of these commands, it’s a sign that <code class="docutils literal notranslate"><span class="pre">stack.sh</span></code>
+didn’t finish properly, or perhaps that you didn’t run the <code class="docutils literal notranslate"><span class="pre">openrc</span>
+<span class="pre">admin</span></code> command at the end of the previous instructions.</p>
+<p>If you stop and restart DevStack via <code class="docutils literal notranslate"><span class="pre">unstack.sh</span></code> followed by
+<code class="docutils literal notranslate"><span class="pre">stack.sh</span></code>, you have to rerun these steps.</p>
+<ol class="arabic">
+<li><p class="first">For SSH access to the VMs we’re going to create, we’ll need a SSH
+keypair.  Later on, we’ll get OpenStack to install this keypair
+into VMs.  Create one with:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ openstack keypair create demo &gt; ~/id_rsa_demo
+$ chmod 600 ~/id_rsa_demo
+</pre></div>
+</div>
+</li>
+<li><p class="first">By default, DevStack security groups drop incoming traffic, but to
+test networking in a reasonable way we need to enable it.  You only
+need to actually edit one particular security group, but DevStack
+creates multiple and it’s somewhat difficult to figure out which
+one is important because all of them are named “default”.  So, the
+following adds rules to allow SSH and ICMP traffic into <strong>every</strong>
+security group:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ for group in $(openstack security group list -f value -c ID); do \
+openstack security group rule create --ingress --ethertype IPv4 --dst-port 22 --protocol tcp $group; \
+openstack security group rule create --ingress --ethertype IPv4 --protocol ICMP $group; \
+done
+</pre></div>
+</div>
+</li>
+<li><p class="first">Later on, we’re going to create some VMs and we’ll need an
+operating system image to install.  DevStack comes with a very
+simple image built-in, called “cirros”, which works fine.  We need
+to get the UUID for this image.  Our later commands assume shell
+variable <code class="docutils literal notranslate"><span class="pre">IMAGE_ID</span></code> holds this UUID.  You can set this by hand,
+e.g.:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ openstack image list
++--------------------------------------+--------------------------+--------+
+| ID                                   | Name                     | Status |
++--------------------------------------+--------------------------+--------+
+| 77f37d2c-3d6b-4e99-a01b-1fa5d78d1fa1 | cirros-0.3.5-x86_64-disk | active |
++--------------------------------------+--------------------------+--------+
+$ IMAGE_ID=73ca34f3-63c4-4c10-a62f-4540afc24eaa
+</pre></div>
+</div>
+<p>or by parsing CLI output:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ IMAGE_ID=$(openstack image list -f value -c ID)
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Your image ID will differ from the one above, as will every UUID
+in this tutorial.  They will also change every time you run
+<code class="docutils literal notranslate"><span class="pre">stack.sh</span></code>.  The UUIDs are generated randomly.</p>
+</div>
+</li>
+</ol>
+</div>
+<div class="section" id="shortening-uuids">
+<h2>Shortening UUIDs<a class="headerlink" href="#shortening-uuids" title="Permalink to this headline">¶</a></h2>
+<p>OpenStack, OVN, and Open vSwitch all really like UUIDs.  These are
+great for uniqueness, but 36-character strings are terrible for
+readability.  Statistically, just the first few characters are enough
+for uniqueness in small environments, so let’s define a helper to make
+things more readable:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ abbrev() { a=&#39;[0-9a-fA-F]&#39; b=$a$a c=$b$b; sed &quot;s/$b-$c-$c-$c-$c$c$c//g&quot;; }
+</pre></div>
+</div>
+<p>You can use this as a filter to abbreviate UUIDs.  For example, use it
+to abbreviate the above image list:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ openstack image list -f yaml | abbrev
+- ID: 77f37d
+  Name: cirros-0.3.5-x86_64-disk
+  Status: active
+</pre></div>
+</div>
+<p>The command above also adds <code class="docutils literal notranslate"><span class="pre">-f</span> <span class="pre">yaml</span></code> to switch to YAML output
+format, because abbreviating UUIDs screws up the default table-based
+formatting and because YAML output doesn’t produce wrap columns across
+lines and therefore is easier to cut and paste.</p>
+</div>
+<div class="section" id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
+<p>Now that DevStack is ready, with OVN set up as the networking
+back-end, here’s an overview of what we’re going to do in the
+remainder of the demo, all via OpenStack:</p>
+<ol class="arabic">
+<li><p class="first">Switching: Create an OpenStack network <code class="docutils literal notranslate"><span class="pre">n1</span></code> and VMs <code class="docutils literal notranslate"><span class="pre">a</span></code> and
+<code class="docutils literal notranslate"><span class="pre">b</span></code> attached to it.</p>
+<p>An OpenStack network is a virtual switch; it corresponds to an OVN
+logical switch.</p>
+</li>
+<li><p class="first">Routing: Create a second OpenStack network <code class="docutils literal notranslate"><span class="pre">n2</span></code> and VM <code class="docutils literal notranslate"><span class="pre">c</span></code>
+attached to it, then connect it to network <code class="docutils literal notranslate"><span class="pre">n1</span></code> by creating an
+OpenStack router and attaching <code class="docutils literal notranslate"><span class="pre">n1</span></code> and <code class="docutils literal notranslate"><span class="pre">n2</span></code> to it.</p>
+</li>
+<li><p class="first">Gateways: Make VMs <code class="docutils literal notranslate"><span class="pre">a</span></code> and <code class="docutils literal notranslate"><span class="pre">b</span></code> available via an external network.</p>
+</li>
+<li><p class="first">IPv6: Add IPv6 addresses to our VMs to demonstrate OVN support for
+IPv6 routing.</p>
+</li>
+<li><p class="first">ACLs: Add and modify OpenStack stateless and stateful rules in
+security groups.</p>
+</li>
+<li><p class="first">DHCP: How it works in OVN.</p>
+</li>
+<li><p class="first">Further directions: Adding more compute nodes.</p>
+</li>
+</ol>
+<p>At each step, we will take a look at how the features in question work
+from OpenStack’s Neutron networking layer at the top to the data plane
+layer at the bottom.  From the highest to lowest level, these layers
+and the software components that connect them are:</p>
+<ul>
+<li><p class="first">OpenStack Neutron, which as the top level in the system is the
+authoritative source of the virtual network configuration.</p>
+<p>We will use OpenStack’s <code class="docutils literal notranslate"><span class="pre">openstack</span></code> utility to observe and modify
+Neutron and other OpenStack configuration.</p>
+</li>
+<li><p class="first">networking-ovn, the Neutron driver that interfaces with OVN and
+translates the internal Neutron representation of the virtual
+network into OVN’s representation and pushes that representation
+down the OVN northbound database.</p>
+<p>In this tutorial it’s rarely worth distinguishing Neutron from
+networking-ovn, so we usually don’t break out this layer separately.</p>
+</li>
+<li><p class="first">The OVN Northbound database, aka NB DB.  This is an instance of
+OVSDB, a simple general-purpose database that is used for multiple
+purposes in Open vSwitch and OVN.  The NB DB’s schema is in terms of
+networking concepts such as switches and routers.  The NB DB serves
+the purpose that in other systems might be filled by some kind of
+API; for example, in place of calling an API to create or delete a
+logical switch, networking-ovn performs these operations by
+inserting or deleting a row in the NB DB’s Logical_Switch table.</p>
+<p>We will use OVN’s <code class="docutils literal notranslate"><span class="pre">ovn-nbctl</span></code> utility to observe the NB DB.  (We
+won’t directly modify data at this layer or below.  Because
+configuration trickles down from Neutron through the stack, the
+right way to make changes is to use the <code class="docutils literal notranslate"><span class="pre">openstack</span></code> utility or
+another OpenStack interface and then wait for them to percolate
+through to lower layers.)</p>
+</li>
+<li><p class="first">The ovn-northd daemon, a program that runs centrally and translates
+the NB DB’s network representation into the lower-level
+representation used by the OVN Southbound database in the next
+layer.  The details of this daemon are usually not of interest,
+although without it OVN will not work, so this tutorial does not
+often mention it.</p>
+</li>
+<li><p class="first">The OVN Southbound database, aka SB DB, which is also an OVSDB
+database.  Its schema is very different from the NB DB.  Instead of
+familiar networking concepts, the SB DB defines the network in terms
+of collections of match-action rules called “logical flows”, which
+while similar in concept to OpenFlow flows use logical concepts, such
+as virtual machine instances, in place of physical concepts like
+physical Ethernet ports.</p>
+<p>We will use OVN’s <code class="docutils literal notranslate"><span class="pre">ovn-sbctl</span></code> utility to observe the SB DB.</p>
+</li>
+<li><p class="first">The ovn-controller daemon.  A copy of ovn-controller runs on each
+hypervisor.  It reads logical flows from the SB DB, translates them
+into OpenFlow flows, and sends them to Open vSwitch’s ovs-vswitchd
+daemon.  Like ovn-northd, usually the details of what this daemon
+are not of interest, even though it’s important to the operation of
+the system.</p>
+</li>
+<li><p class="first">ovs-vswitchd.  This program runs on each hypervisor.  It is the core
+of Open vSwitch, which processes packets according to the OpenFlow
+flows set up by ovn-controller.</p>
+</li>
+<li><p class="first">Open vSwitch datapath.  This is essentially a cache designed to
+accelerate packet processing.  Open vSwitch includes a few different
+datapaths but OVN installations typically use one based on the Open
+vSwitch Linux kernel module.</p>
+</li>
+</ul>
+</div>
+<div class="section" id="switching">
+<h2>Switching<a class="headerlink" href="#switching" title="Permalink to this headline">¶</a></h2>
+<p>Switching is the basis of networking in the real world and in virtual
+networking as well.  OpenStack calls its concept of a virtual switch a
+“network”, and OVN calls its corresponding concept a “logical switch”.</p>
+<p>In this step, we’ll create an OpenStack network <code class="docutils literal notranslate"><span class="pre">n1</span></code>, then create
+VMs <code class="docutils literal notranslate"><span class="pre">a</span></code> and <code class="docutils literal notranslate"><span class="pre">b</span></code> and attach them to <code class="docutils literal notranslate"><span class="pre">n1</span></code>.</p>
+<div class="section" id="creating-network-n1">
+<h3>Creating network <code class="docutils literal notranslate"><span class="pre">n1</span></code><a class="headerlink" href="#creating-network-n1" title="Permalink to this headline">¶</a></h3>
+<p>Let’s start by creating the network:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ openstack network create --project admin --provider-network-type geneve n1
+</pre></div>
+</div>
+<p>OpenStack needs to know the subnets that a network serves.  We inform
+it by creating subnet objects.  To keep it simple, let’s give our
+network a single subnet for the 10.1.1.0/24 network.  We have to give
+it a name, in this case <code class="docutils literal notranslate"><span class="pre">n1subnet</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ openstack subnet create --subnet-range 10.1.1.0/24 --network n1 n1subnet
+</pre></div>
+</div>
+<p>If you ask Neutron to show us the available networks, we see <code class="docutils literal notranslate"><span class="pre">n1</span></code> as
+well as the two networks that DevStack creates by default:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ openstack network list -f yaml | abbrev
+- ID: 5b6baf
+  Name: n1
+  Subnets: 5e67e7
+- ID: c02c4d
+  Name: private
+  Subnets: d88a34, fd87f9
+- ID: d1ac28
+  Name: public
+  Subnets: 0b1e79, c87dc1
+</pre></div>
+</div>
+<p>Neutron pushes this network setup down to the OVN northbound
+database.  We can use <code class="docutils literal notranslate"><span class="pre">ovn-nbctl</span> <span class="pre">show</span></code> to see an overview of what’s
+in the NB DB:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ ovn-nbctl show | abbrev
+switch 5b3d5f (neutron-c02c4d) (aka private)
+    port b256dd
+        type: router
+        router-port: lrp-b256dd
+    port f264e7
+        type: router
+        router-port: lrp-f264e7
+switch 2579f4 (neutron-d1ac28) (aka public)
+    port provnet-d1ac28
+        type: localnet
+        addresses: [&quot;unknown&quot;]
+    port ae9b52
+        type: router
+        router-port: lrp-ae9b52
+switch 3eb263 (neutron-5b6baf) (aka n1)
+router c59ad2 (neutron-9b057f) (aka router1)
+    port lrp-ae9b52
+        mac: &quot;fa:16:3e:b2:d2:67&quot;
+        networks: [&quot;172.24.4.9/24&quot;, &quot;2001:db8::b/64&quot;]
+    port lrp-b256dd
+        mac: &quot;fa:16:3e:35:33:db&quot;
+        networks: [&quot;fdb0:5860:4ba8::1/64&quot;]
+    port lrp-f264e7
+        mac: &quot;fa:16:3e:fc:c8:da&quot;
+        networks: [&quot;10.0.0.1/26&quot;]
+    nat 80914c
+        external ip: &quot;172.24.4.9&quot;
+        logical ip: &quot;10.0.0.0/26&quot;
+        type: &quot;snat&quot;
+</pre></div>
+</div>
+<p>This output shows that OVN has three logical switches, each of which
+corresponds to a Neutron network, and a logical router that
+corresponds to the Neutron router that DevStack creates by default.
+The logical switch that corresponds to our new network <code class="docutils literal notranslate"><span class="pre">n1</span></code> has no
+ports yet, because we haven’t added any.  The <code class="docutils literal notranslate"><span class="pre">public</span></code> and
+<code class="docutils literal notranslate"><span class="pre">private</span></code> networks that DevStack creates by default have router
+ports that connect to the logical router.</p>
+<p>Using ovn-northd, OVN translates the NB DB’s high-level switch and
+router concepts into lower-level concepts of “logical datapaths” and
+logical flows.  There’s one logical datapath for each logical switch
+or router:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ ovn-sbctl list datapath_binding | abbrev
+_uuid               : 0ad69d
+external_ids        : {logical-switch=&quot;5b3d5f&quot;, name=&quot;neutron-c02c4d&quot;, &quot;name2&quot;=private}
+tunnel_key          : 1
+
+_uuid               : a8a758
+external_ids        : {logical-switch=&quot;3eb263&quot;, name=&quot;neutron-5b6baf&quot;, &quot;name2&quot;=&quot;n1&quot;}
+tunnel_key          : 4
+
+_uuid               : 191256
+external_ids        : {logical-switch=&quot;2579f4&quot;, name=&quot;neutron-d1ac28&quot;, &quot;name2&quot;=public}
+tunnel_key          : 3
+
+_uuid               : b87bec
+external_ids        : {logical-router=&quot;c59ad2&quot;, name=&quot;neutron-9b057f&quot;, &quot;name2&quot;=&quot;router1&quot;}
+tunnel_key          : 2
+</pre></div>
+</div>
+<p>This output lists the NB DB UUIDs in external_ids:logical-switch and
+Neutron UUIDs in externals_ids:uuid.  We can dive in deeper by viewing
+the OVN logical flows that implement a logical switch.  Our new
+logical switch is a simple and almost pathological example given that
+it doesn’t yet have any ports attached to it.  We’ll look at the
+details a bit later:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ ovn-sbctl lflow-list n1 | abbrev
+Datapath: &quot;neutron-5b6baf&quot; aka &quot;n1&quot; (a8a758)  Pipeline: ingress
+  table=0 (ls_in_port_sec_l2  ), priority=100  , match=(eth.src[40]), action=(drop;)
+  table=0 (ls_in_port_sec_l2  ), priority=100  , match=(vlan.present), action=(drop;)
+...
+Datapath: &quot;neutron-5b6baf&quot; aka &quot;n1&quot; (a8a758)  Pipeline: egress
+  table=0 (ls_out_pre_lb      ), priority=0    , match=(1), action=(next;)
+  table=1 (ls_out_pre_acl     ), priority=0    , match=(1), action=(next;)
+...
+</pre></div>
+</div>
+<p>We have one hypervisor (aka “compute node”, in OpenStack parlance),
+which is the one where we’re running all these commands.  On this
+hypervisor, ovn-controller is translating OVN logical flows into
+OpenFlow flows (“physical flows”).  It makes sense to go deeper, to
+see the OpenFlow flows that get generated from this datapath.  By
+adding <code class="docutils literal notranslate"><span class="pre">--ovs</span></code> to the <code class="docutils literal notranslate"><span class="pre">ovn-sbctl</span></code> command, we can see OpenFlow
+flows listed just below their logical flows.  We also need to use
+<code class="docutils literal notranslate"><span class="pre">sudo</span></code> because connecting to Open vSwitch is privileged.  Go ahead
+and try it:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ sudo ovn-sbctl --ovs lflow-list n1 | abbrev
+Datapath: &quot;neutron-5b6baf&quot; aka &quot;n1&quot; (a8a758)  Pipeline: ingress
+  table=0 (ls_in_port_sec_l2  ), priority=100  , match=(eth.src[40]), action=(drop;)
+  table=0 (ls_in_port_sec_l2  ), priority=100  , match=(vlan.present), action=(drop;)
+...
+Datapath: &quot;neutron-5b6baf&quot; aka &quot;n1&quot; (a8a758)  Pipeline: egress
+  table=0 (ls_out_pre_lb      ), priority=0    , match=(1), action=(next;)
+  table=1 (ls_out_pre_acl     ), priority=0    , match=(1), action=(next;)
+...
+</pre></div>
+</div>
+<p>You were probably disappointed: the output didn’t change, and no
+OpenFlow flows were printed.  That’s because no OpenFlow flows are
+installed for this logical datapath, which in turn is because there
+are no VIFs for this logical datapath on the local hypervisor.  For a
+better example, you can try <code class="docutils literal notranslate"><span class="pre">ovn-sbctl</span> <span class="pre">--ovs</span></code> on one of the other
+logical datapaths.</p>
+</div>
+<div class="section" id="attaching-vms">
+<h3>Attaching VMs<a class="headerlink" href="#attaching-vms" title="Permalink to this headline">¶</a></h3>
+<p>A switch without any ports is not very interesting.  Let’s create a
+couple of VMs and attach them to the switch.  Run the following
+commands, which create VMs named <code class="docutils literal notranslate"><span class="pre">a</span></code> and <code class="docutils literal notranslate"><span class="pre">b</span></code> and attaches them to
+our network <code class="docutils literal notranslate"><span class="pre">n1</span></code> with IP addresses 10.1.1.5 and 10.1.1.6,
+respectively.  It is not actually necessary to manually assign IP
+address assignments, since OpenStack is perfectly happy to assign them
+itself from the subnet’s IP address range, but predictable addresses
+are useful for our discussion:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ openstack server create --nic net-id=n1,v4-fixed-ip=10.1.1.5 --flavor m1.nano --image $IMAGE_ID --key-name demo a
+$ openstack server create --nic net-id=n1,v4-fixed-ip=10.1.1.6 --flavor m1.nano --image $IMAGE_ID --key-name demo b
+</pre></div>
+</div>
+<p>These commands return before the VMs are really finished being built.
+You can run <code class="docutils literal notranslate"><span class="pre">openstack</span> <span class="pre">server</span> <span class="pre">list</span></code> a few times until each of them
+is shown in the state ACTIVE, which means that they’re not just built
+but already running on the local hypervisor.</p>
+<p>These operations had the side effect of creating separate “port”
+objects, but without giving those ports any easy-to-read names.  It’ll
+be easier to deal with them later if we can refer to them by name, so
+let’s name <code class="docutils literal notranslate"><span class="pre">a</span></code>’s port <code class="docutils literal notranslate"><span class="pre">ap</span></code> and <code class="docutils literal notranslate"><span class="pre">b</span></code>’s port <code class="docutils literal notranslate"><span class="pre">bp</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ openstack port set --name ap $(openstack port list --server a -f value -c ID)
+$ openstack port set --name bp $(openstack port list --server b -f value -c ID)
+</pre></div>
+</div>
+<p>We’ll need to refer to these ports’ MAC addresses a few times, so
+let’s put them in variables:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ AP_MAC=$(openstack port show -f value -c mac_address ap)
+$ BP_MAC=$(openstack port show -f value -c mac_address bp)
+</pre></div>
+</div>
+<p>At this point you can log into the consoles of the VMs if you like.
+You can do that from the OpenStack web interface or get a direct URL
+to paste into a web browser using a command like:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ openstack console url show -f yaml a
+</pre></div>
+</div>
+<p>(The option <code class="docutils literal notranslate"><span class="pre">-f</span> <span class="pre">yaml</span></code> keeps the URL in the output from being broken
+into noncontiguous pieces on a 80-column console.)</p>
+<p>The VMs don’t have many tools in them but <code class="docutils literal notranslate"><span class="pre">ping</span></code> and <code class="docutils literal notranslate"><span class="pre">ssh</span></code> from
+one to the other should work fine.  The VMs do not have any external
+network access or DNS configuration.</p>
+<p>Let’s chase down what’s changed in OVN.  Start with the NB DB at the
+top of the system.  It’s clear that our logical switch now has the two
+logical ports attached to it:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ ovn-nbctl show | abbrev
+...
+switch 3eb263 (neutron-5b6baf) (aka n1)
+    port c29d41 (aka bp)
+        addresses: [&quot;fa:16:3e:99:7a:17 10.1.1.6&quot;]
+    port 820c08 (aka ap)
+        addresses: [&quot;fa:16:3e:a9:4c:c7 10.1.1.5&quot;]
+...
+</pre></div>
+</div>
+<p>We can get some more details on each of these by looking at their NB
+DB records in the Logical_Switch_Port table.  Each port has addressing
+information, port security enabled, and a pointer to DHCP
+configuration (which we’ll look at much later in <a class="reference internal" href="#dhcp">DHCP</a>):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ ovn-nbctl list logical_switch_port ap bp | abbrev
+_uuid               : ef17e5
+addresses           : [&quot;fa:16:3e:a9:4c:c7 10.1.1.5&quot;]
+dhcpv4_options      : 165974
+dhcpv6_options      : []
+dynamic_addresses   : []
+enabled             : true
+external_ids        : {&quot;neutron:port_name&quot;=ap}
+name                : &quot;820c08&quot;
+options             : {}
+parent_name         : []
+port_security       : [&quot;fa:16:3e:a9:4c:c7 10.1.1.5&quot;]
+tag                 : []
+tag_request         : []
+type                : &quot;&quot;
+up                  : true
+
+_uuid               : e8af12
+addresses           : [&quot;fa:16:3e:99:7a:17 10.1.1.6&quot;]
+dhcpv4_options      : 165974
+dhcpv6_options      : []
+dynamic_addresses   : []
+enabled             : true
+external_ids        : {&quot;neutron:port_name&quot;=bp}
+name                : &quot;c29d41&quot;
+options             : {}
+parent_name         : []
+port_security       : [&quot;fa:16:3e:99:7a:17 10.1.1.6&quot;]
+tag                 : []
+tag_request         : []
+type                : &quot;&quot;
+up                  : true
+</pre></div>
+</div>
+<p>Now that the logical switch is less pathological, it’s worth taking
+another look at the SB DB logical flow table.  Try a command like
+this:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ ovn-sbctl lflow-list n1 | abbrev | less -S
+</pre></div>
+</div>
+<p>and then glance through the flows.  Packets that egress a VM into the
+logical switch travel through the flow table’s ingress pipeline
+starting from table 0.  At each table, the switch finds the
+highest-priority logical flow that matches and executes its actions,
+or if there’s no matching flow then the packet is dropped.  The
+<code class="docutils literal notranslate"><span class="pre">ovn-sb</span></code>(5) manpage gives all the details, but with a little
+thought it’s possible to guess a lot without reading the manpage.  For
+example, consider the flows in ingress pipeline table 0, which are the
+first flows encountered by a packet traversing the switch:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">table</span><span class="o">=</span><span class="mi">0</span> <span class="p">(</span><span class="n">ls_in_port_sec_l2</span>  <span class="p">),</span> <span class="n">priority</span><span class="o">=</span><span class="mi">100</span>  <span class="p">,</span> <span class="n">match</span><span class="o">=</span><span class="p">(</span><span class="n">eth</span><span class="o">.</span><span class="n">src</span><span class="p">[</span><span class="mi">40</span><span class="p">]),</span> <span class="n">action</span><span class="o">=</span><span class="p">(</span><span class="n">drop</span><span class="p">;)</span>
+<span class="n">table</span><span class="o">=</span><span class="mi">0</span> <span class="p">(</span><span class="n">ls_in_port_sec_l2</span>  <span class="p">),</span> <span class="n">priority</span><span class="o">=</span><span class="mi">100</span>  <span class="p">,</span> <span class="n">match</span><span class="o">=</span><span class="p">(</span><span class="n">vlan</span><span class="o">.</span><span class="n">present</span><span class="p">),</span> <span class="n">action</span><span class="o">=</span><span class="p">(</span><span class="n">drop</span><span class="p">;)</span>
+<span class="n">table</span><span class="o">=</span><span class="mi">0</span> <span class="p">(</span><span class="n">ls_in_port_sec_l2</span>  <span class="p">),</span> <span class="n">priority</span><span class="o">=</span><span class="mi">50</span>   <span class="p">,</span> <span class="n">match</span><span class="o">=</span><span class="p">(</span><span class="n">inport</span> <span class="o">==</span> <span class="s2">&quot;820c08&quot;</span> <span class="o">&amp;&amp;</span> <span class="n">eth</span><span class="o">.</span><span class="n">src</span> <span class="o">==</span> <span class="p">{</span><span class="n">fa</span><span class="p">:</span><span class="mi">16</span><span class="p">:</span><span class="mi">3</span><span class="n">e</span><span class="p">:</span><span class="n">a9</span><span class="p">:</span><span class="mi">4</span><span class="n">c</span><span class="p">:</span><span class="n">c7</span><span class="p">}),</span> <span class="n">action</span><span class="o">=</span><span class="p">(</span><span class="nb">next</span><span class="p">;)</span>
+<span class="n">table</span><span class="o">=</span><span class="mi">0</span> <span class="p">(</span><span class="n">ls_in_port_sec_l2</span>  <span class="p">),</span> <span class="n">priority</span><span class="o">=</span><span class="mi">50</span>   <span class="p">,</span> <span class="n">match</span><span class="o">=</span><span class="p">(</span><span class="n">inport</span> <span class="o">==</span> <span class="s2">&quot;c29d41&quot;</span> <span class="o">&amp;&amp;</span> <span class="n">eth</span><span class="o">.</span><span class="n">src</span> <span class="o">==</span> <span class="p">{</span><span class="n">fa</span><span class="p">:</span><span class="mi">16</span><span class="p">:</span><span class="mi">3</span><span class="n">e</span><span class="p">:</span><span class="mi">99</span><span class="p">:</span><span class="mi">7</span><span class="n">a</span><span class="p">:</span><span class="mi">17</span><span class="p">}),</span> <span class="n">action</span><span class="o">=</span><span class="p">(</span><span class="nb">next</span><span class="p">;)</span>
+</pre></div>
+</div>
+<p>The first two flows, with priority 100, immediately drop two kinds of
+invalid packets: those with a multicast or broadcast Ethernet source
+address (since multicast is only for packet destinations) and those
+with a VLAN tag (because OVN doesn’t yet support VLAN tags inside
+logical networks).  The next two flows implement L2 port security:
+they advance to the next table for packets with the correct Ethernet
+source addresses for their ingress ports.  A packet that does not
+match any flow is implicitly dropped, so there’s no need for flows to
+deal with mismatches.</p>
+<p>The logical flow table includes many other flows, some of which we
+will look at later.  For now, it’s most worth looking at ingress table
+13:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">table</span><span class="o">=</span><span class="mi">13</span><span class="p">(</span><span class="n">ls_in_l2_lkup</span>      <span class="p">),</span> <span class="n">priority</span><span class="o">=</span><span class="mi">100</span>  <span class="p">,</span> <span class="n">match</span><span class="o">=</span><span class="p">(</span><span class="n">eth</span><span class="o">.</span><span class="n">mcast</span><span class="p">),</span> <span class="n">action</span><span class="o">=</span><span class="p">(</span><span class="n">outport</span> <span class="o">=</span> <span class="s2">&quot;_MC_flood&quot;</span><span class="p">;</span> <span class="n">output</span><span class="p">;)</span>
+<span class="n">table</span><span class="o">=</span><span class="mi">13</span><span class="p">(</span><span class="n">ls_in_l2_lkup</span>      <span class="p">),</span> <span class="n">priority</span><span class="o">=</span><span class="mi">50</span>   <span class="p">,</span> <span class="n">match</span><span class="o">=</span><span class="p">(</span><span class="n">eth</span><span class="o">.</span><span class="n">dst</span> <span class="o">==</span> <span class="n">fa</span><span class="p">:</span><span class="mi">16</span><span class="p">:</span><span class="mi">3</span><span class="n">e</span><span class="p">:</span><span class="mi">99</span><span class="p">:</span><span class="mi">7</span><span class="n">a</span><span class="p">:</span><span class="mi">17</span><span class="p">),</span> <span class="n">action</span><span class="o">=</span><span class="p">(</span><span class="n">outport</span> <span class="o">=</span> <span class="s2">&quot;c29d41&quot;</span><span class="p">;</span> <span class="n">output</span><span class="p">;)</span>
+<span class="n">table</span><span class="o">=</span><span class="mi">13</span><span class="p">(</span><span class="n">ls_in_l2_lkup</span>      <span class="p">),</span> <span class="n">priority</span><span class="o">=</span><span class="mi">50</span>   <span class="p">,</span> <span class="n">match</span><span class="o">=</span><span class="p">(</span><span class="n">eth</span><span class="o">.</span><span class="n">dst</span> <span class="o">==</span> <span class="n">fa</span><span class="p">:</span><span class="mi">16</span><span class="p">:</span><span class="mi">3</span><span class="n">e</span><span class="p">:</span><span class="n">a9</span><span class="p">:</span><span class="mi">4</span><span class="n">c</span><span class="p">:</span><span class="n">c7</span><span class="p">),</span> <span class="n">action</span><span class="o">=</span><span class="p">(</span><span class="n">outport</span> <span class="o">=</span> <span class="s2">&quot;820c08&quot;</span><span class="p">;</span> <span class="n">output</span><span class="p">;)</span>
+</pre></div>
+</div>
+<p>The first flow in table 13 checks whether the packet is an Ethernet
+multicast or broadcast and, if so, outputs it to a special port that
+egresses to every logical port (other than the ingress port).
+Otherwise the packet is output to the port corresponding to its
+Ethernet destination address.  Packets addressed to any other Ethernet
+destination are implicitly dropped.</p>
+<p>(It’s common for an OVN logical switch to know all the MAC addresses
+supported by its logical ports, like this one.  That’s why there’s no
+logic here for MAC learning or flooding packets to unknown MAC
+addresses.  OVN does support unknown MAC handling but that’s not in
+play in our example.)</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>If you’re interested in the details for the multicast group, you can
+run a command like the following and then look at the row for the
+correct datapath:</p>
+<div class="last highlight-default notranslate"><div class="highlight"><pre><span></span>$ ovn-sbctl find multicast_group name=_MC_flood | abbrev
+</pre></div>
+</div>
+</div>
+<p>Now if you want to look at the OpenFlow flows, you can actually see
+them.  For example, here’s the beginning of the output that lists the
+first four logical flows, which we already looked at above, and their
+corresponding OpenFlow flows.  If you want to know more about the
+syntax, the <code class="docutils literal notranslate"><span class="pre">ovs-fields</span></code>(7) manpage explains OpenFlow matches and
+<code class="docutils literal notranslate"><span class="pre">ovs-ofctl</span></code>(8) explains OpenFlow actions:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ sudo ovn-sbctl --ovs lflow-list n1 | abbrev
+Datapath: &quot;neutron-5b6baf&quot; aka &quot;n1&quot; (a8a758)  Pipeline: ingress
+  table=0 (ls_in_port_sec_l2  ), priority=100  , match=(eth.src[40]), action=(drop;)
+    table=8 metadata=0x4,dl_src=01:00:00:00:00:00/01:00:00:00:00:00 actions=drop
+  table=0 (ls_in_port_sec_l2  ), priority=100  , match=(vlan.present), action=(drop;)
+    table=8 metadata=0x4,vlan_tci=0x1000/0x1000 actions=drop
+  table=0 (ls_in_port_sec_l2  ), priority=50   , match=(inport == &quot;820c08&quot; &amp;&amp; eth.src == {fa:16:3e:a9:4c:c7}), action=(next;)
+    table=8 reg14=0x1,metadata=0x4,dl_src=fa:16:3e:a9:4c:c7 actions=resubmit(,9)
+  table=0 (ls_in_port_sec_l2  ), priority=50   , match=(inport == &quot;c29d41&quot; &amp;&amp; eth.src == {fa:16:3e:99:7a:17}), action=(next;)
+    table=8 reg14=0x2,metadata=0x4,dl_src=fa:16:3e:99:7a:17 actions=resubmit(,9)
+...
+</pre></div>
+</div>
+<div class="section" id="logical-tracing">
+<h4>Logical Tracing<a class="headerlink" href="#logical-tracing" title="Permalink to this headline">¶</a></h4>
+<p>Let’s go a level deeper.  So far, everything we’ve done has been
+fairly general.  We can also look at something more specific: the path
+that a particular packet would take through OVN, logically, and Open
+vSwitch, physically.</p>
+<p>Let’s use OVN’s ovn-trace utility to see what happens to packets from
+a logical point of view.  The <code class="docutils literal notranslate"><span class="pre">ovn-trace</span></code>(8) manpage has a lot of
+detail on how to do that, but let’s just start by building up from a
+simple example.  You can start with a command that just specifies the
+logical datapath, an input port, and nothing else; unspecified fields
+default to all-zeros.  This doesn’t do much:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ ovn-trace n1 &#39;inport == &quot;ap&quot;&#39;
+...
+ingress(dp=&quot;n1&quot;, inport=&quot;ap&quot;)
+-----------------------------
+ 0. ls_in_port_sec_l2: no match (implicit drop)
+</pre></div>
+</div>
+<p>We see that the packet was dropped in logical table 0,
+“ls_in_port_sec_l2”, the L2 port security stage (as we discussed
+earlier).  That’s because we didn’t use the right Ethernet source
+address for <code class="docutils literal notranslate"><span class="pre">a</span></code>.  Let’s see what happens if we do:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ ovn-trace n1 &#39;inport == &quot;ap&quot; &amp;&amp; eth.src == &#39;$AP_MAC
+...
+ingress(dp=&quot;n1&quot;, inport=&quot;ap&quot;)
+-----------------------------
+ 0. ls_in_port_sec_l2 (ovn-northd.c:3234): inport == &quot;ap&quot; &amp;&amp; eth.src == {fa:16:3e:a9:4c:c7}, priority 50, uuid 6dcc418a
+    next;
+13. ls_in_l2_lkup: no match (implicit drop)
+</pre></div>
+</div>
+<p>Now the packet passes through L2 port security and skips through
+several other tables until it gets dropped in the L2 lookup stage
+(because the destination is unknown).  Let’s add the Ethernet
+destination for <code class="docutils literal notranslate"><span class="pre">b</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ ovn-trace n1 &#39;inport == &quot;ap&quot; &amp;&amp; eth.src == &#39;$AP_MAC&#39; &amp;&amp; eth.dst == &#39;$BP_MAC
+...
+ingress(dp=&quot;n1&quot;, inport=&quot;ap&quot;)
+-----------------------------
+ 0. ls_in_port_sec_l2 (ovn-northd.c:3234): inport == &quot;ap&quot; &amp;&amp; eth.src == {fa:16:3e:a9:4c:c7}, priority 50, uuid 6dcc418a
+    next;
+13. ls_in_l2_lkup (ovn-northd.c:3529): eth.dst == fa:16:3e:99:7a:17, priority 50, uuid 57a4c46f
+    outport = &quot;bp&quot;;
+    output;
+
+egress(dp=&quot;n1&quot;, inport=&quot;ap&quot;, outport=&quot;bp&quot;)
+------------------------------------------
+ 8. ls_out_port_sec_l2 (ovn-northd.c:3654): outport == &quot;bp&quot; &amp;&amp; eth.dst == {fa:16:3e:99:7a:17}, priority 50, uuid 8aa6426d
+    output;
+    /* output to &quot;bp&quot;, type &quot;&quot; */
+</pre></div>
+</div>
+<p>You can see that in this case the packet gets properly switched from
+<code class="docutils literal notranslate"><span class="pre">a</span></code> to <code class="docutils literal notranslate"><span class="pre">b</span></code>.</p>
+</div>
+<div class="section" id="physical-tracing-for-hypothetical-packets">
+<h4>Physical Tracing for Hypothetical Packets<a class="headerlink" href="#physical-tracing-for-hypothetical-packets" title="Permalink to this headline">¶</a></h4>
+<p>ovn-trace showed us how a hypothetical packet would travel through the
+system in a logical fashion, that is, without regard to how VMs are
+distributed across the physical network.  This is a convenient
+representation for understanding how OVN is <strong>supposed</strong> to work
+abstractly, but sometimes we might want to know more about how it
+actually works in the real systems where it is running.  For this, we
+can use the tracing tool that Open vSwitch provides, which traces
+a hypothetical packet through the OpenFlow tables.</p>
+<p>We can actually get two levels of detail.  Let’s start with the
+version that’s easier to interpret, by physically tracing a packet
+that looks like the one we logically traced before.  One obstacle is
+that we need to know the OpenFlow port number of the input port.  One
+way to do that is to look for a port whose “attached-mac” is the one
+we expect and print its ofport number:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ AP_PORT=$(ovs-vsctl --bare --columns=ofport find  interface external-ids:attached-mac=\&quot;$AP_MAC\&quot;)
+$ echo $AP_PORT
+3
+</pre></div>
+</div>
+<p>(You could also just do a plain <code class="docutils literal notranslate"><span class="pre">ovs-vsctl</span> <span class="pre">list</span> <span class="pre">interface</span></code> and then
+look through for the right row and pick its <code class="docutils literal notranslate"><span class="pre">ofport</span></code> value.)</p>
+<p>Now we can feed this input port number into <code class="docutils literal notranslate"><span class="pre">ovs-appctl</span>
+<span class="pre">ofproto/trace</span></code> along with the correct Ethernet source and
+destination addresses and get a physical trace:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ sudo ovs-appctl ofproto/trace br-int in_port=$AP_PORT,dl_src=$AP_MAC,dl_dst=$BP_MAC
+Flow: in_port=3,vlan_tci=0x0000,dl_src=fa:16:3e:a9:4c:c7,dl_dst=fa:16:3e:99:7a:17,dl_type=0x0000
+
+bridge(&quot;br-int&quot;)
+----------------
+ 0. in_port=3, priority 100
+    set_field:0x8-&gt;reg13
+    set_field:0x9-&gt;reg11
+    set_field:0xa-&gt;reg12
+    set_field:0x4-&gt;metadata
+    set_field:0x1-&gt;reg14
+    resubmit(,8)
+ 8. reg14=0x1,metadata=0x4,dl_src=fa:16:3e:a9:4c:c7, priority 50, cookie 0x6dcc418a
+    resubmit(,9)
+ 9. metadata=0x4, priority 0, cookie 0x8fe8689e
+    resubmit(,10)
+10. metadata=0x4, priority 0, cookie 0x719549d1
+    resubmit(,11)
+11. metadata=0x4, priority 0, cookie 0x39c99e6f
+    resubmit(,12)
+12. metadata=0x4, priority 0, cookie 0x838152a3
+    resubmit(,13)
+13. metadata=0x4, priority 0, cookie 0x918259e3
+    resubmit(,14)
+14. metadata=0x4, priority 0, cookie 0xcad14db2
+    resubmit(,15)
+15. metadata=0x4, priority 0, cookie 0x7834d912
+    resubmit(,16)
+16. metadata=0x4, priority 0, cookie 0x87745210
+    resubmit(,17)
+17. metadata=0x4, priority 0, cookie 0x34951929
+    resubmit(,18)
+18. metadata=0x4, priority 0, cookie 0xd7a8c9fb
+    resubmit(,19)
+19. metadata=0x4, priority 0, cookie 0xd02e9578
+    resubmit(,20)
+20. metadata=0x4, priority 0, cookie 0x42d35507
+    resubmit(,21)
+21. metadata=0x4,dl_dst=fa:16:3e:99:7a:17, priority 50, cookie 0x57a4c46f
+    set_field:0x2-&gt;reg15
+    resubmit(,32)
+32. priority 0
+    resubmit(,33)
+33. reg15=0x2,metadata=0x4, priority 100
+    set_field:0xb-&gt;reg13
+    set_field:0x9-&gt;reg11
+    set_field:0xa-&gt;reg12
+    resubmit(,34)
+34. priority 0
+    set_field:0-&gt;reg0
+    set_field:0-&gt;reg1
+    set_field:0-&gt;reg2
+    set_field:0-&gt;reg3
+    set_field:0-&gt;reg4
+    set_field:0-&gt;reg5
+    set_field:0-&gt;reg6
+    set_field:0-&gt;reg7
+    set_field:0-&gt;reg8
+    set_field:0-&gt;reg9
+    resubmit(,40)
+40. metadata=0x4, priority 0, cookie 0xde9f3899
+    resubmit(,41)
+41. metadata=0x4, priority 0, cookie 0x74074eff
+    resubmit(,42)
+42. metadata=0x4, priority 0, cookie 0x7789c8b1
+    resubmit(,43)
+43. metadata=0x4, priority 0, cookie 0xa6b002c0
+    resubmit(,44)
+44. metadata=0x4, priority 0, cookie 0xaeab2b45
+    resubmit(,45)
+45. metadata=0x4, priority 0, cookie 0x290cc4d4
+    resubmit(,46)
+46. metadata=0x4, priority 0, cookie 0xa3223b88
+    resubmit(,47)
+47. metadata=0x4, priority 0, cookie 0x7ac2132e
+    resubmit(,48)
+48. reg15=0x2,metadata=0x4,dl_dst=fa:16:3e:99:7a:17, priority 50, cookie 0x8aa6426d
+    resubmit(,64)
+64. priority 0
+    resubmit(,65)
+65. reg15=0x2,metadata=0x4, priority 100
+    output:4
+
+Final flow: reg11=0x9,reg12=0xa,reg13=0xb,reg14=0x1,reg15=0x2,metadata=0x4,in_port=3,vlan_tci=0x0000,dl_src=fa:16:3e:a9:4c:c7,dl_dst=fa:16:3e:99:7a:17,dl_type=0x0000
+Megaflow: recirc_id=0,ct_state=-new-est-rel-rpl-inv-trk,ct_label=0/0x1,in_port=3,vlan_tci=0x0000/0x1000,dl_src=fa:16:3e:a9:4c:c7,dl_dst=fa:16:3e:99:7a:17,dl_type=0x0000
+Datapath actions: 4
+</pre></div>
+</div>
+<p>There’s a lot there, which you can read through if you like, but the
+important part is:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mf">65.</span> <span class="n">reg15</span><span class="o">=</span><span class="mh">0x2</span><span class="p">,</span><span class="n">metadata</span><span class="o">=</span><span class="mh">0x4</span><span class="p">,</span> <span class="n">priority</span> <span class="mi">100</span>
+    <span class="n">output</span><span class="p">:</span><span class="mi">4</span>
+</pre></div>
+</div>
+<p>which means that the packet is ultimately being output to OpenFlow
+port 4.  That’s port <code class="docutils literal notranslate"><span class="pre">b</span></code>, which you can confirm with:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ sudo ovs-vsctl find interface ofport=4
+_uuid               : 840a5aca-ea8d-4c16-a11b-a94e0f408091
+admin_state         : up
+bfd                 : {}
+bfd_status          : {}
+cfm_fault           : []
+cfm_fault_status    : []
+cfm_flap_count      : []
+cfm_health          : []
+cfm_mpid            : []
+cfm_remote_mpids    : []
+cfm_remote_opstate  : []
+duplex              : full
+error               : []
+external_ids        : {attached-mac=&quot;fa:16:3e:99:7a:17&quot;, iface-id=&quot;c29d4120-20a4-4c44-bd83-8d91f5f447fd&quot;, iface-status=active, vm-id=&quot;2db969ca-ca2a-4d9a-b49e-f287d39c5645&quot;}
+ifindex             : 9
+ingress_policing_burst: 0
+ingress_policing_rate: 0
+lacp_current        : []
+link_resets         : 1
+link_speed          : 10000000
+link_state          : up
+lldp                : {}
+mac                 : []
+mac_in_use          : &quot;fe:16:3e:99:7a:17&quot;
+mtu                 : 1500
+mtu_request         : []
+name                : &quot;tapc29d4120-20&quot;
+ofport              : 4
+ofport_request      : []
+options             : {}
+other_config        : {}
+statistics          : {collisions=0, rx_bytes=4254, rx_crc_err=0, rx_dropped=0, rx_errors=0, rx_frame_err=0, rx_over_err=0, rx_packets=39, tx_bytes=4188, tx_dropped=0, tx_errors=0, tx_packets=39}
+status              : {driver_name=tun, driver_version=&quot;1.6&quot;, firmware_version=&quot;&quot;}
+type                : &quot;&quot;
+</pre></div>
+</div>
+<p>or:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ BP_PORT=$(ovs-vsctl --bare --columns=ofport find  interface external-ids:attached-mac=\&quot;$BP_MAC\&quot;)
+$ echo $BP_PORT
+4
+</pre></div>
+</div>
+</div>
+<div class="section" id="physical-tracing-for-real-packets">
+<h4>Physical Tracing for Real Packets<a class="headerlink" href="#physical-tracing-for-real-packets" title="Permalink to this headline">¶</a></h4>
+<p>In the previous sections we traced a hypothetical L2 packet, one
+that’s honestly not very realistic: we didn’t even supply an Ethernet
+type, so it defaulted to zero, which isn’t anything one would see on a
+real network.  We could refine our packet so that it becomes a more
+realistic TCP or UDP or ICMP, etc. packet, but let’s try a different
+approach: working from a real packet.</p>
+<p>Pull up a console for VM <code class="docutils literal notranslate"><span class="pre">a</span></code> and start <code class="docutils literal notranslate"><span class="pre">ping</span> <span class="pre">10.1.1.6</span></code>, then leave
+it running for the rest of our experiment.</p>
+<p>Now go back to your DevStack session and run:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ sudo watch ovs-dpctl dump-flows
+</pre></div>
+</div>
+<p>We’re working with a new program.  ovn-dpctl is an interface to Open
+vSwitch datapaths, in this case to the Linux kernel datapath.  Its
+<code class="docutils literal notranslate"><span class="pre">dump-flows</span></code> command displays the contents of the in-kernel flow
+cache, and by running it under the <code class="docutils literal notranslate"><span class="pre">watch</span></code> program we see a new
+snapshot of the flow table every 2 seconds.</p>
+<p>Look through the output for a flow that begins with <code class="docutils literal notranslate"><span class="pre">recirc_id(0)</span></code>
+and matches the Ethernet source address for <code class="docutils literal notranslate"><span class="pre">a</span></code>.  There is one flow
+per line, but the lines are very long, so it’s easier to read if you
+make the window very wide.  This flow’s packet counter should be
+increasing at a rate of 1 packet per second.  It looks something like
+this:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">recirc_id</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span><span class="n">in_port</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span><span class="n">eth</span><span class="p">(</span><span class="n">src</span><span class="o">=</span><span class="n">fa</span><span class="p">:</span><span class="mi">16</span><span class="p">:</span><span class="mi">3</span><span class="n">e</span><span class="p">:</span><span class="n">f5</span><span class="p">:</span><span class="mi">2</span><span class="n">a</span><span class="p">:</span><span class="mi">90</span><span class="p">),</span><span class="n">eth_type</span><span class="p">(</span><span class="mh">0x0800</span><span class="p">),</span><span class="n">ipv4</span><span class="p">(</span><span class="n">src</span><span class="o">=</span><span class="mf">10.1</span><span class="o">.</span><span class="mf">1.5</span><span class="p">,</span><span class="n">frag</span><span class="o">=</span><span class="n">no</span><span class="p">),</span> <span class="n">packets</span><span class="p">:</span><span class="mi">388</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">:</span><span class="mi">38024</span><span class="p">,</span> <span class="n">used</span><span class="p">:</span><span class="mf">0.977</span><span class="n">s</span><span class="p">,</span> <span class="n">actions</span><span class="p">:</span><span class="n">ct</span><span class="p">(</span><span class="n">zone</span><span class="o">=</span><span class="mi">8</span><span class="p">),</span><span class="n">recirc</span><span class="p">(</span><span class="mh">0x18</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>We can hand the first part of this (everything up to the first space)
+to <code class="docutils literal notranslate"><span class="pre">ofproto/trace</span></code>, and it will tell us what happens:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ sudo ovs-appctl ofproto/trace &#39;recirc_id(0),in_port(3),eth(src=fa:16:3e:a9:4c:c7),eth_type(0x0800),ipv4(src=10.1.1.5,dst=10.1.0.0/255.255.0.0,frag=no)&#39;
+Flow: ip,in_port=3,vlan_tci=0x0000,dl_src=fa:16:3e:a9:4c:c7,dl_dst=00:00:00:00:00:00,nw_src=10.1.1.5,nw_dst=10.1.0.0,nw_proto=0,nw_tos=0,nw_ecn=0,nw_ttl=0
+
+bridge(&quot;br-int&quot;)
+----------------
+ 0. in_port=3, priority 100
+    set_field:0x8-&gt;reg13
+    set_field:0x9-&gt;reg11
+    set_field:0xa-&gt;reg12
+    set_field:0x4-&gt;metadata
+    set_field:0x1-&gt;reg14
+    resubmit(,8)
+ 8. reg14=0x1,metadata=0x4,dl_src=fa:16:3e:a9:4c:c7, priority 50, cookie 0x6dcc418a
+    resubmit(,9)
+ 9. ip,reg14=0x1,metadata=0x4,dl_src=fa:16:3e:a9:4c:c7,nw_src=10.1.1.5, priority 90, cookie 0x343af48c
+    resubmit(,10)
+10. metadata=0x4, priority 0, cookie 0x719549d1
+    resubmit(,11)
+11. ip,metadata=0x4, priority 100, cookie 0x46c089e6
+    load:0x1-&gt;NXM_NX_XXREG0[96]
+    resubmit(,12)
+12. metadata=0x4, priority 0, cookie 0x838152a3
+    resubmit(,13)
+13. ip,reg0=0x1/0x1,metadata=0x4, priority 100, cookie 0xd1941634
+    ct(table=22,zone=NXM_NX_REG13[0..15])
+    drop
+
+Final flow: ip,reg0=0x1,reg11=0x9,reg12=0xa,reg13=0x8,reg14=0x1,metadata=0x4,in_port=3,vlan_tci=0x0000,dl_src=fa:16:3e:a9:4c:c7,dl_dst=00:00:00:00:00:00,nw_src=10.1.1.5,nw_dst=10.1.0.0,nw_proto=0,nw_tos=0,nw_ecn=0,nw_ttl=0
+Megaflow: recirc_id=0,ip,in_port=3,vlan_tci=0x0000/0x1000,dl_src=fa:16:3e:a9:4c:c7,nw_src=10.1.1.5,nw_dst=10.1.0.0/16,nw_frag=no
+Datapath actions: ct(zone=8),recirc(0xb)
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Be careful cutting and pasting <code class="docutils literal notranslate"><span class="pre">ovs-dpctl</span> <span class="pre">dump-flows</span></code> output into
+<code class="docutils literal notranslate"><span class="pre">ofproto/trace</span></code> because the latter has terrible error reporting.
+If you add an extra line break, etc., it will likely give you a
+useless error message.</p>
+</div>
+<p>There’s no <code class="docutils literal notranslate"><span class="pre">output</span></code> action in the output, but there are <code class="docutils literal notranslate"><span class="pre">ct</span></code> and
+<code class="docutils literal notranslate"><span class="pre">recirc</span></code> actions (which you can see in the <code class="docutils literal notranslate"><span class="pre">Datapath</span> <span class="pre">actions</span></code> at
+the end).  The <code class="docutils literal notranslate"><span class="pre">ct</span></code> action tells the kernel to pass the packet
+through the kernel connection tracking for firewalling purposes and
+the <code class="docutils literal notranslate"><span class="pre">recirc</span></code> says to go back to the flow cache for another pass
+based on the firewall results.  The <code class="docutils literal notranslate"><span class="pre">0xb</span></code> value inside the
+<code class="docutils literal notranslate"><span class="pre">recirc</span></code> gives us a hint to look at the kernel flows for a cached
+flow with <code class="docutils literal notranslate"><span class="pre">recirc_id(0xb)</span></code>.  Indeed, there is one:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">recirc_id</span><span class="p">(</span><span class="mh">0xb</span><span class="p">),</span><span class="n">in_port</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span><span class="n">ct_state</span><span class="p">(</span><span class="o">-</span><span class="n">new</span><span class="o">+</span><span class="n">est</span><span class="o">-</span><span class="n">rel</span><span class="o">-</span><span class="n">rpl</span><span class="o">-</span><span class="n">inv</span><span class="o">+</span><span class="n">trk</span><span class="p">),</span><span class="n">ct_label</span><span class="p">(</span><span class="mi">0</span><span class="o">/</span><span class="mh">0x1</span><span class="p">),</span><span class="n">eth</span><span class="p">(</span><span class="n">src</span><span class="o">=</span><span class="n">fa</span><span class="p">:</span><span class="mi">16</span><span class="p">:</span><span class="mi">3</span><span class="n">e</span><span class="p">:</span><span class="n">a9</span><span class="p">:</span><span class="mi">4</span><span class="n">c</span><span class="p">:</span><span class="n">c7</span><span class="p">,</span><span class="n">dst</span><span class="o">=</span><span class="n">fa</span><span class="p">:</span><span class="mi">16</span><span class="p">:</span><span class="mi">3</span><span class="n">e</span><span class="p">:</span><span class="mi">99</span><span class="p">:</span><span class="mi">7</span><span class="n">a</span><span class="p">:</span><span class="mi">17</span><span class="p">),</span><span class="n">eth_type</span><span class="p">(</span><span class="mh">0x0800</span><span class="p">),</span><span class="n">ipv4</span><span class="p">(</span><span class="n">dst</span><span class="o">=</span><span class="mf">10.1</span><span class="o">.</span><span class="mf">1.4</span><span class="o">/</span><span class="mf">255.255</span><span class="o">.</span><span class="mf">255.252</span><span class="p">,</span><span class="n">frag</span><span class="o">=</span><span class="n">no</span><span class="p">),</span> <span class="n">packets</span><span class="p">:</span><span class="mi">171</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">:</span><span class="mi">16758</span><span class="p">,</span> <span class="n">used</span><span class="p">:</span><span class="mf">0.271</span><span class="n">s</span><span class="p">,</span> <span class="n">actions</span><span class="p">:</span><span class="n">ct</span><span class="p">(</span><span class="n">zone</span><span class="o">=</span><span class="mi">11</span><span class="p">),</span><span class="n">recirc</span><span class="p">(</span><span class="mh">0xc</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>We can then repeat our command with the match part of this kernel
+flow:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ sudo ovs-appctl ofproto/trace &#39;recirc_id(0xb),in_port(3),ct_state(-new+est-rel-rpl-inv+trk),ct_label(0/0x1),eth(src=fa:16:3e:a9:4c:c7,dst=fa:16:3e:99:7a:17),eth_type(0x0800),ipv4(dst=10.1.1.4/255.255.255.252,frag=no)&#39;
+...
+Datapath actions: ct(zone=11),recirc(0xc)
+</pre></div>
+</div>
+<p>In other words, the flow passes through the connection tracker a
+second time.  The first time was for <code class="docutils literal notranslate"><span class="pre">a</span></code>’s outgoing firewall; this
+second time is for <code class="docutils literal notranslate"><span class="pre">b</span></code>’s incoming firewall.  Again, we continue
+tracing with <code class="docutils literal notranslate"><span class="pre">recirc_id(0xc)</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ sudo ovs-appctl ofproto/trace &#39;recirc_id(0xc),in_port(3),ct_state(-new+est-rel-rpl-inv+trk),ct_label(0/0x1),eth(src=fa:16:3e:a9:4c:c7,dst=fa:16:3e:99:7a:17),eth_type(0x0800),ipv4(dst=10.1.1.6,proto=1,frag=no)&#39;
+...
+Datapath actions: 4
+</pre></div>
+</div>
+<p>It was took multiple hops, but we finally came to the end of the line
+where the packet was output to <code class="docutils literal notranslate"><span class="pre">b</span></code> after passing through both
+firewalls.  The port number here is a datapath port number, which is
+usually different from an OpenFlow port number.  To check that it is
+<code class="docutils literal notranslate"><span class="pre">b</span></code>’s port, we first list the datapath ports to get the name
+corresponding to the port number:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ sudo ovs-dpctl show
+system@ovs-system:
+        lookups: hit:1994 missed:56 lost:0
+        flows: 6
+        masks: hit:2340 total:4 hit/pkt:1.14
+        port 0: ovs-system (internal)
+        port 1: br-int (internal)
+        port 2: br-ex (internal)
+        port 3: tap820c0888-13
+        port 4: tapc29d4120-20
+</pre></div>
+</div>
+<p>and then confirm that this is the port we think it is with a command
+like this:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ ovs-vsctl --columns=external-ids list interface tapc29d4120-20
+external_ids        : {attached-mac=&quot;fa:16:3e:99:7a:17&quot;, iface-id=&quot;c29d4120-20a4-4c44-bd83-8d91f5f447fd&quot;, iface-status=active, vm-id=&quot;2db969ca-ca2a-4d9a-b49e-f287d39c5645&quot;}
+</pre></div>
+</div>
+<p>Finally, we can relate the OpenFlow flows from our traces back to OVN
+logical flows.  For individual flows, cut and paste a “cookie” value
+from <code class="docutils literal notranslate"><span class="pre">ofproto/trace</span></code> output into <code class="docutils literal notranslate"><span class="pre">ovn-sbctl</span> <span class="pre">lflow-list</span></code>, e.g.:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ ovn-sbctl lflow-list 0x6dcc418a|abbrev
+Datapath: &quot;neutron-5b6baf&quot; aka &quot;n1&quot; (a8a758)  Pipeline: ingress
+  table=0 (ls_in_port_sec_l2  ), priority=50   , match=(inport == &quot;820c08&quot; &amp;&amp; eth.src == {fa:16:3e:a9:4c:c7}), action=(next;)
+</pre></div>
+</div>
+<p>Or, you can pipe <code class="docutils literal notranslate"><span class="pre">ofproto/trace</span></code> output through <code class="docutils literal notranslate"><span class="pre">ovn-detrace</span></code> to
+annotate every flow:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ sudo ovs-appctl ofproto/trace &#39;recirc_id(0xc),in_port(3),ct_state(-new+est-rel-rpl-inv+trk),ct_label(0/0x1),eth(src=fa:16:3e:a9:4c:c7,dst=fa:16:3e:99:7a:17),eth_type(0x0800),ipv4(dst=10.1.1.6,proto=1,frag=no)&#39; | ovn-detrace
+...
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="section" id="routing">
+<h2>Routing<a class="headerlink" href="#routing" title="Permalink to this headline">¶</a></h2>
+<p>Previously we set up a pair of VMs <code class="docutils literal notranslate"><span class="pre">a</span></code> and <code class="docutils literal notranslate"><span class="pre">b</span></code> on a network <code class="docutils literal notranslate"><span class="pre">n1</span></code>
+and demonstrated how packets make their way between them.  In this
+step, we’ll set up a second network <code class="docutils literal notranslate"><span class="pre">n2</span></code> with a new VM <code class="docutils literal notranslate"><span class="pre">c</span></code>,
+connect a router <code class="docutils literal notranslate"><span class="pre">r</span></code> to both networks, and demonstrate how routing
+works in OVN.</p>
+<p>There’s nothing really new for the network and the VM so let’s just go
+ahead and create them:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ openstack network create --project admin --provider-network-type geneve n2
+$ openstack subnet create --subnet-range 10.1.2.0/24 --network n2 n2subnet
+$ openstack server create --nic net-id=n2,v4-fixed-ip=10.1.2.7 --flavor m1.nano --image $IMAGE_ID --key-name demo c
+$ openstack port set --name cp $(openstack port list --server c -f value -c ID)
+$ CP_MAC=$(openstack port show -f value -c mac_address cp)
+</pre></div>
+</div>
+<p>The new network <code class="docutils literal notranslate"><span class="pre">n2</span></code> is not yet connected to <code class="docutils literal notranslate"><span class="pre">n1</span></code> in any way.  You
+can try tracing a broadcast packet from <code class="docutils literal notranslate"><span class="pre">a</span></code> to see, for example,
+that it doesn’t make it to <code class="docutils literal notranslate"><span class="pre">c</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ ovn-trace n1 &#39;inport == &quot;ap&quot; &amp;&amp; eth.src == &#39;$AP_MAC&#39; &amp;&amp; eth.dst == &#39;$CP_MAC
+...
+</pre></div>
+</div>
+<p>Now create an OpenStack router and connect it to <code class="docutils literal notranslate"><span class="pre">n1</span></code> and <code class="docutils literal notranslate"><span class="pre">n2</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ openstack router create r
+$ openstack router add subnet r n1subnet
+$ openstack router add subnet r n2subnet
+</pre></div>
+</div>
+<p>Now <code class="docutils literal notranslate"><span class="pre">a</span></code>, <code class="docutils literal notranslate"><span class="pre">b</span></code>, and <code class="docutils literal notranslate"><span class="pre">c</span></code> should all be able to reach other.  You
+can get some verification that routing is taking place by running you
+<code class="docutils literal notranslate"><span class="pre">ping</span></code> between <code class="docutils literal notranslate"><span class="pre">c</span></code> and one of the other VMs: the reported TTL
+should be one less than between <code class="docutils literal notranslate"><span class="pre">a</span></code> and <code class="docutils literal notranslate"><span class="pre">b</span></code> (63 instead of 64).</p>
+<p>Observe via <code class="docutils literal notranslate"><span class="pre">ovn-nbctl</span></code> the new OVN logical switch and router and
+then ports that connect them together:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ ovn-nbctl show|abbrev
+...
+switch f51234 (neutron-332346) (aka n2)
+    port 82b983
+        type: router
+        router-port: lrp-82b983
+    port 2e585f (aka cp)
+        addresses: [&quot;fa:16:3e:89:f2:36 10.1.2.7&quot;]
+switch 3eb263 (neutron-5b6baf) (aka n1)
+    port c29d41 (aka bp)
+        addresses: [&quot;fa:16:3e:99:7a:17 10.1.1.6&quot;]
+    port 820c08 (aka ap)
+        addresses: [&quot;fa:16:3e:a9:4c:c7 10.1.1.5&quot;]
+    port 17d870
+        type: router
+        router-port: lrp-17d870
+...
+router dde06c (neutron-f88ebc) (aka r)
+    port lrp-82b983
+        mac: &quot;fa:16:3e:19:9f:46&quot;
+        networks: [&quot;10.1.2.1/24&quot;]
+    port lrp-17d870
+        mac: &quot;fa:16:3e:f6:e2:8f&quot;
+        networks: [&quot;10.1.1.1/24&quot;]
+</pre></div>
+</div>
+<p>We have not yet looked at the logical flows for an OVN logical router.
+You might find it of interest to look at them on your own:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ ovn-sbctl lflow-list r | abbrev | less -S
+...
+</pre></div>
+</div>
+<p>Let’s grab the <code class="docutils literal notranslate"><span class="pre">n1subnet</span></code> router porter MAC address to simplify
+later commands:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ N1SUBNET_MAC=$(ovn-nbctl --bare --columns=mac find logical_router_port networks=10.1.1.1/24)
+</pre></div>
+</div>
+<p>Let’s see what happens at the logical flow level for an ICMP packet
+from <code class="docutils literal notranslate"><span class="pre">a</span></code> to <code class="docutils literal notranslate"><span class="pre">c</span></code>.  This generates a long trace but an interesting
+one, so we’ll look at it bit by bit.  The first three stanzas in the
+output show the packet’s ingress into <code class="docutils literal notranslate"><span class="pre">n1</span></code> and processing through
+the firewall on that side (via the “ct_next” connection-tracking
+action), and then the selection of the port that leads to router <code class="docutils literal notranslate"><span class="pre">r</span></code>
+as the output port:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ ovn-trace n1 &#39;inport == &quot;ap&quot; &amp;&amp; eth.src == &#39;$AP_MAC&#39; &amp;&amp; eth.dst == &#39;$N1SUBNET_MAC&#39; &amp;&amp; ip4.src == 10.1.1.5 &amp;&amp; ip4.dst == 10.1.2.7 &amp;&amp; ip.ttl == 64 &amp;&amp; icmp4.type == 8&#39;
+...
+ingress(dp=&quot;n1&quot;, inport=&quot;ap&quot;)
+-----------------------------
+ 0. ls_in_port_sec_l2 (ovn-northd.c:3234): inport == &quot;ap&quot; &amp;&amp; eth.src == {fa:16:3e:a9:4c:c7}, priority 50, uuid 6dcc418a
+    next;
+ 1. ls_in_port_sec_ip (ovn-northd.c:2364): inport == &quot;ap&quot; &amp;&amp; eth.src == fa:16:3e:a9:4c:c7 &amp;&amp; ip4.src == {10.1.1.5}, priority 90, uuid 343af48c
+    next;
+ 3. ls_in_pre_acl (ovn-northd.c:2646): ip, priority 100, uuid 46c089e6
+    reg0[0] = 1;
+    next;
+ 5. ls_in_pre_stateful (ovn-northd.c:2764): reg0[0] == 1, priority 100, uuid d1941634
+    ct_next;
+
+ct_next(ct_state=est|trk /* default (use --ct to customize) */)
+---------------------------------------------------------------
+ 6. ls_in_acl (ovn-northd.c:2925): !ct.new &amp;&amp; ct.est &amp;&amp; !ct.rpl &amp;&amp; ct_label.blocked == 0 &amp;&amp; (inport == &quot;ap&quot; &amp;&amp; ip4), priority 2002, uuid a12b39f0
+    next;
+13. ls_in_l2_lkup (ovn-northd.c:3529): eth.dst == fa:16:3e:f6:e2:8f, priority 50, uuid c43ead31
+    outport = &quot;17d870&quot;;
+    output;
+
+egress(dp=&quot;n1&quot;, inport=&quot;ap&quot;, outport=&quot;17d870&quot;)
+----------------------------------------------
+ 1. ls_out_pre_acl (ovn-northd.c:2626): ip &amp;&amp; outport == &quot;17d870&quot;, priority 110, uuid 60395450
+    next;
+ 8. ls_out_port_sec_l2 (ovn-northd.c:3654): outport == &quot;17d870&quot;, priority 50, uuid 91b5cab0
+    output;
+    /* output to &quot;17d870&quot;, type &quot;patch&quot; */
+</pre></div>
+</div>
+<p>The next two stanzas represent processing through logical router
+<code class="docutils literal notranslate"><span class="pre">r</span></code>.  The processing in table 5 is the core of the routing
+implementation: it recognizes that the packet is destined for an
+attached subnet, decrements the TTL and updates the Ethernet source
+address.  Table 6 then selects the Ethernet destination address based
+on the IP destination.  The packet then passes to switch <code class="docutils literal notranslate"><span class="pre">n2</span></code> via an
+OVN “logical patch port”:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ingress</span><span class="p">(</span><span class="n">dp</span><span class="o">=</span><span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="n">inport</span><span class="o">=</span><span class="s2">&quot;lrp-17d870&quot;</span><span class="p">)</span>
+<span class="o">------------------------------------</span>
+ <span class="mf">0.</span> <span class="n">lr_in_admission</span> <span class="p">(</span><span class="n">ovn</span><span class="o">-</span><span class="n">northd</span><span class="o">.</span><span class="n">c</span><span class="p">:</span><span class="mi">4071</span><span class="p">):</span> <span class="n">eth</span><span class="o">.</span><span class="n">dst</span> <span class="o">==</span> <span class="n">fa</span><span class="p">:</span><span class="mi">16</span><span class="p">:</span><span class="mi">3</span><span class="n">e</span><span class="p">:</span><span class="n">f6</span><span class="p">:</span><span class="n">e2</span><span class="p">:</span><span class="mi">8</span><span class="n">f</span> <span class="o">&amp;&amp;</span> <span class="n">inport</span> <span class="o">==</span> <span class="s2">&quot;lrp-17d870&quot;</span><span class="p">,</span> <span class="n">priority</span> <span class="mi">50</span><span class="p">,</span> <span class="n">uuid</span> <span class="n">fa5270b0</span>
+    <span class="nb">next</span><span class="p">;</span>
+ <span class="mf">5.</span> <span class="n">lr_in_ip_routing</span> <span class="p">(</span><span class="n">ovn</span><span class="o">-</span><span class="n">northd</span><span class="o">.</span><span class="n">c</span><span class="p">:</span><span class="mi">3782</span><span class="p">):</span> <span class="n">ip4</span><span class="o">.</span><span class="n">dst</span> <span class="o">==</span> <span class="mf">10.1</span><span class="o">.</span><span class="mf">2.0</span><span class="o">/</span><span class="mi">24</span><span class="p">,</span> <span class="n">priority</span> <span class="mi">49</span><span class="p">,</span> <span class="n">uuid</span> <span class="mi">5</span><span class="n">f9d469f</span>
+    <span class="n">ip</span><span class="o">.</span><span class="n">ttl</span><span class="o">--</span><span class="p">;</span>
+    <span class="n">reg0</span> <span class="o">=</span> <span class="n">ip4</span><span class="o">.</span><span class="n">dst</span><span class="p">;</span>
+    <span class="n">reg1</span> <span class="o">=</span> <span class="mf">10.1</span><span class="o">.</span><span class="mf">2.1</span><span class="p">;</span>
+    <span class="n">eth</span><span class="o">.</span><span class="n">src</span> <span class="o">=</span> <span class="n">fa</span><span class="p">:</span><span class="mi">16</span><span class="p">:</span><span class="mi">3</span><span class="n">e</span><span class="p">:</span><span class="mi">19</span><span class="p">:</span><span class="mi">9</span><span class="n">f</span><span class="p">:</span><span class="mi">46</span><span class="p">;</span>
+    <span class="n">outport</span> <span class="o">=</span> <span class="s2">&quot;lrp-82b983&quot;</span><span class="p">;</span>
+    <span class="n">flags</span><span class="o">.</span><span class="n">loopback</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+    <span class="nb">next</span><span class="p">;</span>
+ <span class="mf">6.</span> <span class="n">lr_in_arp_resolve</span> <span class="p">(</span><span class="n">ovn</span><span class="o">-</span><span class="n">northd</span><span class="o">.</span><span class="n">c</span><span class="p">:</span><span class="mi">5088</span><span class="p">):</span> <span class="n">outport</span> <span class="o">==</span> <span class="s2">&quot;lrp-82b983&quot;</span> <span class="o">&amp;&amp;</span> <span class="n">reg0</span> <span class="o">==</span> <span class="mf">10.1</span><span class="o">.</span><span class="mf">2.7</span><span class="p">,</span> <span class="n">priority</span> <span class="mi">100</span><span class="p">,</span> <span class="n">uuid</span> <span class="mi">03</span><span class="n">d506d3</span>
+    <span class="n">eth</span><span class="o">.</span><span class="n">dst</span> <span class="o">=</span> <span class="n">fa</span><span class="p">:</span><span class="mi">16</span><span class="p">:</span><span class="mi">3</span><span class="n">e</span><span class="p">:</span><span class="mi">89</span><span class="p">:</span><span class="n">f2</span><span class="p">:</span><span class="mi">36</span><span class="p">;</span>
+    <span class="nb">next</span><span class="p">;</span>
+ <span class="mf">8.</span> <span class="n">lr_in_arp_request</span> <span class="p">(</span><span class="n">ovn</span><span class="o">-</span><span class="n">northd</span><span class="o">.</span><span class="n">c</span><span class="p">:</span><span class="mi">5260</span><span class="p">):</span> <span class="mi">1</span><span class="p">,</span> <span class="n">priority</span> <span class="mi">0</span><span class="p">,</span> <span class="n">uuid</span> <span class="mi">6</span><span class="n">dacdd82</span>
+    <span class="n">output</span><span class="p">;</span>
+
+<span class="n">egress</span><span class="p">(</span><span class="n">dp</span><span class="o">=</span><span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="n">inport</span><span class="o">=</span><span class="s2">&quot;lrp-17d870&quot;</span><span class="p">,</span> <span class="n">outport</span><span class="o">=</span><span class="s2">&quot;lrp-82b983&quot;</span><span class="p">)</span>
+<span class="o">---------------------------------------------------------</span>
+ <span class="mf">3.</span> <span class="n">lr_out_delivery</span> <span class="p">(</span><span class="n">ovn</span><span class="o">-</span><span class="n">northd</span><span class="o">.</span><span class="n">c</span><span class="p">:</span><span class="mi">5288</span><span class="p">):</span> <span class="n">outport</span> <span class="o">==</span> <span class="s2">&quot;lrp-82b983&quot;</span><span class="p">,</span> <span class="n">priority</span> <span class="mi">100</span><span class="p">,</span> <span class="n">uuid</span> <span class="mi">00</span><span class="n">bea4f2</span>
+    <span class="n">output</span><span class="p">;</span>
+    <span class="o">/*</span> <span class="n">output</span> <span class="n">to</span> <span class="s2">&quot;lrp-82b983&quot;</span><span class="p">,</span> <span class="nb">type</span> <span class="s2">&quot;patch&quot;</span> <span class="o">*/</span>
+</pre></div>
+</div>
+<p>Finally the logical switch for <code class="docutils literal notranslate"><span class="pre">n2</span></code> runs through the same logic as
+<code class="docutils literal notranslate"><span class="pre">n1</span></code> and the packet is delivered to VM <code class="docutils literal notranslate"><span class="pre">c</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>ingress(dp=&quot;n2&quot;, inport=&quot;82b983&quot;)
+---------------------------------
+ 0. ls_in_port_sec_l2 (ovn-northd.c:3234): inport == &quot;82b983&quot;, priority 50, uuid 9a789e06
+    next;
+ 3. ls_in_pre_acl (ovn-northd.c:2624): ip &amp;&amp; inport == &quot;82b983&quot;, priority 110, uuid ab52f21a
+    next;
+13. ls_in_l2_lkup (ovn-northd.c:3529): eth.dst == fa:16:3e:89:f2:36, priority 50, uuid dcafb3e9
+    outport = &quot;cp&quot;;
+    output;
+
+egress(dp=&quot;n2&quot;, inport=&quot;82b983&quot;, outport=&quot;cp&quot;)
+----------------------------------------------
+ 1. ls_out_pre_acl (ovn-northd.c:2648): ip, priority 100, uuid cd9cfa74
+    reg0[0] = 1;
+    next;
+ 2. ls_out_pre_stateful (ovn-northd.c:2766): reg0[0] == 1, priority 100, uuid 9e8e22c5
+    ct_next;
+
+ct_next(ct_state=est|trk /* default (use --ct to customize) */)
+---------------------------------------------------------------
+ 4. ls_out_acl (ovn-northd.c:2925): !ct.new &amp;&amp; ct.est &amp;&amp; !ct.rpl &amp;&amp; ct_label.blocked == 0 &amp;&amp; (outport == &quot;cp&quot; &amp;&amp; ip4 &amp;&amp; ip4.src == $as_ip4_0fc1b6cf_f925_49e6_8f00_6dd13beca9dc), priority 2002, uuid a746fa0d
+    next;
+ 7. ls_out_port_sec_ip (ovn-northd.c:2364): outport == &quot;cp&quot; &amp;&amp; eth.dst == fa:16:3e:89:f2:36 &amp;&amp; ip4.dst == {255.255.255.255, 224.0.0.0/4, 10.1.2.7}, priority 90, uuid 4d9862b5
+    next;
+ 8. ls_out_port_sec_l2 (ovn-northd.c:3654): outport == &quot;cp&quot; &amp;&amp; eth.dst == {fa:16:3e:89:f2:36}, priority 50, uuid 0242cdc3
+    output;
+    /* output to &quot;cp&quot;, type &quot;&quot; */
+</pre></div>
+</div>
+<div class="section" id="physical-tracing">
+<h3>Physical Tracing<a class="headerlink" href="#physical-tracing" title="Permalink to this headline">¶</a></h3>
+<p>It’s possible to use <code class="docutils literal notranslate"><span class="pre">ofproto/trace</span></code>, just as before, to trace a
+packet through OpenFlow tables, either for a hypothetical packet or
+one that you get from a real test case using <code class="docutils literal notranslate"><span class="pre">ovs-dpctl</span></code>.  The
+process is just the same as before and the output is almost the same,
+too.  Using a router doesn’t actually introduce any interesting new
+wrinkles, so we’ll skip over this for this case and for the remainder
+of the tutorial, but you can follow the steps on your own if you like.</p>
+</div>
+</div>
+<div class="section" id="adding-a-gateway">
+<h2>Adding a Gateway<a class="headerlink" href="#adding-a-gateway" title="Permalink to this headline">¶</a></h2>
+<p>The VMs that we’ve created can access each other but they are isolated
+from the physical world.  In OpenStack, the dominant way to connect a
+VM to external networks is by creating what is called a “floating IP
+address”, which uses network address translation to connect an
+external address to an internal one.</p>
+<p>DevStack created a pair of networks named “private” and “public”.  To
+use a floating IP address from a VM, we first add a port to the VM
+with an IP address from the “private” network, then we create a
+floating IP address on the “public” network, then we associate the
+port with the floating IP address.</p>
+<p>Let’s add a new VM <code class="docutils literal notranslate"><span class="pre">d</span></code> with a floating IP:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ openstack server create --nic net-id=private --flavor m1.nano --image $IMAGE_ID --key-name demo d
+$ openstack port set --name dp $(openstack port list --server d -f value -c ID)
+$ DP_MAC=$(openstack port show -f value -c mac_address dp)
+$ openstack floating ip create --floating-ip-address 172.24.4.8 public
+$ openstack server add floating ip d 172.24.4.8
+</pre></div>
+</div>
+<p>(We specified a particular floating IP address to make the examples
+easier to follow, but without that OpenStack will automatically
+allocate one.)</p>
+<p>It’s also necessary to configure the “public” network because DevStack
+does not do it automatically:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ sudo ip link set br-ex up
+$ sudo ip route add 172.24.4.0/24 dev br-ex
+$ sudo ip addr add 172.24.4.1/24 dev br-ex
+</pre></div>
+</div>
+<p>Now you should be able to “ping” VM <code class="docutils literal notranslate"><span class="pre">d</span></code> from the OpenStack host:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ ping 172.24.4.8
+PING 172.24.4.8 (172.24.4.8) 56(84) bytes of data.
+64 bytes from 172.24.4.8: icmp_seq=1 ttl=63 time=56.0 ms
+64 bytes from 172.24.4.8: icmp_seq=2 ttl=63 time=1.44 ms
+64 bytes from 172.24.4.8: icmp_seq=3 ttl=63 time=1.04 ms
+64 bytes from 172.24.4.8: icmp_seq=4 ttl=63 time=0.403 ms
+^C
+--- 172.24.4.8 ping statistics ---
+4 packets transmitted, 4 received, 0% packet loss, time 3003ms
+rtt min/avg/max/mdev = 0.403/14.731/56.028/23.845 ms
+</pre></div>
+</div>
+<p>You can also SSH in with the key that we created during setup:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ ssh -i ~/id_rsa_demo cirros@172.24.4.8
+</pre></div>
+</div>
+<p>Let’s dive in and see how this gets implemented in OVN.  First, the
+relevant parts of the NB DB for the “public” and “private” networks
+and the router between them:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ ovn-nbctl show | abbrev
+switch 2579f4 (neutron-d1ac28) (aka public)
+    port provnet-d1ac28
+        type: localnet
+        addresses: [&quot;unknown&quot;]
+    port ae9b52
+        type: router
+        router-port: lrp-ae9b52
+switch 5b3d5f (neutron-c02c4d) (aka private)
+    port b256dd
+        type: router
+        router-port: lrp-b256dd
+    port f264e7
+        type: router
+        router-port: lrp-f264e7
+    port cae25b (aka dp)
+        addresses: [&quot;fa:16:3e:c1:f5:a2 10.0.0.6 fdb0:5860:4ba8:0:f816:3eff:fec1:f5a2&quot;]
+...
+router c59ad2 (neutron-9b057f) (aka router1)
+    port lrp-ae9b52
+        mac: &quot;fa:16:3e:b2:d2:67&quot;
+        networks: [&quot;172.24.4.9/24&quot;, &quot;2001:db8::b/64&quot;]
+    port lrp-b256dd
+        mac: &quot;fa:16:3e:35:33:db&quot;
+        networks: [&quot;fdb0:5860:4ba8::1/64&quot;]
+    port lrp-f264e7
+        mac: &quot;fa:16:3e:fc:c8:da&quot;
+        networks: [&quot;10.0.0.1/26&quot;]
+    nat 788c6d
+        external ip: &quot;172.24.4.8&quot;
+        logical ip: &quot;10.0.0.6&quot;
+        type: &quot;dnat_and_snat&quot;
+    nat 80914c
+        external ip: &quot;172.24.4.9&quot;
+        logical ip: &quot;10.0.0.0/26&quot;
+        type: &quot;snat&quot;
+...
+</pre></div>
+</div>
+<p>What we see is:</p>
+<ul class="simple">
+<li>VM <code class="docutils literal notranslate"><span class="pre">d</span></code> is on the “private” switch under its private IP address
+10.0.0.8.  The “private” switch is connected to “router1” via two
+router ports (one for IPv4, one for IPv6).</li>
+<li>The “public” switch is connected to “router1” and to the physical
+network via a “localnet” port.</li>
+<li>“router1” is in the middle between “private” and “public”.  In
+addition to the router ports that connect to these switches, it has
+“nat” entries that direct network address translation.  The
+translation between floating IP address 172.24.4.8 and private
+address 10.0.0.8 makes perfect sense.</li>
+</ul>
+<p>When the NB DB gets translated into logical flows at the southbound
+layer, the “nat” entries get translated into IP matches that then
+invoke “ct_snat” and “ct_dnat” actions.  The details are intricate,
+but you can get some of the idea by just looking for relevant flows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ ovn-sbctl lflow-list router1 | abbrev | grep nat | grep -E &#39;172.24.4.8|10.0.0.8&#39;
+  table=3 (lr_in_unsnat       ), priority=100  , match=(ip &amp;&amp; ip4.dst == 172.24.4.8 &amp;&amp; inport == &quot;lrp-ae9b52&quot; &amp;&amp; is_chassis_resident(&quot;cr-lrp-ae9b52&quot;)), action=(ct_snat;)
+  table=3 (lr_in_unsnat       ), priority=50   , match=(ip &amp;&amp; ip4.dst == 172.24.4.8), action=(reg9[0] = 1; next;)
+  table=4 (lr_in_dnat         ), priority=100  , match=(ip &amp;&amp; ip4.dst == 172.24.4.8 &amp;&amp; inport == &quot;lrp-ae9b52&quot; &amp;&amp; is_chassis_resident(&quot;cr-lrp-ae9b52&quot;)), action=(ct_dnat(10.0.0.6);)
+  table=4 (lr_in_dnat         ), priority=50   , match=(ip &amp;&amp; ip4.dst == 172.24.4.8), action=(reg9[0] = 1; next;)
+  table=1 (lr_out_snat        ), priority=33   , match=(ip &amp;&amp; ip4.src == 10.0.0.6 &amp;&amp; outport == &quot;lrp-ae9b52&quot; &amp;&amp; is_chassis_resident(&quot;cr-lrp-ae9b52&quot;)), action=(ct_snat(172.24.4.8);)
+</pre></div>
+</div>
+<p>Let’s take a look at how a packet passes through this whole gauntlet.
+The first two stanzas just show the packet traveling through the
+“public” network and being forwarded to the “router1” network:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ ovn-trace public &#39;inport == &quot;provnet-d1ac2896-18a7-4bca-8f46-b21e2370e5b1&quot; &amp;&amp; eth.src == 00:01:02:03:04:05 &amp;&amp; eth.dst == fa:16:3e:b2:d2:67 &amp;&amp; ip4.src == 172.24.4.1 &amp;&amp; ip4.dst == 172.24.4.8 &amp;&amp; ip.ttl == 64 &amp;&amp; icmp4.type==8&#39;
+...
+ingress(dp=&quot;public&quot;, inport=&quot;provnet-d1ac28&quot;)
+---------------------------------------------
+ 0. ls_in_port_sec_l2 (ovn-northd.c:3234): inport == &quot;provnet-d1ac28&quot;, priority 50, uuid 8d86fb06
+    next;
+10. ls_in_arp_rsp (ovn-northd.c:3266): inport == &quot;provnet-d1ac28&quot;, priority 100, uuid 21313eff
+    next;
+13. ls_in_l2_lkup (ovn-northd.c:3571): eth.dst == fa:16:3e:b2:d2:67 &amp;&amp; is_chassis_resident(&quot;cr-lrp-ae9b52&quot;), priority 50, uuid 7f28f51f
+    outport = &quot;ae9b52&quot;;
+    output;
+
+egress(dp=&quot;public&quot;, inport=&quot;provnet-d1ac28&quot;, outport=&quot;ae9b52&quot;)
+--------------------------------------------------------------
+ 8. ls_out_port_sec_l2 (ovn-northd.c:3654): outport == &quot;ae9b52&quot;, priority 50, uuid 72fea396
+    output;
+    /* output to &quot;ae9b52&quot;, type &quot;patch&quot; */
+</pre></div>
+</div>
+<p>In “router1”, first the <code class="docutils literal notranslate"><span class="pre">ct_snat</span></code> action without an argument
+attempts to “un-SNAT” the packet.  ovn-trace treats this as a no-op,
+because it doesn’t have any state for tracking connections.  As an
+alternative, it invokes <code class="docutils literal notranslate"><span class="pre">ct_dnat(10.0.0.8)</span></code> to NAT the destination
+IP:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ingress</span><span class="p">(</span><span class="n">dp</span><span class="o">=</span><span class="s2">&quot;router1&quot;</span><span class="p">,</span> <span class="n">inport</span><span class="o">=</span><span class="s2">&quot;lrp-ae9b52&quot;</span><span class="p">)</span>
+<span class="o">------------------------------------------</span>
+ <span class="mf">0.</span> <span class="n">lr_in_admission</span> <span class="p">(</span><span class="n">ovn</span><span class="o">-</span><span class="n">northd</span><span class="o">.</span><span class="n">c</span><span class="p">:</span><span class="mi">4071</span><span class="p">):</span> <span class="n">eth</span><span class="o">.</span><span class="n">dst</span> <span class="o">==</span> <span class="n">fa</span><span class="p">:</span><span class="mi">16</span><span class="p">:</span><span class="mi">3</span><span class="n">e</span><span class="p">:</span><span class="n">b2</span><span class="p">:</span><span class="n">d2</span><span class="p">:</span><span class="mi">67</span> <span class="o">&amp;&amp;</span> <span class="n">inport</span> <span class="o">==</span> <span class="s2">&quot;lrp-ae9b52&quot;</span> <span class="o">&amp;&amp;</span> <span class="n">is_chassis_resident</span><span class="p">(</span><span class="s2">&quot;cr-lrp-ae9b52&quot;</span><span class="p">),</span> <span class="n">priority</span> <span class="mi">50</span><span class="p">,</span> <span class="n">uuid</span> <span class="mi">8</span><span class="n">c6945c2</span>
+    <span class="nb">next</span><span class="p">;</span>
+ <span class="mf">3.</span> <span class="n">lr_in_unsnat</span> <span class="p">(</span><span class="n">ovn</span><span class="o">-</span><span class="n">northd</span><span class="o">.</span><span class="n">c</span><span class="p">:</span><span class="mi">4591</span><span class="p">):</span> <span class="n">ip</span> <span class="o">&amp;&amp;</span> <span class="n">ip4</span><span class="o">.</span><span class="n">dst</span> <span class="o">==</span> <span class="mf">172.24</span><span class="o">.</span><span class="mf">4.8</span> <span class="o">&amp;&amp;</span> <span class="n">inport</span> <span class="o">==</span> <span class="s2">&quot;lrp-ae9b52&quot;</span> <span class="o">&amp;&amp;</span> <span class="n">is_chassis_resident</span><span class="p">(</span><span class="s2">&quot;cr-lrp-ae9b52&quot;</span><span class="p">),</span> <span class="n">priority</span> <span class="mi">100</span><span class="p">,</span> <span class="n">uuid</span> <span class="n">e922f541</span>
+    <span class="n">ct_snat</span><span class="p">;</span>
+
+<span class="n">ct_snat</span> <span class="o">/*</span> <span class="n">assuming</span> <span class="n">no</span> <span class="n">un</span><span class="o">-</span><span class="n">snat</span> <span class="n">entry</span><span class="p">,</span> <span class="n">so</span> <span class="n">no</span> <span class="n">change</span> <span class="o">*/</span>
+<span class="o">-----------------------------------------------------</span>
+ <span class="mf">4.</span> <span class="n">lr_in_dnat</span> <span class="p">(</span><span class="n">ovn</span><span class="o">-</span><span class="n">northd</span><span class="o">.</span><span class="n">c</span><span class="p">:</span><span class="mi">4649</span><span class="p">):</span> <span class="n">ip</span> <span class="o">&amp;&amp;</span> <span class="n">ip4</span><span class="o">.</span><span class="n">dst</span> <span class="o">==</span> <span class="mf">172.24</span><span class="o">.</span><span class="mf">4.8</span> <span class="o">&amp;&amp;</span> <span class="n">inport</span> <span class="o">==</span> <span class="s2">&quot;lrp-ae9b52&quot;</span> <span class="o">&amp;&amp;</span> <span class="n">is_chassis_resident</span><span class="p">(</span><span class="s2">&quot;cr-lrp-ae9b52&quot;</span><span class="p">),</span> <span class="n">priority</span> <span class="mi">100</span><span class="p">,</span> <span class="n">uuid</span> <span class="mi">02</span><span class="n">f41b79</span>
+    <span class="n">ct_dnat</span><span class="p">(</span><span class="mf">10.0</span><span class="o">.</span><span class="mf">0.6</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>Still in “router1”, the routing and output steps transmit the packet
+to the “private” network:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ct_dnat</span><span class="p">(</span><span class="n">ip4</span><span class="o">.</span><span class="n">dst</span><span class="o">=</span><span class="mf">10.0</span><span class="o">.</span><span class="mf">0.6</span><span class="p">)</span>
+<span class="o">-------------------------</span>
+ <span class="mf">5.</span> <span class="n">lr_in_ip_routing</span> <span class="p">(</span><span class="n">ovn</span><span class="o">-</span><span class="n">northd</span><span class="o">.</span><span class="n">c</span><span class="p">:</span><span class="mi">3782</span><span class="p">):</span> <span class="n">ip4</span><span class="o">.</span><span class="n">dst</span> <span class="o">==</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.0</span><span class="o">/</span><span class="mi">26</span><span class="p">,</span> <span class="n">priority</span> <span class="mi">53</span><span class="p">,</span> <span class="n">uuid</span> <span class="mf">86e005</span><span class="n">b0</span>
+    <span class="n">ip</span><span class="o">.</span><span class="n">ttl</span><span class="o">--</span><span class="p">;</span>
+    <span class="n">reg0</span> <span class="o">=</span> <span class="n">ip4</span><span class="o">.</span><span class="n">dst</span><span class="p">;</span>
+    <span class="n">reg1</span> <span class="o">=</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.1</span><span class="p">;</span>
+    <span class="n">eth</span><span class="o">.</span><span class="n">src</span> <span class="o">=</span> <span class="n">fa</span><span class="p">:</span><span class="mi">16</span><span class="p">:</span><span class="mi">3</span><span class="n">e</span><span class="p">:</span><span class="n">fc</span><span class="p">:</span><span class="n">c8</span><span class="p">:</span><span class="n">da</span><span class="p">;</span>
+    <span class="n">outport</span> <span class="o">=</span> <span class="s2">&quot;lrp-f264e7&quot;</span><span class="p">;</span>
+    <span class="n">flags</span><span class="o">.</span><span class="n">loopback</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+    <span class="nb">next</span><span class="p">;</span>
+ <span class="mf">6.</span> <span class="n">lr_in_arp_resolve</span> <span class="p">(</span><span class="n">ovn</span><span class="o">-</span><span class="n">northd</span><span class="o">.</span><span class="n">c</span><span class="p">:</span><span class="mi">5088</span><span class="p">):</span> <span class="n">outport</span> <span class="o">==</span> <span class="s2">&quot;lrp-f264e7&quot;</span> <span class="o">&amp;&amp;</span> <span class="n">reg0</span> <span class="o">==</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.6</span><span class="p">,</span> <span class="n">priority</span> <span class="mi">100</span><span class="p">,</span> <span class="n">uuid</span> <span class="mi">2963</span><span class="n">d67c</span>
+    <span class="n">eth</span><span class="o">.</span><span class="n">dst</span> <span class="o">=</span> <span class="n">fa</span><span class="p">:</span><span class="mi">16</span><span class="p">:</span><span class="mi">3</span><span class="n">e</span><span class="p">:</span><span class="n">c1</span><span class="p">:</span><span class="n">f5</span><span class="p">:</span><span class="n">a2</span><span class="p">;</span>
+    <span class="nb">next</span><span class="p">;</span>
+ <span class="mf">8.</span> <span class="n">lr_in_arp_request</span> <span class="p">(</span><span class="n">ovn</span><span class="o">-</span><span class="n">northd</span><span class="o">.</span><span class="n">c</span><span class="p">:</span><span class="mi">5260</span><span class="p">):</span> <span class="mi">1</span><span class="p">,</span> <span class="n">priority</span> <span class="mi">0</span><span class="p">,</span> <span class="n">uuid</span> <span class="n">eea419b7</span>
+    <span class="n">output</span><span class="p">;</span>
+
+<span class="n">egress</span><span class="p">(</span><span class="n">dp</span><span class="o">=</span><span class="s2">&quot;router1&quot;</span><span class="p">,</span> <span class="n">inport</span><span class="o">=</span><span class="s2">&quot;lrp-ae9b52&quot;</span><span class="p">,</span> <span class="n">outport</span><span class="o">=</span><span class="s2">&quot;lrp-f264e7&quot;</span><span class="p">)</span>
+<span class="o">---------------------------------------------------------------</span>
+ <span class="mf">3.</span> <span class="n">lr_out_delivery</span> <span class="p">(</span><span class="n">ovn</span><span class="o">-</span><span class="n">northd</span><span class="o">.</span><span class="n">c</span><span class="p">:</span><span class="mi">5288</span><span class="p">):</span> <span class="n">outport</span> <span class="o">==</span> <span class="s2">&quot;lrp-f264e7&quot;</span><span class="p">,</span> <span class="n">priority</span> <span class="mi">100</span><span class="p">,</span> <span class="n">uuid</span> <span class="mi">42</span><span class="n">dadc23</span>
+    <span class="n">output</span><span class="p">;</span>
+    <span class="o">/*</span> <span class="n">output</span> <span class="n">to</span> <span class="s2">&quot;lrp-f264e7&quot;</span><span class="p">,</span> <span class="nb">type</span> <span class="s2">&quot;patch&quot;</span> <span class="o">*/</span>
+</pre></div>
+</div>
+<p>In the “private” network, the packet passes through VM <code class="docutils literal notranslate"><span class="pre">d</span></code>’s
+firewall and is output to <code class="docutils literal notranslate"><span class="pre">d</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>ingress(dp=&quot;private&quot;, inport=&quot;f264e7&quot;)
+--------------------------------------
+ 0. ls_in_port_sec_l2 (ovn-northd.c:3234): inport == &quot;f264e7&quot;, priority 50, uuid 5b721214
+    next;
+ 3. ls_in_pre_acl (ovn-northd.c:2624): ip &amp;&amp; inport == &quot;f264e7&quot;, priority 110, uuid 5bdc3209
+    next;
+13. ls_in_l2_lkup (ovn-northd.c:3529): eth.dst == fa:16:3e:c1:f5:a2, priority 50, uuid 7957f80f
+    outport = &quot;dp&quot;;
+    output;
+
+egress(dp=&quot;private&quot;, inport=&quot;f264e7&quot;, outport=&quot;dp&quot;)
+---------------------------------------------------
+ 1. ls_out_pre_acl (ovn-northd.c:2648): ip, priority 100, uuid 4981c79d
+    reg0[0] = 1;
+    next;
+ 2. ls_out_pre_stateful (ovn-northd.c:2766): reg0[0] == 1, priority 100, uuid 247e02eb
+    ct_next;
+
+ct_next(ct_state=est|trk /* default (use --ct to customize) */)
+---------------------------------------------------------------
+ 4. ls_out_acl (ovn-northd.c:2925): !ct.new &amp;&amp; ct.est &amp;&amp; !ct.rpl &amp;&amp; ct_label.blocked == 0 &amp;&amp; (outport == &quot;dp&quot; &amp;&amp; ip4 &amp;&amp; ip4.src == 0.0.0.0/0 &amp;&amp; icmp4), priority 2002, uuid b860fc9f
+    next;
+ 7. ls_out_port_sec_ip (ovn-northd.c:2364): outport == &quot;dp&quot; &amp;&amp; eth.dst == fa:16:3e:c1:f5:a2 &amp;&amp; ip4.dst == {255.255.255.255, 224.0.0.0/4, 10.0.0.6}, priority 90, uuid 15655a98
+    next;
+ 8. ls_out_port_sec_l2 (ovn-northd.c:3654): outport == &quot;dp&quot; &amp;&amp; eth.dst == {fa:16:3e:c1:f5:a2}, priority 50, uuid 5916f94b
+    output;
+    /* output to &quot;dp&quot;, type &quot;&quot; */
+</pre></div>
+</div>
+</div>
+<div class="section" id="ipv6">
+<h2>IPv6<a class="headerlink" href="#ipv6" title="Permalink to this headline">¶</a></h2>
+<p>OVN supports IPv6 logical routing.  Let’s try it out.</p>
+<p>The first step is to add an IPv6 subnet to networks <code class="docutils literal notranslate"><span class="pre">n1</span></code> and <code class="docutils literal notranslate"><span class="pre">n2</span></code>,
+then attach those subnets to our router <code class="docutils literal notranslate"><span class="pre">r</span></code>.  As usual, though
+OpenStack can assign addresses itself, we use fixed ones to make the
+discussion easier:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ openstack subnet create --ip-version 6 --subnet-range fc11::/64 --network n1 n1subnet6
+$ openstack subnet create --ip-version 6 --subnet-range fc22::/64 --network n2 n2subnet6
+$ openstack router add subnet r n1subnet6
+$ openstack router add subnet r n2subnet6
+</pre></div>
+</div>
+<p>Then we add an IPv6 address to each of our VMs:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ A_PORT_ID=$(openstack port list --server a -f value -c ID)
+$ openstack port set --fixed-ip subnet=n1subnet6,ip-address=fc11::5 $A_PORT_ID
+$ B_PORT_ID=$(openstack port list --server b -f value -c ID)
+$ openstack port set --fixed-ip subnet=n1subnet6,ip-address=fc11::6 $B_PORT_ID
+$ C_PORT_ID=$(openstack port list --server c -f value -c ID)
+$ openstack port set --fixed-ip subnet=n2subnet6,ip-address=fc22::7 $C_PORT_ID
+</pre></div>
+</div>
+<p>At least for me, the new IPv6 addresses didn’t automatically get
+propagated into the VMs.  To do it by hand, pull up the console for
+<code class="docutils literal notranslate"><span class="pre">a</span></code> and run:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ sudo ip addr add fc11::5/64 dev eth0
+$ sudo ip route add via fc11::1
+</pre></div>
+</div>
+<p>Then in <code class="docutils literal notranslate"><span class="pre">b</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ sudo ip addr add fc11::6/64 dev eth0
+$ sudo ip route add via fc11::1
+</pre></div>
+</div>
+<p>Finally in <code class="docutils literal notranslate"><span class="pre">c</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ sudo ip addr add fc22::7/64 dev eth0
+$ sudo ip route add via fc22::1
+</pre></div>
+</div>
+<p>Now you should have working IPv6 routing through router <code class="docutils literal notranslate"><span class="pre">r</span></code>.  The
+relevant parts of the NB DB look like the following.  The interesting
+parts are the new <code class="docutils literal notranslate"><span class="pre">fc11::</span></code> and <code class="docutils literal notranslate"><span class="pre">fc22::</span></code> addresses on the ports in
+<code class="docutils literal notranslate"><span class="pre">n1</span></code> and <code class="docutils literal notranslate"><span class="pre">n2</span></code> and the new IPv6 router ports in <code class="docutils literal notranslate"><span class="pre">r</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ ovn-nbctl show | abbrev
+...
+switch f51234 (neutron-332346) (aka n2)
+    port 1a8162
+        type: router
+        router-port: lrp-1a8162
+    port 82b983
+        type: router
+        router-port: lrp-82b983
+    port 2e585f (aka cp)
+        addresses: [&quot;fa:16:3e:89:f2:36 10.1.2.7 fc22::7&quot;]
+switch 3eb263 (neutron-5b6baf) (aka n1)
+    port ad952e
+        type: router
+        router-port: lrp-ad952e
+    port c29d41 (aka bp)
+        addresses: [&quot;fa:16:3e:99:7a:17 10.1.1.6 fc11::6&quot;]
+    port 820c08 (aka ap)
+        addresses: [&quot;fa:16:3e:a9:4c:c7 10.1.1.5 fc11::5&quot;]
+    port 17d870
+        type: router
+        router-port: lrp-17d870
+...
+router dde06c (neutron-f88ebc) (aka r)
+    port lrp-1a8162
+        mac: &quot;fa:16:3e:06:de:ad&quot;
+        networks: [&quot;fc22::1/64&quot;]
+    port lrp-82b983
+        mac: &quot;fa:16:3e:19:9f:46&quot;
+        networks: [&quot;10.1.2.1/24&quot;]
+    port lrp-ad952e
+        mac: &quot;fa:16:3e:ef:2f:8b&quot;
+        networks: [&quot;fc11::1/64&quot;]
+    port lrp-17d870
+        mac: &quot;fa:16:3e:f6:e2:8f&quot;
+        networks: [&quot;10.1.1.1/24&quot;]
+</pre></div>
+</div>
+<p>Try tracing a packet from <code class="docutils literal notranslate"><span class="pre">a</span></code> to <code class="docutils literal notranslate"><span class="pre">c</span></code>.  The results correspond
+closely to those for IPv4 which we already discussed back under
+<a class="reference internal" href="#routing">Routing</a>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ N1SUBNET6_MAC=$(ovn-nbctl --bare --columns=mac find logical_router_port networks=\&quot;fc11::1/64\&quot;)
+$ ovn-trace n1 &#39;inport == &quot;ap&quot; &amp;&amp; eth.src == &#39;$AP_MAC&#39; &amp;&amp; eth.dst == &#39;$N1SUBNET6_MAC&#39; &amp;&amp; ip6.src == fc11::5 &amp;&amp; ip6.dst == fc22::7 &amp;&amp; ip.ttl == 64 &amp;&amp; icmp6.type == 8&#39;
+...
+ingress(dp=&quot;n1&quot;, inport=&quot;ap&quot;)
+-----------------------------
+ 0. ls_in_port_sec_l2 (ovn-northd.c:3234): inport == &quot;ap&quot; &amp;&amp; eth.src == {fa:16:3e:a9:4c:c7}, priority 50, uuid 6dcc418a
+    next;
+ 1. ls_in_port_sec_ip (ovn-northd.c:2390): inport == &quot;ap&quot; &amp;&amp; eth.src == fa:16:3e:a9:4c:c7 &amp;&amp; ip6.src == {fe80::f816:3eff:fea9:4cc7, fc11::5}, priority 90, uuid 604810ea
+    next;
+ 3. ls_in_pre_acl (ovn-northd.c:2646): ip, priority 100, uuid 46c089e6
+    reg0[0] = 1;
+    next;
+ 5. ls_in_pre_stateful (ovn-northd.c:2764): reg0[0] == 1, priority 100, uuid d1941634
+    ct_next;
+
+ct_next(ct_state=est|trk /* default (use --ct to customize) */)
+---------------------------------------------------------------
+ 6. ls_in_acl (ovn-northd.c:2925): !ct.new &amp;&amp; ct.est &amp;&amp; !ct.rpl &amp;&amp; ct_label.blocked == 0 &amp;&amp; (inport == &quot;ap&quot; &amp;&amp; ip6), priority 2002, uuid 7fdd607e
+    next;
+13. ls_in_l2_lkup (ovn-northd.c:3529): eth.dst == fa:16:3e:ef:2f:8b, priority 50, uuid e1d87fc5
+    outport = &quot;ad952e&quot;;
+    output;
+
+egress(dp=&quot;n1&quot;, inport=&quot;ap&quot;, outport=&quot;ad952e&quot;)
+----------------------------------------------
+ 1. ls_out_pre_acl (ovn-northd.c:2626): ip &amp;&amp; outport == &quot;ad952e&quot;, priority 110, uuid 88f68988
+    next;
+ 8. ls_out_port_sec_l2 (ovn-northd.c:3654): outport == &quot;ad952e&quot;, priority 50, uuid 5935755e
+    output;
+    /* output to &quot;ad952e&quot;, type &quot;patch&quot; */
+
+ingress(dp=&quot;r&quot;, inport=&quot;lrp-ad952e&quot;)
+------------------------------------
+ 0. lr_in_admission (ovn-northd.c:4071): eth.dst == fa:16:3e:ef:2f:8b &amp;&amp; inport == &quot;lrp-ad952e&quot;, priority 50, uuid ddfeb712
+    next;
+ 5. lr_in_ip_routing (ovn-northd.c:3782): ip6.dst == fc22::/64, priority 129, uuid cc2130ec
+    ip.ttl--;
+    xxreg0 = ip6.dst;
+    xxreg1 = fc22::1;
+    eth.src = fa:16:3e:06:de:ad;
+    outport = &quot;lrp-1a8162&quot;;
+    flags.loopback = 1;
+    next;
+ 6. lr_in_arp_resolve (ovn-northd.c:5122): outport == &quot;lrp-1a8162&quot; &amp;&amp; xxreg0 == fc22::7, priority 100, uuid bcf75288
+    eth.dst = fa:16:3e:89:f2:36;
+    next;
+ 8. lr_in_arp_request (ovn-northd.c:5260): 1, priority 0, uuid 6dacdd82
+    output;
+
+egress(dp=&quot;r&quot;, inport=&quot;lrp-ad952e&quot;, outport=&quot;lrp-1a8162&quot;)
+---------------------------------------------------------
+ 3. lr_out_delivery (ovn-northd.c:5288): outport == &quot;lrp-1a8162&quot;, priority 100, uuid 5260dfc5
+    output;
+    /* output to &quot;lrp-1a8162&quot;, type &quot;patch&quot; */
+
+ingress(dp=&quot;n2&quot;, inport=&quot;1a8162&quot;)
+---------------------------------
+ 0. ls_in_port_sec_l2 (ovn-northd.c:3234): inport == &quot;1a8162&quot;, priority 50, uuid 10957d1b
+    next;
+ 3. ls_in_pre_acl (ovn-northd.c:2624): ip &amp;&amp; inport == &quot;1a8162&quot;, priority 110, uuid a27ebd00
+    next;
+13. ls_in_l2_lkup (ovn-northd.c:3529): eth.dst == fa:16:3e:89:f2:36, priority 50, uuid dcafb3e9
+    outport = &quot;cp&quot;;
+    output;
+
+egress(dp=&quot;n2&quot;, inport=&quot;1a8162&quot;, outport=&quot;cp&quot;)
+----------------------------------------------
+ 1. ls_out_pre_acl (ovn-northd.c:2648): ip, priority 100, uuid cd9cfa74
+    reg0[0] = 1;
+    next;
+ 2. ls_out_pre_stateful (ovn-northd.c:2766): reg0[0] == 1, priority 100, uuid 9e8e22c5
+    ct_next;
+
+ct_next(ct_state=est|trk /* default (use --ct to customize) */)
+---------------------------------------------------------------
+ 4. ls_out_acl (ovn-northd.c:2925): !ct.new &amp;&amp; ct.est &amp;&amp; !ct.rpl &amp;&amp; ct_label.blocked == 0 &amp;&amp; (outport == &quot;cp&quot; &amp;&amp; ip6 &amp;&amp; ip6.src == $as_ip6_0fc1b6cf_f925_49e6_8f00_6dd13beca9dc), priority 2002, uuid 12fc96f9
+    next;
+ 7. ls_out_port_sec_ip (ovn-northd.c:2390): outport == &quot;cp&quot; &amp;&amp; eth.dst == fa:16:3e:89:f2:36 &amp;&amp; ip6.dst == {fe80::f816:3eff:fe89:f236, ff00::/8, fc22::7}, priority 90, uuid c622596a
+    next;
+ 8. ls_out_port_sec_l2 (ovn-northd.c:3654): outport == &quot;cp&quot; &amp;&amp; eth.dst == {fa:16:3e:89:f2:36}, priority 50, uuid 0242cdc3
+    output;
+    /* output to &quot;cp&quot;, type &quot;&quot; */
+</pre></div>
+</div>
+</div>
+<div class="section" id="acls">
+<h2>ACLs<a class="headerlink" href="#acls" title="Permalink to this headline">¶</a></h2>
+<p>Let’s explore how ACLs work in OpenStack and OVN.  In OpenStack, ACL
+rules are part of “security groups”, which are “default deny”, that
+is, packets are not allowed by default and the rules added to security
+groups serve to allow different classes of packets.  The default group
+(named “default”) that is assigned to each of our VMs so far allows
+all traffic from our other VMs, which isn’t very interesting for
+testing.  So, let’s create a new security group, which we’ll name
+“custom”, add rules to it that allow incoming SSH and ICMP traffic,
+and apply this security group to VM <code class="docutils literal notranslate"><span class="pre">c</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ openstack security group create custom
+$ openstack security group rule create --dst-port 22 custom
+$ openstack security group rule create --protocol icmp custom
+$ openstack server remove security group c default
+$ openstack server add security group c custom
+</pre></div>
+</div>
+<p>Now we can do some experiments to test security groups.  From the
+console on <code class="docutils literal notranslate"><span class="pre">a</span></code> or <code class="docutils literal notranslate"><span class="pre">b</span></code>, it should now be possible to “ping” <code class="docutils literal notranslate"><span class="pre">c</span></code>
+or to SSH to it, but attempts to initiate connections on other ports
+should be blocked.  (You can try to connect on another port with
+<code class="docutils literal notranslate"><span class="pre">ssh</span> <span class="pre">-p</span> <span class="pre">PORT</span> <span class="pre">IP</span></code> or <code class="docutils literal notranslate"><span class="pre">nc</span> <span class="pre">PORT</span> <span class="pre">IP</span></code>.)  Connection attempts should
+time out rather than receive the “connection refused” or “connection
+reset” error that you would see between <code class="docutils literal notranslate"><span class="pre">a</span></code> and <code class="docutils literal notranslate"><span class="pre">b</span></code>.</p>
+<p>It’s also possible to test ACLs via ovn-trace, with one new wrinkle.
+ovn-trace can’t simulate connection tracking state in the network, so
+by default it assumes that every packet represents an established
+connection.  That’s good enough for what we’ve been doing so far, but
+for checking properties of security groups we want to look at more
+detail.</p>
+<p>If you look back at the VM-to-VM traces we’ve done until now, you can
+see that they execute two <code class="docutils literal notranslate"><span class="pre">ct_next</span></code> actions:</p>
+<ul class="simple">
+<li>The first of these is for the packet passing outward through the
+source VM’s firewall.  We can tell ovn-trace to treat the packet as
+starting a new connection or adding to an established connection by
+adding a <code class="docutils literal notranslate"><span class="pre">--ct</span></code> option: <code class="docutils literal notranslate"><span class="pre">--ct</span> <span class="pre">new</span></code> or <code class="docutils literal notranslate"><span class="pre">--ct</span> <span class="pre">est</span></code>,
+respectively.  The latter is the default and therefore what we’ve
+been using so far.  We can also use <code class="docutils literal notranslate"><span class="pre">--ct</span> <span class="pre">est,rpl</span></code>, which in
+addition to <code class="docutils literal notranslate"><span class="pre">--ct</span> <span class="pre">est</span></code> means that the connection was initiated by
+the destination VM rather than by the VM sending this packet.</li>
+<li>The second is for the packet passing inward through the destination
+VM’s firewall.  For this one, it makes sense to tell ovn-trace that
+the packet is starting a new connection, with <code class="docutils literal notranslate"><span class="pre">--ct</span> <span class="pre">new</span></code>, or that
+it is a packet sent in reply to a connection established by the
+destination VM, with <code class="docutils literal notranslate"><span class="pre">--ct</span> <span class="pre">est,rpl</span></code>.</li>
+</ul>
+<p>ovn-trace uses the <code class="docutils literal notranslate"><span class="pre">--ct</span></code> options in order, so if we want to
+override the second <code class="docutils literal notranslate"><span class="pre">ct_next</span></code> behavior we have to specify two
+options.</p>
+<p>Another useful ovn-trace option for this testing is <code class="docutils literal notranslate"><span class="pre">--minimal</span></code>,
+which reduces the amount of output.  In this case we’re really just
+interested in finding out whether the packet reaches the destination
+VM, that is, whether there’s an eventual <code class="docutils literal notranslate"><span class="pre">output</span></code> action to <code class="docutils literal notranslate"><span class="pre">c</span></code>,
+so <code class="docutils literal notranslate"><span class="pre">--minimal</span></code> works fine and the output is easier to read.</p>
+<p>Try a few traces.  For example:</p>
+<ul>
+<li><p class="first">VM <code class="docutils literal notranslate"><span class="pre">a</span></code> initiates a new SSH connection to <code class="docutils literal notranslate"><span class="pre">c</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ ovn-trace --ct new --ct new --minimal n1 &#39;inport == &quot;ap&quot; &amp;&amp; eth.src == &#39;$AP_MAC&#39; &amp;&amp; eth.dst == &#39;$N1SUBNET6_MAC&#39; &amp;&amp; ip4.src == 10.1.1.5 &amp;&amp; ip4.dst == 10.1.2.7 &amp;&amp; ip.ttl == 64 &amp;&amp; tcp.dst == 22&#39;
+...
+ct_next(ct_state=new|trk) {
+    ip.ttl--;
+    eth.src = fa:16:3e:19:9f:46;
+    eth.dst = fa:16:3e:89:f2:36;
+    ct_next(ct_state=new|trk) {
+        output(&quot;cp&quot;);
+    };
+};
+</pre></div>
+</div>
+<p>This succeeds, as you can see since there is an <code class="docutils literal notranslate"><span class="pre">output</span></code> action.</p>
+</li>
+<li><p class="first">VM <code class="docutils literal notranslate"><span class="pre">a</span></code> initiates a new Telnet connection to <code class="docutils literal notranslate"><span class="pre">c</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ ovn-trace --ct new --ct new --minimal n1 &#39;inport == &quot;ap&quot; &amp;&amp; eth.src == &#39;$AP_MAC&#39; &amp;&amp; eth.dst == &#39;$N1SUBNET6_MAC&#39; &amp;&amp; ip4.src == 10.1.1.5 &amp;&amp; ip4.dst == 10.1.2.7 &amp;&amp; ip.ttl == 64 &amp;&amp; tcp.dst == 23&#39;
+ct_next(ct_state=new|trk) {
+    ip.ttl--;
+    eth.src = fa:16:3e:19:9f:46;
+    eth.dst = fa:16:3e:89:f2:36;
+    ct_next(ct_state=new|trk);
+};
+</pre></div>
+</div>
+<p>This fails, as you can see from the lack of an <code class="docutils literal notranslate"><span class="pre">output</span></code> action.</p>
+</li>
+<li><p class="first">VM <code class="docutils literal notranslate"><span class="pre">a</span></code> replies to a packet that is part of a Telnet connection
+originally initiated by <code class="docutils literal notranslate"><span class="pre">c</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ ovn-trace --ct est,rpl --ct est,rpl --minimal n1 &#39;inport == &quot;ap&quot; &amp;&amp; eth.src == &#39;$AP_MAC&#39; &amp;&amp; eth.dst == &#39;$N1SUBNET6_MAC&#39; &amp;&amp; ip4.src == 10.1.1.5 &amp;&amp; ip4.dst == 10.1.2.7 &amp;&amp; ip.ttl == 64 &amp;&amp; tcp.dst == 23&#39;
+...
+ct_next(ct_state=est|rpl|trk) {
+    ip.ttl--;
+    eth.src = fa:16:3e:19:9f:46;
+    eth.dst = fa:16:3e:89:f2:36;
+    ct_next(ct_state=est|rpl|trk) {
+        output(&quot;cp&quot;);
+    };
+};
+</pre></div>
+</div>
+<p>This succeeds, as you can see from the <code class="docutils literal notranslate"><span class="pre">output</span></code> action, since
+traffic received in reply to an outgoing connection is always
+allowed.</p>
+</li>
+</ul>
+</div>
+<div class="section" id="dhcp">
+<h2>DHCP<a class="headerlink" href="#dhcp" title="Permalink to this headline">¶</a></h2>
+<p>As a final demonstration of the OVN architecture, let’s examine the
+DHCP implementation.  Like switching, routing, and NAT, the OVN
+implementation of DHCP involves configuration in the NB DB and logical
+flows in the SB DB.</p>
+<p>Let’s look at the DHCP support for <code class="docutils literal notranslate"><span class="pre">a</span></code>’s port <code class="docutils literal notranslate"><span class="pre">ap</span></code>.  The port’s
+Logical_Switch_Port record shows that <code class="docutils literal notranslate"><span class="pre">ap</span></code> has DHCPv4 options:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ ovn-nbctl list logical_switch_port ap | abbrev
+_uuid               : ef17e5
+addresses           : [&quot;fa:16:3e:a9:4c:c7 10.1.1.5 fc11::5&quot;]
+dhcpv4_options      : 165974
+dhcpv6_options      : 26f7cd
+dynamic_addresses   : []
+enabled             : true
+external_ids        : {&quot;neutron:port_name&quot;=ap}
+name                : &quot;820c08&quot;
+options             : {}
+parent_name         : []
+port_security       : [&quot;fa:16:3e:a9:4c:c7 10.1.1.5 fc11::5&quot;]
+tag                 : []
+tag_request         : []
+type                : &quot;&quot;
+up                  : true
+</pre></div>
+</div>
+<p>We can then list them either by UUID or, more easily, by port name:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ ovn-nbctl list dhcp_options ap | abbrev
+_uuid               : 165974
+cidr                : &quot;10.1.1.0/24&quot;
+external_ids        : {subnet_id=&quot;5e67e7&quot;}
+options             : {lease_time=&quot;43200&quot;, mtu=&quot;1442&quot;, router=&quot;10.1.1.1&quot;, server_id=&quot;10.1.1.1&quot;, server_mac=&quot;fa:16:3e:bb:94:72&quot;}
+</pre></div>
+</div>
+<p>These options show the basic DHCP configuration for the subnet.  They
+do not include the IP address itself, which comes from the
+Logical_Switch_Port record.  This allows a whole Neutron subnet to
+share a single DHCP_Options record.  You can see this sharing in
+action, if you like, by listing the record for port <code class="docutils literal notranslate"><span class="pre">bp</span></code>, which is
+on the same subnet as <code class="docutils literal notranslate"><span class="pre">ap</span></code>, and see that it is the same record as before:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ ovn-nbctl list dhcp_options bp | abbrev
+_uuid               : 165974
+cidr                : &quot;10.1.1.0/24&quot;
+external_ids        : {subnet_id=&quot;5e67e7&quot;}
+options             : {lease_time=&quot;43200&quot;, mtu=&quot;1442&quot;, router=&quot;10.1.1.1&quot;, server_id=&quot;10.1.1.1&quot;, server_mac=&quot;fa:16:3e:bb:94:72&quot;}
+</pre></div>
+</div>
+<p>You can take another look at the southbound flow table if you like,
+but the best demonstration is to trace a DHCP packet.  The following
+is a trace of a DHCP request inbound from <code class="docutils literal notranslate"><span class="pre">ap</span></code>.  The first part is
+just the usual travel through the firewall:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ ovn-trace n1 &#39;inport == &quot;ap&quot; &amp;&amp; eth.src == &#39;$AP_MAC&#39; &amp;&amp; eth.dst == ff:ff:ff:ff:ff:ff &amp;&amp; ip4.dst == 255.255.255.255 &amp;&amp; udp.src == 68 &amp;&amp; udp.dst == 67 &amp;&amp; ip.ttl == 1&#39;
+...
+ingress(dp=&quot;n1&quot;, inport=&quot;ap&quot;)
+-----------------------------
+ 0. ls_in_port_sec_l2 (ovn-northd.c:3234): inport == &quot;ap&quot; &amp;&amp; eth.src == {fa:16:3e:a9:4c:c7}, priority 50, uuid 6dcc418a
+    next;
+ 1. ls_in_port_sec_ip (ovn-northd.c:2325): inport == &quot;ap&quot; &amp;&amp; eth.src == fa:16:3e:a9:4c:c7 &amp;&amp; ip4.src == 0.0.0.0 &amp;&amp; ip4.dst == 255.255.255.255 &amp;&amp; udp.src == 68 &amp;&amp; udp.dst == 67, priority 90, uuid e46bed6f
+    next;
+ 3. ls_in_pre_acl (ovn-northd.c:2646): ip, priority 100, uuid 46c089e6
+    reg0[0] = 1;
+    next;
+ 5. ls_in_pre_stateful (ovn-northd.c:2764): reg0[0] == 1, priority 100, uuid d1941634
+    ct_next;
+</pre></div>
+</div>
+<p>The next part is the new part.  First, an ACL in table 6 allows a DHCP
+request to pass through.  In table 11, the special <code class="docutils literal notranslate"><span class="pre">put_dhcp_opts</span></code>
+action replaces a DHCPDISCOVER or DHCPREQUEST packet by a
+reply.  Table 12 flips the packet’s source and destination and sends
+it back the way it came in:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span> 6. ls_in_acl (ovn-northd.c:2925): !ct.new &amp;&amp; ct.est &amp;&amp; !ct.rpl &amp;&amp; ct_label.blocked == 0 &amp;&amp; (inport == &quot;ap&quot; &amp;&amp; ip4 &amp;&amp; ip4.dst == {255.255.255.255, 10.1.1.0/24} &amp;&amp; udp &amp;&amp; udp.src == 68 &amp;&amp; udp.dst == 67), priority 2002, uuid 9c90245d
+    next;
+11. ls_in_dhcp_options (ovn-northd.c:3409): inport == &quot;ap&quot; &amp;&amp; eth.src == fa:16:3e:a9:4c:c7 &amp;&amp; ip4.src == 0.0.0.0 &amp;&amp; ip4.dst == 255.255.255.255 &amp;&amp; udp.src == 68 &amp;&amp; udp.dst == 67, priority 100, uuid 8d63f29c
+    reg0[3] = put_dhcp_opts(offerip = 10.1.1.5, lease_time = 43200, mtu = 1442, netmask = 255.255.255.0, router = 10.1.1.1, server_id = 10.1.1.1);
+    /* We assume that this packet is DHCPDISCOVER or DHCPREQUEST. */
+    next;
+12. ls_in_dhcp_response (ovn-northd.c:3438): inport == &quot;ap&quot; &amp;&amp; eth.src == fa:16:3e:a9:4c:c7 &amp;&amp; ip4 &amp;&amp; udp.src == 68 &amp;&amp; udp.dst == 67 &amp;&amp; reg0[3], priority 100, uuid 995eeaa9
+    eth.dst = eth.src;
+    eth.src = fa:16:3e:bb:94:72;
+    ip4.dst = 10.1.1.5;
+    ip4.src = 10.1.1.1;
+    udp.src = 67;
+    udp.dst = 68;
+    outport = inport;
+    flags.loopback = 1;
+    output;
+</pre></div>
+</div>
+<p>Then the last part is just traveling back through the firewall to VM
+<code class="docutils literal notranslate"><span class="pre">a</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">egress</span><span class="p">(</span><span class="n">dp</span><span class="o">=</span><span class="s2">&quot;n1&quot;</span><span class="p">,</span> <span class="n">inport</span><span class="o">=</span><span class="s2">&quot;ap&quot;</span><span class="p">,</span> <span class="n">outport</span><span class="o">=</span><span class="s2">&quot;ap&quot;</span><span class="p">)</span>
+<span class="o">------------------------------------------</span>
+ <span class="mf">1.</span> <span class="n">ls_out_pre_acl</span> <span class="p">(</span><span class="n">ovn</span><span class="o">-</span><span class="n">northd</span><span class="o">.</span><span class="n">c</span><span class="p">:</span><span class="mi">2648</span><span class="p">):</span> <span class="n">ip</span><span class="p">,</span> <span class="n">priority</span> <span class="mi">100</span><span class="p">,</span> <span class="n">uuid</span> <span class="mi">3752</span><span class="n">b746</span>
+    <span class="n">reg0</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+    <span class="nb">next</span><span class="p">;</span>
+ <span class="mf">2.</span> <span class="n">ls_out_pre_stateful</span> <span class="p">(</span><span class="n">ovn</span><span class="o">-</span><span class="n">northd</span><span class="o">.</span><span class="n">c</span><span class="p">:</span><span class="mi">2766</span><span class="p">):</span> <span class="n">reg0</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span> <span class="n">priority</span> <span class="mi">100</span><span class="p">,</span> <span class="n">uuid</span> <span class="mi">0</span><span class="n">c066ea1</span>
+    <span class="n">ct_next</span><span class="p">;</span>
+
+<span class="n">ct_next</span><span class="p">(</span><span class="n">ct_state</span><span class="o">=</span><span class="n">est</span><span class="o">|</span><span class="n">trk</span> <span class="o">/*</span> <span class="n">default</span> <span class="p">(</span><span class="n">use</span> <span class="o">--</span><span class="n">ct</span> <span class="n">to</span> <span class="n">customize</span><span class="p">)</span> <span class="o">*/</span><span class="p">)</span>
+<span class="o">---------------------------------------------------------------</span>
+ <span class="mf">4.</span> <span class="n">ls_out_acl</span> <span class="p">(</span><span class="n">ovn</span><span class="o">-</span><span class="n">northd</span><span class="o">.</span><span class="n">c</span><span class="p">:</span><span class="mi">3008</span><span class="p">):</span> <span class="n">outport</span> <span class="o">==</span> <span class="s2">&quot;ap&quot;</span> <span class="o">&amp;&amp;</span> <span class="n">eth</span><span class="o">.</span><span class="n">src</span> <span class="o">==</span> <span class="n">fa</span><span class="p">:</span><span class="mi">16</span><span class="p">:</span><span class="mi">3</span><span class="n">e</span><span class="p">:</span><span class="n">bb</span><span class="p">:</span><span class="mi">94</span><span class="p">:</span><span class="mi">72</span> <span class="o">&amp;&amp;</span> <span class="n">ip4</span><span class="o">.</span><span class="n">src</span> <span class="o">==</span> <span class="mf">10.1</span><span class="o">.</span><span class="mf">1.1</span> <span class="o">&amp;&amp;</span> <span class="n">udp</span> <span class="o">&amp;&amp;</span> <span class="n">udp</span><span class="o">.</span><span class="n">src</span> <span class="o">==</span> <span class="mi">67</span> <span class="o">&amp;&amp;</span> <span class="n">udp</span><span class="o">.</span><span class="n">dst</span> <span class="o">==</span> <span class="mi">68</span><span class="p">,</span> <span class="n">priority</span> <span class="mi">34000</span><span class="p">,</span> <span class="n">uuid</span> <span class="mi">0</span><span class="n">b383e77</span>
+    <span class="n">ct_commit</span><span class="p">;</span>
+    <span class="nb">next</span><span class="p">;</span>
+ <span class="mf">7.</span> <span class="n">ls_out_port_sec_ip</span> <span class="p">(</span><span class="n">ovn</span><span class="o">-</span><span class="n">northd</span><span class="o">.</span><span class="n">c</span><span class="p">:</span><span class="mi">2364</span><span class="p">):</span> <span class="n">outport</span> <span class="o">==</span> <span class="s2">&quot;ap&quot;</span> <span class="o">&amp;&amp;</span> <span class="n">eth</span><span class="o">.</span><span class="n">dst</span> <span class="o">==</span> <span class="n">fa</span><span class="p">:</span><span class="mi">16</span><span class="p">:</span><span class="mi">3</span><span class="n">e</span><span class="p">:</span><span class="n">a9</span><span class="p">:</span><span class="mi">4</span><span class="n">c</span><span class="p">:</span><span class="n">c7</span> <span class="o">&amp;&amp;</span> <span class="n">ip4</span><span class="o">.</span><span class="n">dst</span> <span class="o">==</span> <span class="p">{</span><span class="mf">255.255</span><span class="o">.</span><span class="mf">255.255</span><span class="p">,</span> <span class="mf">224.0</span><span class="o">.</span><span class="mf">0.0</span><span class="o">/</span><span class="mi">4</span><span class="p">,</span> <span class="mf">10.1</span><span class="o">.</span><span class="mf">1.5</span><span class="p">},</span> <span class="n">priority</span> <span class="mi">90</span><span class="p">,</span> <span class="n">uuid</span> <span class="mi">7</span><span class="n">b8cbcd5</span>
+    <span class="nb">next</span><span class="p">;</span>
+ <span class="mf">8.</span> <span class="n">ls_out_port_sec_l2</span> <span class="p">(</span><span class="n">ovn</span><span class="o">-</span><span class="n">northd</span><span class="o">.</span><span class="n">c</span><span class="p">:</span><span class="mi">3654</span><span class="p">):</span> <span class="n">outport</span> <span class="o">==</span> <span class="s2">&quot;ap&quot;</span> <span class="o">&amp;&amp;</span> <span class="n">eth</span><span class="o">.</span><span class="n">dst</span> <span class="o">==</span> <span class="p">{</span><span class="n">fa</span><span class="p">:</span><span class="mi">16</span><span class="p">:</span><span class="mi">3</span><span class="n">e</span><span class="p">:</span><span class="n">a9</span><span class="p">:</span><span class="mi">4</span><span class="n">c</span><span class="p">:</span><span class="n">c7</span><span class="p">},</span> <span class="n">priority</span> <span class="mi">50</span><span class="p">,</span> <span class="n">uuid</span> <span class="n">b874ece8</span>
+    <span class="n">output</span><span class="p">;</span>
+    <span class="o">/*</span> <span class="n">output</span> <span class="n">to</span> <span class="s2">&quot;ap&quot;</span><span class="p">,</span> <span class="nb">type</span> <span class="s2">&quot;&quot;</span> <span class="o">*/</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="further-directions">
+<h2>Further Directions<a class="headerlink" href="#further-directions" title="Permalink to this headline">¶</a></h2>
+<p>We’ve looked at a fair bit of how OVN works and how it interacts with
+OpenStack.  If you still have some interest, then you might want to
+explore some of these directions:</p>
+<ul class="simple">
+<li>Adding more than one hypervisor (“compute node”, in OpenStack
+parlance).  OVN connects compute nodes by tunneling packets with the
+STT or Geneve protocols.  OVN scales to 1000 compute nodes or more,
+but two compute nodes demonstrate the principle.  All of the tools
+and techniques we demonstrated also work with multiple compute
+nodes.</li>
+<li>Container support.  OVN supports seamlessly connecting VMs to
+containers, whether the containers are hosted on “bare metal” or
+nested inside VMs.  OpenStack support for containers, however, is
+still evolving, and too difficult to incorporate into the tutorial
+at this point.</li>
+<li>Other kinds of gateways.  In addition to floating IPs with NAT, OVN
+supports directly attaching VMs to a physical network and connecting
+logical switches to VTEP hardware.</li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../contents.html">
+              <img class="logo" src="../_static/logo.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="../contents.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">OVN OpenStack Tutorial</a><ul>
+<li><a class="reference internal" href="#setting-up-devstack">Setting Up DevStack</a></li>
+<li><a class="reference internal" href="#devstack-preliminaries">DevStack preliminaries</a></li>
+<li><a class="reference internal" href="#shortening-uuids">Shortening UUIDs</a></li>
+<li><a class="reference internal" href="#overview">Overview</a></li>
+<li><a class="reference internal" href="#switching">Switching</a><ul>
+<li><a class="reference internal" href="#creating-network-n1">Creating network <code class="docutils literal notranslate"><span class="pre">n1</span></code></a></li>
+<li><a class="reference internal" href="#attaching-vms">Attaching VMs</a><ul>
+<li><a class="reference internal" href="#logical-tracing">Logical Tracing</a></li>
+<li><a class="reference internal" href="#physical-tracing-for-hypothetical-packets">Physical Tracing for Hypothetical Packets</a></li>
+<li><a class="reference internal" href="#physical-tracing-for-real-packets">Physical Tracing for Real Packets</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#routing">Routing</a><ul>
+<li><a class="reference internal" href="#physical-tracing">Physical Tracing</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#adding-a-gateway">Adding a Gateway</a></li>
+<li><a class="reference internal" href="#ipv6">IPv6</a></li>
+<li><a class="reference internal" href="#acls">ACLs</a></li>
+<li><a class="reference internal" href="#dhcp">DHCP</a></li>
+<li><a class="reference internal" href="#further-directions">Further Directions</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../contents.html">Documentation overview</a><ul>
+  <li><a href="index.html">Tutorials</a><ul>
+      <li>Previous: <a href="ovn-sandbox.html" title="previous chapter">OVN Sandbox</a></li>
+      <li>Next: <a href="../topics/index.html" title="next chapter">Deep Dive</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/tutorials/ovn-openstack.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, The Open vSwitch Development Community.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.4</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="../_sources/tutorials/ovn-openstack.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

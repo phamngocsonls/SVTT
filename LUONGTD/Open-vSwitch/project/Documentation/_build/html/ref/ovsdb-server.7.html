@@ -1,0 +1,511 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>ovsdb-server &#8212; Open vSwitch 2.9.2 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="ovsdb" href="ovsdb.5.html" />
+    <link rel="prev" title="ovs-vlan-test" href="ovs-vlan-test.8.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="ovsdb-server">
+<h1>ovsdb-server<a class="headerlink" href="#ovsdb-server" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="description">
+<h2>Description<a class="headerlink" href="#description" title="Permalink to this headline">¶</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">ovsdb-server</span></code> implements the Open vSwitch Database (OVSDB) protocol
+specified in RFC 7047.  This document provides clarifications for how
+<code class="docutils literal notranslate"><span class="pre">ovsdb-server</span></code> implements the protocol and describes the extensions that it
+provides beyond RFC 7047.  Numbers in section headings refer to corresponding
+sections in RFC 7047.</p>
+<div class="section" id="json-usage">
+<h3>3.1 JSON Usage<a class="headerlink" href="#json-usage" title="Permalink to this headline">¶</a></h3>
+<p>RFC 4627 says that names within a JSON object should be unique.
+The Open vSwitch JSON parser discards all but the last value
+for a name that is specified more than once.</p>
+<p>The definition of &lt;error&gt; allows for implementation extensions.
+Currently <code class="docutils literal notranslate"><span class="pre">ovsdb-server</span></code> uses the following additional <code class="docutils literal notranslate"><span class="pre">error</span></code>
+strings (which might change in later releases):</p>
+<dl class="docutils">
+<dt><code class="docutils literal notranslate"><span class="pre">syntax</span> <span class="pre">error</span></code> or <code class="docutils literal notranslate"><span class="pre">unknown</span> <span class="pre">column</span></code></dt>
+<dd>The request could not be parsed as an OVSDB request.  An additional
+<code class="docutils literal notranslate"><span class="pre">syntax</span></code> member, whose value is a string that contains JSON, may narrow
+down the particular syntax that could not be parsed.</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">internal</span> <span class="pre">error</span></code></dt>
+<dd>The request triggered a bug in <code class="docutils literal notranslate"><span class="pre">ovsdb-server</span></code>.</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">ovsdb</span> <span class="pre">error</span></code></dt>
+<dd>A map or set contains a duplicate key.</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">permission</span> <span class="pre">error</span></code></dt>
+<dd>The request was denied by the role-based access control extension,
+introduced in version 2.8.</dd>
+</dl>
+</div>
+<div class="section" id="schema-format">
+<h3>3.2 Schema Format<a class="headerlink" href="#schema-format" title="Permalink to this headline">¶</a></h3>
+<p>RFC 7047 requires the <code class="docutils literal notranslate"><span class="pre">version</span></code> field in &lt;database-schema&gt;.  Current versions
+of <code class="docutils literal notranslate"><span class="pre">ovsdb-server</span></code> allow it to be omitted (future versions are likely to
+require it).</p>
+<p>RFC 7047 allows columns that contain weak references to be immutable.  This
+raises the issue of the behavior of the weak reference when the rows that it
+references are deleted.  Since version 2.6, <code class="docutils literal notranslate"><span class="pre">ovsdb-server</span></code> forces columns
+that contain weak references to be mutable.</p>
+<p>Since version 2.8, the table name <code class="docutils literal notranslate"><span class="pre">RBAC_Role</span></code> is used internally by the
+role-based access control extension to <code class="docutils literal notranslate"><span class="pre">ovsdb-server</span></code> and should not be used
+for purposes other than defining mappings of role names to table access
+permissions. This table has one row per role name and the following columns:</p>
+<dl class="docutils">
+<dt><code class="docutils literal notranslate"><span class="pre">name</span></code></dt>
+<dd>The role name.</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">permissions</span></code></dt>
+<dd>A map of table name to a reference to a row in a separate permission table.</dd>
+</dl>
+<p>The separate RBAC permission table has one row per access control
+configuration and the following columns:</p>
+<dl class="docutils">
+<dt><code class="docutils literal notranslate"><span class="pre">name</span></code></dt>
+<dd>The name of the table to which the row applies.</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">authorization</span></code></dt>
+<dd>The set of column names and column:key pairs to be compared with the client
+ID in order to determine the authorization status of the requested
+operation.</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">insert_delete</span></code></dt>
+<dd>A boolean value, true if authorized insertions and deletions are allowed,
+false if no insertions or deletions are allowed.</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">update</span></code></dt>
+<dd>The set of columns and column:key pairs for which authorized update and
+mutate operations should be permitted.</dd>
+</dl>
+</div>
+<div class="section" id="wire-protocol">
+<h3>4 Wire Protocol<a class="headerlink" href="#wire-protocol" title="Permalink to this headline">¶</a></h3>
+<p>The original OVSDB specifications included the following reasons, omitted from
+RFC 7047, to operate JSON-RPC directly over a stream instead of over HTTP:</p>
+<ul class="simple">
+<li>JSON-RPC is a peer-to-peer protocol, but HTTP is a client-server protocol,
+which is a poor match.  Thus, JSON-RPC over HTTP requires the client to
+periodically poll the server to receive server requests.</li>
+<li>HTTP is more complicated than stream connections and doesn’t provide any
+corresponding advantage.</li>
+<li>The JSON-RPC specification for HTTP transport is incomplete.</li>
+</ul>
+</div>
+<div class="section" id="transact">
+<h3>4.1.3 Transact<a class="headerlink" href="#transact" title="Permalink to this headline">¶</a></h3>
+<p>Since version 2.8, role-based access controls can be applied to operations
+within a transaction that would modify the contents of the database (these
+operations include row insert, row delete, column update, and column
+mutate). Role-based access controls are applied when the database schema
+contains a table with the name <code class="docutils literal notranslate"><span class="pre">RBAC_Role</span></code> and the connection on which the
+transaction request was received has an associated role name (from the <code class="docutils literal notranslate"><span class="pre">role</span></code>
+column in the remote connection table). When role-based access controls are
+enabled, transactions that are otherwise well-formed may be rejected depending
+on the client’s role, ID, and the contents of the <code class="docutils literal notranslate"><span class="pre">RBAC_Role</span></code> table and
+associated permissions table.</p>
+</div>
+<div class="section" id="monitor">
+<h3>4.1.5 Monitor<a class="headerlink" href="#monitor" title="Permalink to this headline">¶</a></h3>
+<p>For backward compatibility, <code class="docutils literal notranslate"><span class="pre">ovsdb-server</span></code> currently permits a single
+&lt;monitor-request&gt; to be used instead of an array; it is treated as a
+single-element array.  Future versions of <code class="docutils literal notranslate"><span class="pre">ovsdb-server</span></code> might remove this
+compatibility feature.</p>
+<p>Because the &lt;json-value&gt; parameter is used to match subsequent update
+notifications (see below) to the request, it must be unique among all active
+monitors.  <code class="docutils literal notranslate"><span class="pre">ovsdb-server</span></code> rejects attempt to create two monitors with the
+same identifier.</p>
+</div>
+<div class="section" id="monitor-cancellation">
+<h3>4.1.7 Monitor Cancellation<a class="headerlink" href="#monitor-cancellation" title="Permalink to this headline">¶</a></h3>
+<p>When a database monitored by a session is removed, and database change
+awareness is enabled for the session (see Section 4.1.16), the database server
+spontaneously cancels all monitors (including conditional monitors described in
+Section 4.1.12) for the removed database.  For each canceled monitor, it issues
+a notification in the following form:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;monitor_canceled&quot;</span>
+<span class="s2">&quot;params&quot;</span><span class="p">:</span> <span class="p">[</span><span class="o">&lt;</span><span class="n">json</span><span class="o">-</span><span class="n">value</span><span class="o">&gt;</span><span class="p">]</span>
+<span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="n">null</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="monitor-cond">
+<h3>4.1.12 Monitor_cond<a class="headerlink" href="#monitor-cond" title="Permalink to this headline">¶</a></h3>
+<p>A new monitor method added in Open vSwitch version 2.6.  The <code class="docutils literal notranslate"><span class="pre">monitor_cond</span></code>
+request enables a client to replicate subsets of tables within an OVSDB
+database by requesting notifications of changes to rows matching one of the
+conditions specified in <code class="docutils literal notranslate"><span class="pre">where</span></code> by receiving the specified contents of these
+rows when table updates occur.  <code class="docutils literal notranslate"><span class="pre">monitor_cond</span></code> also allows a more efficient
+update notifications by receiving &lt;table-updates2&gt; notifications (described
+below).</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">monitor</span></code> method described in Section 4.1.5 also applies to
+<code class="docutils literal notranslate"><span class="pre">monitor_cond</span></code>, with the following exceptions:</p>
+<ul class="simple">
+<li>RPC request method becomes <code class="docutils literal notranslate"><span class="pre">monitor_cond</span></code>.</li>
+<li>Reply result follows &lt;table-updates2&gt;, described in Section 4.1.14.</li>
+<li>Subsequent changes are sent to the client using the <code class="docutils literal notranslate"><span class="pre">update2</span></code> monitor
+notification, described in Section 4.1.14</li>
+<li>Update notifications are being sent only for rows matching [&lt;condition&gt;*].</li>
+</ul>
+<p>The request object has the following members:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;monitor_cond&quot;</span>
+<span class="s2">&quot;params&quot;</span><span class="p">:</span> <span class="p">[</span><span class="o">&lt;</span><span class="n">db</span><span class="o">-</span><span class="n">name</span><span class="o">&gt;</span><span class="p">,</span> <span class="o">&lt;</span><span class="n">json</span><span class="o">-</span><span class="n">value</span><span class="o">&gt;</span><span class="p">,</span> <span class="o">&lt;</span><span class="n">monitor</span><span class="o">-</span><span class="n">cond</span><span class="o">-</span><span class="n">requests</span><span class="o">&gt;</span><span class="p">]</span>
+<span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">nonnull</span><span class="o">-</span><span class="n">json</span><span class="o">-</span><span class="n">value</span><span class="o">&gt;</span>
+</pre></div>
+</div>
+<p>The &lt;json-value&gt; parameter is used to match subsequent update notifications
+(see below) to this request.  The &lt;monitor-cond-requests&gt; object maps the name
+of the table to an array of &lt;monitor-cond-request&gt;.</p>
+<p>Each &lt;monitor-cond-request&gt; is an object with the following members:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;columns&quot;</span><span class="p">:</span> <span class="p">[</span><span class="o">&lt;</span><span class="n">column</span><span class="o">&gt;*</span><span class="p">]</span>            <span class="n">optional</span>
+<span class="s2">&quot;where&quot;</span><span class="p">:</span> <span class="p">[</span><span class="o">&lt;</span><span class="n">condition</span><span class="o">&gt;*</span><span class="p">]</span>           <span class="n">optional</span>
+<span class="s2">&quot;select&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">monitor</span><span class="o">-</span><span class="n">select</span><span class="o">&gt;</span>        <span class="n">optional</span>
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">columns</span></code>, if present, define the columns within the table to be
+monitored that match conditions.  If not present, all columns are monitored.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">where</span></code>, if present, is a JSON array of &lt;condition&gt; and boolean values.
+If not present or condition is an empty array, implicit True will be considered
+and updates on all rows will be sent.</p>
+<p>&lt;monitor-select&gt; is an object with the following members:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;initial&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">boolean</span><span class="o">&gt;</span>              <span class="n">optional</span>
+<span class="s2">&quot;insert&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">boolean</span><span class="o">&gt;</span>               <span class="n">optional</span>
+<span class="s2">&quot;delete&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">boolean</span><span class="o">&gt;</span>               <span class="n">optional</span>
+<span class="s2">&quot;modify&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">boolean</span><span class="o">&gt;</span>               <span class="n">optional</span>
+</pre></div>
+</div>
+<p>The contents of this object specify how the columns or table are to be
+monitored as explained in more detail below.</p>
+<p>The response object has the following members:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;result&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">table</span><span class="o">-</span><span class="n">updates2</span><span class="o">&gt;</span>
+<span class="s2">&quot;error&quot;</span><span class="p">:</span> <span class="n">null</span>
+<span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="n">same</span> <span class="s2">&quot;id&quot;</span> <span class="k">as</span> <span class="n">request</span>
+</pre></div>
+</div>
+<p>The &lt;table-updates2&gt; object is described in detail in Section 4.1.14.  It
+contains the contents of the tables for which initial rows are selected.  If no
+tables initial contents are requested, then <code class="docutils literal notranslate"><span class="pre">result</span></code> is an empty object.</p>
+<p>Subsequently, when changes to a specified table that match one of the
+conditions in &lt;monitor-cond-request&gt; are committed, the changes are
+automatically sent to the client using the <code class="docutils literal notranslate"><span class="pre">update2</span></code> monitor notification
+(see Section 4.1.14).  This monitoring persists until the JSON-RPC session
+terminates or until the client sends a <code class="docutils literal notranslate"><span class="pre">monitor_cancel</span></code> JSON-RPC request.</p>
+<p>Each &lt;monitor-cond-request&gt; specifies one or more conditions and the manner in
+which the rows that match the conditions are to be monitored.  The
+circumstances in which an <code class="docutils literal notranslate"><span class="pre">update</span></code> notification is sent for a row within the
+table are determined by &lt;monitor-select&gt;:</p>
+<ul class="simple">
+<li>If <code class="docutils literal notranslate"><span class="pre">initial</span></code> is omitted or true, every row in the original table that
+matches one of the conditions is sent as part of the response to the
+<code class="docutils literal notranslate"><span class="pre">monitor_cond</span></code> request.</li>
+<li>If <code class="docutils literal notranslate"><span class="pre">insert</span></code> is omitted or true, update notifications are sent for rows
+newly inserted into the table that match conditions or for rows modified in
+the table so that their old version does not match the condition and new
+version does.</li>
+<li>If <code class="docutils literal notranslate"><span class="pre">delete</span></code> is omitted or true, update notifications are sent for rows
+deleted from the table that match conditions or for rows modified in the
+table so that their old version does match the conditions and new version
+does not.</li>
+<li>If <code class="docutils literal notranslate"><span class="pre">modify</span></code> is omitted or true, update notifications are sent whenever a
+row in the table that matches conditions in both old and new version is
+modified.</li>
+</ul>
+<p>Both <code class="docutils literal notranslate"><span class="pre">monitor</span></code> and <code class="docutils literal notranslate"><span class="pre">monitor_cond</span></code> sessions can exist concurrently. However,
+<code class="docutils literal notranslate"><span class="pre">monitor</span></code> and <code class="docutils literal notranslate"><span class="pre">monitor_cond</span></code> shares the same &lt;json-value&gt; parameter space;
+it must be unique among all <code class="docutils literal notranslate"><span class="pre">monitor</span></code> and <code class="docutils literal notranslate"><span class="pre">monitor_cond</span></code> sessions.</p>
+</div>
+<div class="section" id="monitor-cond-change">
+<h3>4.1.13 Monitor_cond_change<a class="headerlink" href="#monitor-cond-change" title="Permalink to this headline">¶</a></h3>
+<p>The <code class="docutils literal notranslate"><span class="pre">monitor_cond_change</span></code> request enables a client to change an existing
+<code class="docutils literal notranslate"><span class="pre">monitor_cond</span></code> replication of the database by specifying a new condition and
+columns for each replicated table.  Currently changing the columns set is not
+supported.</p>
+<p>The request object has the following members:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;monitor_cond_change&quot;</span>
+<span class="s2">&quot;params&quot;</span><span class="p">:</span> <span class="p">[</span><span class="o">&lt;</span><span class="n">json</span><span class="o">-</span><span class="n">value</span><span class="o">&gt;</span><span class="p">,</span> <span class="o">&lt;</span><span class="n">json</span><span class="o">-</span><span class="n">value</span><span class="o">&gt;</span><span class="p">,</span> <span class="o">&lt;</span><span class="n">monitor</span><span class="o">-</span><span class="n">cond</span><span class="o">-</span><span class="n">update</span><span class="o">-</span><span class="n">requests</span><span class="o">&gt;</span><span class="p">]</span>
+<span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">nonnull</span><span class="o">-</span><span class="n">json</span><span class="o">-</span><span class="n">value</span><span class="o">&gt;</span>
+</pre></div>
+</div>
+<p>The &lt;json-value&gt; parameter should have a value of an existing conditional
+monitoring session from this client. The second &lt;json-value&gt; in params array is
+the requested value for this session. This value is valid only after
+<code class="docutils literal notranslate"><span class="pre">monitor_cond_change</span></code> is committed. A user can use these values to
+distinguish between update messages before conditions update and after. The
+&lt;monitor-cond-update-requests&gt; object maps the name of the table to an array of
+&lt;monitor-cond-update-request&gt;.  Monitored tables not included in
+&lt;monitor-cond-update-requests&gt; retain their current conditions.</p>
+<p>Each &lt;monitor-cond-update-request&gt; is an object with the following members:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;columns&quot;</span><span class="p">:</span> <span class="p">[</span><span class="o">&lt;</span><span class="n">column</span><span class="o">&gt;*</span><span class="p">]</span>         <span class="n">optional</span>
+<span class="s2">&quot;where&quot;</span><span class="p">:</span> <span class="p">[</span><span class="o">&lt;</span><span class="n">condition</span><span class="o">&gt;*</span><span class="p">]</span>        <span class="n">optional</span>
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">columns</span></code> specify a new array of columns to be monitored, although this
+feature is not yet supported.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">where</span></code> specify a new array of conditions to be applied to this
+monitoring session.</p>
+<p>The response object has the following members:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;result&quot;</span><span class="p">:</span> <span class="n">null</span>
+<span class="s2">&quot;error&quot;</span><span class="p">:</span> <span class="n">null</span>
+<span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="n">same</span> <span class="s2">&quot;id&quot;</span> <span class="k">as</span> <span class="n">request</span>
+</pre></div>
+</div>
+<p>Subsequent &lt;table-updates2&gt; notifications are described in detail in Section
+4.1.14 in the RFC.  If insert contents are requested by original monitor_cond
+request, &lt;table-updates2&gt; will contain rows that match the new condition and do
+not match the old condition.  If deleted contents are requested by origin
+monitor request, &lt;table-updates2&gt; will contain any matched rows by old
+condition and not matched by the new condition.</p>
+<p>Changes according to the new conditions are automatically sent to the client
+using the <code class="docutils literal notranslate"><span class="pre">update2</span></code> monitor notification.  An update, if any, as a result of
+a condition change, will be sent to the client before the reply to the
+<code class="docutils literal notranslate"><span class="pre">monitor_cond_change</span></code> request.</p>
+</div>
+<div class="section" id="update2-notification">
+<h3>4.1.14 Update2 notification<a class="headerlink" href="#update2-notification" title="Permalink to this headline">¶</a></h3>
+<p>The <code class="docutils literal notranslate"><span class="pre">update2</span></code> notification is sent by the server to the client to report
+changes in tables that are being monitored following a <code class="docutils literal notranslate"><span class="pre">monitor_cond</span></code> request
+as described above. The notification has the following members:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;update2&quot;</span>
+<span class="s2">&quot;params&quot;</span><span class="p">:</span> <span class="p">[</span><span class="o">&lt;</span><span class="n">json</span><span class="o">-</span><span class="n">value</span><span class="o">&gt;</span><span class="p">,</span> <span class="o">&lt;</span><span class="n">table</span><span class="o">-</span><span class="n">updates2</span><span class="o">&gt;</span><span class="p">]</span>
+<span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="n">null</span>
+</pre></div>
+</div>
+<p>The &lt;json-value&gt; in <code class="docutils literal notranslate"><span class="pre">params</span></code> is the same as the value passed as the
+&lt;json-value&gt; in <code class="docutils literal notranslate"><span class="pre">params</span></code> for the corresponding <code class="docutils literal notranslate"><span class="pre">monitor</span></code> request.
+&lt;table-updates2&gt; is an object that maps from a table name to a &lt;table-update2&gt;.
+A &lt;table-update2&gt; is an object that maps from row’s UUID to a &lt;row-update2&gt;
+object. A &lt;row-update2&gt; is an object with one of the following members:</p>
+<dl class="docutils">
+<dt><code class="docutils literal notranslate"><span class="pre">&quot;initial&quot;:</span> <span class="pre">&lt;row&gt;</span></code></dt>
+<dd>present for <code class="docutils literal notranslate"><span class="pre">initial</span></code> updates</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">&quot;insert&quot;:</span> <span class="pre">&lt;row&gt;</span></code></dt>
+<dd>present for <code class="docutils literal notranslate"><span class="pre">insert</span></code> updates</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">&quot;delete&quot;:</span> <span class="pre">&lt;row&gt;</span></code></dt>
+<dd>present for <code class="docutils literal notranslate"><span class="pre">delete</span></code> updates</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">&quot;modify&quot;:</span> <span class="pre">&lt;row&gt;&quot;</span></code></dt>
+<dd>present for <code class="docutils literal notranslate"><span class="pre">modify</span></code> updates</dd>
+</dl>
+<p>The format of &lt;row&gt; is described in Section 5.1.</p>
+<p>&lt;row&gt; is always a null object for a <code class="docutils literal notranslate"><span class="pre">delete</span></code> update.  In <code class="docutils literal notranslate"><span class="pre">initial</span></code> and
+<code class="docutils literal notranslate"><span class="pre">insert</span></code> updates, &lt;row&gt; omits columns whose values equal the default value of
+the column type.</p>
+<p>For a <code class="docutils literal notranslate"><span class="pre">modify</span></code> update, &lt;row&gt; contains only the columns that are modified.
+&lt;row&gt; stores the difference between the old and new value for those columns, as
+described below.</p>
+<p>For columns with single value, the difference is the value of the new column.</p>
+<p>The difference between two sets are all elements that only belong to one of the
+sets.</p>
+<p>The difference between two maps are all key-value pairs whose keys appears in
+only one of the maps, plus the key-value pairs whose keys appear in both maps
+but with different values.  For the latter elements, &lt;row&gt; includes the value
+from the new column.</p>
+<p>Initial views of rows are not presented in update2 notifications, but in the
+response object to the <code class="docutils literal notranslate"><span class="pre">monitor_cond</span></code> request.  The formatting of the
+&lt;table-updates2&gt; object, however, is the same in either case.</p>
+</div>
+<div class="section" id="get-server-id">
+<h3>4.1.15 Get Server ID<a class="headerlink" href="#get-server-id" title="Permalink to this headline">¶</a></h3>
+<p>A new RPC method added in Open vSwitch version 2.7.  The request contains the
+following members:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;get_server_id&quot;</span>
+<span class="s2">&quot;params&quot;</span><span class="p">:</span> <span class="n">null</span>
+<span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">nonnull</span><span class="o">-</span><span class="n">json</span><span class="o">-</span><span class="n">value</span><span class="o">&gt;</span>
+</pre></div>
+</div>
+<p>The response object contains the following members:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;result&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;server_id&gt;&quot;</span>
+<span class="s2">&quot;error&quot;</span><span class="p">:</span> <span class="n">null</span>
+<span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="n">same</span> <span class="s2">&quot;id&quot;</span> <span class="k">as</span> <span class="n">request</span>
+</pre></div>
+</div>
+<p>&lt;server_id&gt; is JSON string that contains a UUID that uniquely identifies the
+running OVSDB server process.  A fresh UUID is generated when the process
+restarts.</p>
+</div>
+<div class="section" id="database-change-awareness">
+<h3>4.1.16 Database Change Awareness<a class="headerlink" href="#database-change-awareness" title="Permalink to this headline">¶</a></h3>
+<p>RFC 7047 does not provide a way for a client to find out about some kinds of
+configuration changes, such as about databases added or removed while a client
+is connected to the server, or databases changing between read/write and
+read-only due to a transition between active and backup roles.  Traditionally,
+<code class="docutils literal notranslate"><span class="pre">ovsdb-server</span></code> disconnects all of its clients when this happens, because this
+prompts a well-written client to reassess what is available from the server
+when it reconnects.</p>
+<p>OVS 2.9 provides a way for clients to keep track of these kinds of changes, by
+monitoring the <code class="docutils literal notranslate"><span class="pre">Database</span></code> table in the <code class="docutils literal notranslate"><span class="pre">_Server</span></code> database introduced in
+this release (see <code class="docutils literal notranslate"><span class="pre">ovsdb-server(5)</span></code> for details).  By itself, this does not
+suppress <code class="docutils literal notranslate"><span class="pre">ovsdb-server</span></code> disconnection behavior, because a client might
+monitor this database without understanding its special semantics.  Instead,
+<code class="docutils literal notranslate"><span class="pre">ovsdb-server</span></code> provides a special request:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;set_db_change_aware&quot;</span>
+<span class="s2">&quot;params&quot;</span><span class="p">:</span> <span class="p">[</span><span class="o">&lt;</span><span class="n">boolean</span><span class="o">&gt;</span><span class="p">]</span>
+<span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">nonnull</span><span class="o">-</span><span class="n">json</span><span class="o">-</span><span class="n">value</span><span class="o">&gt;</span>
+</pre></div>
+</div>
+<p>If the boolean in the request is true, it suppresses the connection-closing
+behavior for the current connection, and false restores the default behavior.
+The reply is always the same:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;result&quot;</span><span class="p">:</span> <span class="p">{}</span>
+<span class="s2">&quot;error&quot;</span><span class="p">:</span> <span class="n">null</span>
+<span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="n">same</span> <span class="s2">&quot;id&quot;</span> <span class="k">as</span> <span class="n">request</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="schema-conversion">
+<h3>4.1.17 Schema Conversion<a class="headerlink" href="#schema-conversion" title="Permalink to this headline">¶</a></h3>
+<p>Open vSwitch 2.9 adds a new JSON-RPC request to convert an online database from
+one schema to another.  The request contains the following members:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;convert&quot;</span>
+<span class="s2">&quot;params&quot;</span><span class="p">:</span> <span class="p">[</span><span class="o">&lt;</span><span class="n">db</span><span class="o">-</span><span class="n">name</span><span class="o">&gt;</span><span class="p">,</span> <span class="o">&lt;</span><span class="n">database</span><span class="o">-</span><span class="n">schema</span><span class="o">&gt;</span><span class="p">]</span>
+<span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">nonnull</span><span class="o">-</span><span class="n">json</span><span class="o">-</span><span class="n">value</span><span class="o">&gt;</span>
+</pre></div>
+</div>
+<p>Upon receipt, the server converts database &lt;db-name&gt; to schema
+&lt;database-schema&gt;.  The schema’s name must be &lt;db-name&gt;.  The conversion is
+atomic, consistent, isolated, and durable.  The data in the database must be
+valid when interpreted under &lt;database-schema&gt;, with only one exception: data
+for tables and columns that do not exist in the new schema are ignored.
+Columns that exist in &lt;database-schema&gt; but not in the database are set to
+their default values.  All of the new schema’s constraints apply in full.</p>
+<p>If the conversion is successful, the server notifies clients that use the
+<code class="docutils literal notranslate"><span class="pre">set_db_change_aware</span></code> RPC introduced in Open vSwitch 2.9 and cancels their
+outstanding transactions and monitors.  The server disconnects other clients,
+enabling them to notice the change when they reconnect.  The server sends the
+following reply:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;result&quot;</span><span class="p">:</span> <span class="p">{}</span>
+<span class="s2">&quot;error&quot;</span><span class="p">:</span> <span class="n">null</span>
+<span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="n">same</span> <span class="s2">&quot;id&quot;</span> <span class="k">as</span> <span class="n">request</span>
+</pre></div>
+</div>
+<p>If the conversion fails, then the server sends an error reply in the following
+form:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;result&quot;</span><span class="p">:</span> <span class="n">null</span>
+<span class="s2">&quot;error&quot;</span><span class="p">:</span> <span class="p">[</span><span class="o">&lt;</span><span class="n">error</span><span class="o">&gt;</span><span class="p">]</span>
+<span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="n">same</span> <span class="s2">&quot;id&quot;</span> <span class="k">as</span> <span class="n">request</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="notation">
+<h3>5.1 Notation<a class="headerlink" href="#notation" title="Permalink to this headline">¶</a></h3>
+<p>For &lt;condition&gt;, RFC 7047 only allows the use of <code class="docutils literal notranslate"><span class="pre">!=</span></code>, <code class="docutils literal notranslate"><span class="pre">==</span></code>, <code class="docutils literal notranslate"><span class="pre">includes</span></code>,
+and <code class="docutils literal notranslate"><span class="pre">excludes</span></code> operators with set types.  Open vSwitch 2.4 and later extend
+&lt;condition&gt; to allow the use of <code class="docutils literal notranslate"><span class="pre">&lt;</span></code>, <code class="docutils literal notranslate"><span class="pre">&lt;=</span></code>, <code class="docutils literal notranslate"><span class="pre">&gt;=</span></code>, and <code class="docutils literal notranslate"><span class="pre">&gt;</span></code> operators with
+columns with type “set of 0 or 1 integer” and “set of 0 or 1 real”.  These
+conditions evaluate to false when the column is empty, and otherwise as
+described in RFC 7047 for integer and real types.</p>
+<p>&lt;condition&gt; is specified in Section 5.1 in the RFC with the following change: A
+condition can be either a 3-element JSON array as described in the RFC or a
+boolean value. In case of an empty array an implicit true boolean value will be
+considered.</p>
+</div>
+<div class="section" id="wait-5-2-7-commit-5-2-9-comment">
+<h3>5.2.6 Wait, 5.2.7 Commit, 5.2.9 Comment<a class="headerlink" href="#wait-5-2-7-commit-5-2-9-comment" title="Permalink to this headline">¶</a></h3>
+<p>RFC 7047 says that the <code class="docutils literal notranslate"><span class="pre">wait</span></code>, <code class="docutils literal notranslate"><span class="pre">commit</span></code>, and <code class="docutils literal notranslate"><span class="pre">comment</span></code> operations have no
+corresponding result object.  This is not true.  Instead, when such an
+operation is successful, it yields a result object with no members.</p>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../contents.html">
+              <img class="logo" src="../_static/logo.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="../contents.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">ovsdb-server</a><ul>
+<li><a class="reference internal" href="#description">Description</a><ul>
+<li><a class="reference internal" href="#json-usage">3.1 JSON Usage</a></li>
+<li><a class="reference internal" href="#schema-format">3.2 Schema Format</a></li>
+<li><a class="reference internal" href="#wire-protocol">4 Wire Protocol</a></li>
+<li><a class="reference internal" href="#transact">4.1.3 Transact</a></li>
+<li><a class="reference internal" href="#monitor">4.1.5 Monitor</a></li>
+<li><a class="reference internal" href="#monitor-cancellation">4.1.7 Monitor Cancellation</a></li>
+<li><a class="reference internal" href="#monitor-cond">4.1.12 Monitor_cond</a></li>
+<li><a class="reference internal" href="#monitor-cond-change">4.1.13 Monitor_cond_change</a></li>
+<li><a class="reference internal" href="#update2-notification">4.1.14 Update2 notification</a></li>
+<li><a class="reference internal" href="#get-server-id">4.1.15 Get Server ID</a></li>
+<li><a class="reference internal" href="#database-change-awareness">4.1.16 Database Change Awareness</a></li>
+<li><a class="reference internal" href="#schema-conversion">4.1.17 Schema Conversion</a></li>
+<li><a class="reference internal" href="#notation">5.1 Notation</a></li>
+<li><a class="reference internal" href="#wait-5-2-7-commit-5-2-9-comment">5.2.6 Wait, 5.2.7 Commit, 5.2.9 Comment</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../contents.html">Documentation overview</a><ul>
+  <li><a href="index.html">Reference Guide</a><ul>
+      <li>Previous: <a href="ovs-vlan-test.8.html" title="previous chapter">ovs-vlan-test</a></li>
+      <li>Next: <a href="ovsdb.5.html" title="next chapter">ovsdb</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/ref/ovsdb-server.7.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, The Open vSwitch Development Community.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.4</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="../_sources/ref/ovsdb-server.7.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

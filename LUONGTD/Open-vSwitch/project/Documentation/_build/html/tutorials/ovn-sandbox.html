@@ -1,0 +1,235 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>OVN Sandbox &#8212; Open vSwitch 2.9.2 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="OVN OpenStack Tutorial" href="ovn-openstack.html" />
+    <link rel="prev" title="Open vSwitch Advanced Features" href="ovs-advanced.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="ovn-sandbox">
+<h1>OVN Sandbox<a class="headerlink" href="#ovn-sandbox" title="Permalink to this headline">¶</a></h1>
+<p>This tutorial shows you how to explore features using <code class="docutils literal notranslate"><span class="pre">ovs-sandbox</span></code> as a
+simulated test environment.  It’s assumed that you have an understanding of OVS
+before going through this tutorial. Detail about OVN is covered in
+<a class="reference external" href="http://openvswitch.org/support/dist-docs/ovn-architecture.7.html">ovn-architecture</a>, but this tutorial lets you quickly see it in action.</p>
+<div class="section" id="getting-started">
+<h2>Getting Started<a class="headerlink" href="#getting-started" title="Permalink to this headline">¶</a></h2>
+<p>For some general information about <code class="docutils literal notranslate"><span class="pre">ovs-sandbox</span></code>, see the “Getting Started”
+section of the <a class="reference external" href=":ref:`ovs-advanced`">tutorial</a>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">ovs-sandbox</span></code> does not include OVN support by default.  To enable OVN, you
+must pass the <code class="docutils literal notranslate"><span class="pre">--ovn</span></code> flag.  For example, if running it straight from the ovs
+git tree you would run:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ make sandbox SANDBOXFLAGS=&quot;--ovn&quot;
+</pre></div>
+</div>
+<p>Running the sandbox with OVN enabled does the following additional steps to the
+environment:</p>
+<ol class="arabic simple">
+<li>Creates the <code class="docutils literal notranslate"><span class="pre">OVN_Northbound</span></code> and <code class="docutils literal notranslate"><span class="pre">OVN_Southbound</span></code> databases as described in
+<a class="reference external" href="http://openvswitch.org/support/dist-docs/ovn-nb.5.html">ovn-nb(5)</a> and <a class="reference external" href="http://openvswitch.org/support/dist-docs/ovn-sb.5.html">ovn-sb(5)</a>.</li>
+<li>Creates a backup server for <code class="docutils literal notranslate"><span class="pre">OVN_Southbond</span></code> database. Sandbox launch
+screen provides the instructions on accessing the backup database.  However
+access to the backup server is not required to go through the tutorial.</li>
+<li>Creates the <code class="docutils literal notranslate"><span class="pre">hardware_vtep</span></code> database as described in <a class="reference external" href="http://openvswitch.org/support/dist-docs/vtep.5.html">vtep(5)</a>.</li>
+<li>Runs the <a class="reference external" href="http://openvswitch.org/support/dist-docs/ovn-northd.8.html">ovn-northd(8)</a>, <a class="reference external" href="http://openvswitch.org/support/dist-docs/ovn-controller.8.html">ovn-controller(8)</a>, and
+<a class="reference external" href="http://openvswitch.org/support/dist-docs/ovn-controller-vtep.8.html">ovn-controller-vtep(8)</a> daemons.</li>
+<li>Makes OVN and VTEP utilities available for use in the environment, including
+<a class="reference external" href="http://openvswitch.org/support/dist-docs/vtep-ctl.8.html">vtep-ctl(8)</a>, <a class="reference external" href="http://openvswitch.org/support/dist-docs/ovn-nbctl.8.html">ovn-nbctl(8)</a>, and <a class="reference external" href="http://openvswitch.org/support/dist-docs/ovn-sbctl.8.html">ovn-sbctl(8)</a>.</li>
+</ol>
+</div>
+<div class="section" id="using-gdb">
+<h2>Using GDB<a class="headerlink" href="#using-gdb" title="Permalink to this headline">¶</a></h2>
+<p>GDB support is not required to go through the tutorial. See the “Using GDB”
+section of the <a class="reference external" href=":ref:`ovs-advanced`">tutorial</a> for more info. Additional flags exist for launching
+the debugger for the OVN programs:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">--</span><span class="n">gdb</span><span class="o">-</span><span class="n">ovn</span><span class="o">-</span><span class="n">northd</span>
+<span class="o">--</span><span class="n">gdb</span><span class="o">-</span><span class="n">ovn</span><span class="o">-</span><span class="n">controller</span>
+<span class="o">--</span><span class="n">gdb</span><span class="o">-</span><span class="n">ovn</span><span class="o">-</span><span class="n">controller</span><span class="o">-</span><span class="n">vtep</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="creating-ovn-resources">
+<h2>Creating OVN Resources<a class="headerlink" href="#creating-ovn-resources" title="Permalink to this headline">¶</a></h2>
+<p>Once you have <code class="docutils literal notranslate"><span class="pre">ovs-sandbox</span></code> running with OVN enabled, you can start using OVN
+utilities to create resources in OVN.  As an example, we will create an
+environment that has two logical switches connected by a logical router.</p>
+<p>Create the first logical switch with one port:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ ovn-nbctl ls-add sw0
+$ ovn-nbctl lsp-add sw0 sw0-port1
+$ ovn-nbctl lsp-set-addresses sw0-port1 &quot;50:54:00:00:00:01 192.168.0.2&quot;
+</pre></div>
+</div>
+<p>Create the second logical switch with one port:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ ovn-nbctl ls-add sw1
+$ ovn-nbctl lsp-add sw1 sw1-port1
+$ ovn-nbctl lsp-set-addresses sw1-port1 &quot;50:54:00:00:00:03 11.0.0.2&quot;
+</pre></div>
+</div>
+<p>Create the logical router and attach both logical switches:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ ovn-nbctl lr-add lr0
+$ ovn-nbctl lrp-add lr0 lrp0 00:00:00:00:ff:01 192.168.0.1/24
+$ ovn-nbctl lsp-add sw0 lrp0-attachment
+$ ovn-nbctl lsp-set-type lrp0-attachment router
+$ ovn-nbctl lsp-set-addresses lrp0-attachment 00:00:00:00:ff:01
+$ ovn-nbctl lsp-set-options lrp0-attachment router-port=lrp0
+$ ovn-nbctl lrp-add lr0 lrp1 00:00:00:00:ff:02 11.0.0.1/24
+$ ovn-nbctl lsp-add sw1 lrp1-attachment
+$ ovn-nbctl lsp-set-type lrp1-attachment router
+$ ovn-nbctl lsp-set-addresses lrp1-attachment 00:00:00:00:ff:02
+$ ovn-nbctl lsp-set-options lrp1-attachment router-port=lrp1
+</pre></div>
+</div>
+<p>View a summary of OVN’s current logical configuration:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ ovn-nbctl show
+    switch 1396cf55-d176-4082-9a55-1c06cef626e4 (sw1)
+        port lrp1-attachment
+            addresses: [&quot;00:00:00:00:ff:02&quot;]
+        port sw1-port1
+            addresses: [&quot;50:54:00:00:00:03 11.0.0.2&quot;]
+    switch 2c9d6d03-09fc-4e32-8da6-305f129b0d53 (sw0)
+        port lrp0-attachment
+            addresses: [&quot;00:00:00:00:ff:01&quot;]
+        port sw0-port1
+            addresses: [&quot;50:54:00:00:00:01 192.168.0.2&quot;]
+    router f8377e8c-f75e-4fc8-8751-f3ea03c6dd98 (lr0)
+        port lrp0
+            mac: &quot;00:00:00:00:ff:01&quot;
+            networks: [&quot;192.168.0.1/24&quot;]
+        port lrp1
+            mac: &quot;00:00:00:00:ff:02&quot;
+            networks: [&quot;11.0.0.1/24&quot;]
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">tutorial</span></code> directory of the OVS source tree includes a script
+that runs all of the commands for you:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ ./ovn-setup.sh
+</pre></div>
+</div>
+</div>
+<div class="section" id="using-ovn-trace">
+<h2>Using ovn-trace<a class="headerlink" href="#using-ovn-trace" title="Permalink to this headline">¶</a></h2>
+<p>Once you have configured resources in OVN, try using <code class="docutils literal notranslate"><span class="pre">ovn-trace</span></code> to see
+how OVN would process a sample packet through its logical pipeline.</p>
+<p>For example, we can trace an IP packet from <code class="docutils literal notranslate"><span class="pre">sw0-port1</span></code> to <code class="docutils literal notranslate"><span class="pre">sw1-port1</span></code>.
+The <code class="docutils literal notranslate"><span class="pre">--minimal</span></code> output shows each visible action performed on the packet,
+which includes:</p>
+<ol class="arabic simple">
+<li>The logical router will decrement the IP TTL field.</li>
+<li>The logical router will change the source and destination
+MAC addresses to reflect the next hop.</li>
+<li>The packet will be output to <code class="docutils literal notranslate"><span class="pre">sw1-port1</span></code>.</li>
+</ol>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ ovn-trace --minimal sw0 &#39;inport == &quot;sw0-port1&quot; \
+&gt; &amp;&amp; eth.src == 50:54:00:00:00:01 &amp;&amp; ip4.src == 192.168.0.2 \
+&gt; &amp;&amp; eth.dst == 00:00:00:00:ff:01 &amp;&amp; ip4.dst == 11.0.0.2 \
+&gt; &amp;&amp; ip.ttl == 64&#39;
+
+# ip,reg14=0x1,vlan_tci=0x0000,dl_src=50:54:00:00:00:01,dl_dst=00:00:00:00:ff:01,nw_src=192.168.0.2,nw_dst=11.0.0.2,nw_proto=0,nw_tos=0,nw_ecn=0,nw_ttl=64
+ip.ttl--;
+eth.src = 00:00:00:00:ff:02;
+eth.dst = 50:54:00:00:00:03;
+output(&quot;sw1-port1&quot;);
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">ovn-trace</span></code> utility can also provide much more detail on how the packet
+would be processed through OVN’s logical pipeline, as well as correlate that
+to OpenFlow flows programmed by <code class="docutils literal notranslate"><span class="pre">ovn-controller</span></code>.  See the <a class="reference external" href="http://openvswitch.org/support/dist-docs/ovn-trace.8.html">ovn-trace(8)</a>
+man page for more detail.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../contents.html">
+              <img class="logo" src="../_static/logo.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="../contents.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">OVN Sandbox</a><ul>
+<li><a class="reference internal" href="#getting-started">Getting Started</a></li>
+<li><a class="reference internal" href="#using-gdb">Using GDB</a></li>
+<li><a class="reference internal" href="#creating-ovn-resources">Creating OVN Resources</a></li>
+<li><a class="reference internal" href="#using-ovn-trace">Using ovn-trace</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../contents.html">Documentation overview</a><ul>
+  <li><a href="index.html">Tutorials</a><ul>
+      <li>Previous: <a href="ovs-advanced.html" title="previous chapter">Open vSwitch Advanced Features</a></li>
+      <li>Next: <a href="ovn-openstack.html" title="next chapter">OVN OpenStack Tutorial</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/tutorials/ovn-sandbox.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, The Open vSwitch Development Community.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.4</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="../_sources/tutorials/ovn-sandbox.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

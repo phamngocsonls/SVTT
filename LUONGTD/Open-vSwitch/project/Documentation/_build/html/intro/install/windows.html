@@ -1,0 +1,790 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Open vSwitch on Windows &#8212; Open vSwitch 2.9.2 documentation</title>
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" src="../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Open vSwitch on Citrix XenServer" href="xenserver.html" />
+    <link rel="prev" title="Open vSwitch on NetBSD" href="netbsd.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="open-vswitch-on-windows">
+<h1>Open vSwitch on Windows<a class="headerlink" href="#open-vswitch-on-windows" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="build-requirements">
+<span id="windows-build-reqs"></span><h2>Build Requirements<a class="headerlink" href="#build-requirements" title="Permalink to this headline">¶</a></h2>
+<p>Open vSwitch on Linux uses autoconf and automake for generating Makefiles.  It
+will be useful to maintain the same build system while compiling on Windows
+too.  One approach is to compile Open vSwitch in a MinGW environment that
+contains autoconf and automake utilities and then use Visual C++ as a compiler
+and linker.</p>
+<p>The following explains the steps in some detail.</p>
+<ul>
+<li><p class="first">Mingw</p>
+<p>Install Mingw on a Windows machine by following the instructions on
+<a class="reference external" href="http://www.mingw.org/wiki/Getting_Started">mingw.org</a>.</p>
+<p>This should install mingw at <code class="docutils literal notranslate"><span class="pre">C:\Mingw</span></code> and msys at <code class="docutils literal notranslate"><span class="pre">C:\Mingw\msys</span></code>.  Add
+<code class="docutils literal notranslate"><span class="pre">C:\MinGW\bin</span></code> and <code class="docutils literal notranslate"><span class="pre">C:\Mingw\msys\1.0\bin</span></code> to PATH environment variable
+of Windows.</p>
+<p>You can either use the MinGW installer or the command line utility
+<code class="docutils literal notranslate"><span class="pre">mingw-get</span></code> to install both the base packages and additional packages like
+automake and autoconf(version 2.68).</p>
+<p>Also make sure that <code class="docutils literal notranslate"><span class="pre">/mingw</span></code> mount point exists. If its not, please
+add/create the following entry in <code class="docutils literal notranslate"><span class="pre">/etc/fstab</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s1">&#39;C:/MinGW /mingw&#39;</span><span class="o">.</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first">Python</p>
+<p>Install the latest Python 2.x from python.org and verify that its path is
+part of Windows’ PATH environment variable.
+We require that you have Python six and pypiwin32 libraries installed.
+The libraries can be installed via pip command:</p>
+<blockquote>
+<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ pip install six
+$ pip install pypiwin32
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+<li><p class="first">Visual Studio</p>
+<p>You will need at least Visual Studio 2013 (update 4) to compile userspace
+binaries.  In addition to that, if you want to compile the kernel module you
+will also need to install Windows Driver Kit (WDK) 8.1 Update.</p>
+<p>It is important to get the Visual Studio related environment variables and to
+have the $PATH inside the bash to point to the proper compiler and linker.
+One easy way to achieve this for VS2013 is to get into the “VS2013 x86 Native
+Tools Command Prompt” (in a default installation of Visual Studio 2013 this
+can be found under the following location: <code class="docutils literal notranslate"><span class="pre">C:\Program</span> <span class="pre">Files</span> <span class="pre">(x86)\Microsoft</span>
+<span class="pre">Visual</span> <span class="pre">Studio</span> <span class="pre">12.0\Common7\Tools\Shortcuts</span></code>) and through it enter into the
+bash shell available from msys by typing <code class="docutils literal notranslate"><span class="pre">bash</span> <span class="pre">--login</span></code>.</p>
+<p>There is support for generating 64 bit binaries too.  To compile under x64,
+open the “VS2013 x64 Native Tools Command Prompt” (if your current running OS
+is 64 bit) or “VS2013 x64 Cross Tools Command Prompt” (if your current
+running OS is not 64 bit) instead of opening its x86 variant.  This will
+point the compiler and the linker to their 64 bit equivalent.</p>
+<p>If after the above step, a <code class="docutils literal notranslate"><span class="pre">which</span> <span class="pre">link</span></code> inside MSYS’s bash says,
+<code class="docutils literal notranslate"><span class="pre">/bin/link.exe</span></code>, rename <code class="docutils literal notranslate"><span class="pre">/bin/link.exe</span></code> to something else so that the
+Visual studio’s linker is used. You should also see a ‘which sort’ report
+<code class="docutils literal notranslate"><span class="pre">/bin/sort.exe</span></code>.</p>
+</li>
+<li><p class="first">pthreads-win32</p>
+<p>For pthread support, install the library, dll and includes of pthreads-win32
+project from <a class="reference external" href="ftp://sourceware.org/pub/pthreads-win32/prebuilt-dll-2-9-1-release">sourceware</a> to a
+directory (e.g.: <code class="docutils literal notranslate"><span class="pre">C:/pthread</span></code>). You should add the pthread-win32’s dll path
+(e.g.: <code class="docutils literal notranslate"><span class="pre">C:\pthread\dll\x86</span></code>) to the Windows’ PATH environment variable.</p>
+</li>
+<li><p class="first">OpenSSL</p>
+<p>To get SSL support for Open vSwitch on Windows, you will need to install
+<a class="reference external" href="https://wiki.openssl.org/index.php/Binaries">OpenSSL for Windows</a></p>
+<p>Note down the directory where OpenSSL is installed (e.g.:
+<code class="docutils literal notranslate"><span class="pre">C:/OpenSSL-Win32</span></code>) for later use.</p>
+</li>
+</ul>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Commands prefixed by <code class="docutils literal notranslate"><span class="pre">$</span></code> must be run in the Bash shell provided by MinGW.
+Open vSwitch commands, such as <code class="docutils literal notranslate"><span class="pre">ovs-dpctl</span></code> are shown running under the DOS
+shell (<code class="docutils literal notranslate"><span class="pre">cmd.exe</span></code>), as indicated by the <code class="docutils literal notranslate"><span class="pre">&gt;</span></code> prefix, but will also run
+under Bash. The remainder, prefixed by <code class="docutils literal notranslate"><span class="pre">&gt;</span></code>, are PowerShell commands and
+must be run in PowerShell.</p>
+</div>
+</div>
+<div class="section" id="install-requirements">
+<h2>Install Requirements<a class="headerlink" href="#install-requirements" title="Permalink to this headline">¶</a></h2>
+<ul>
+<li><p class="first">Share network adaptors</p>
+<p>We require that you don’t disable the “Allow management operating system to
+share this network adapter” under ‘Virtual Switch Properties’ &gt; ‘Connection
+type: External network’, in the HyperV virtual network switch configuration.</p>
+</li>
+<li><p class="first">Checksum Offloads</p>
+<p>While there is some support for checksum/segmentation offloads in software,
+this is still a work in progress. Till the support is complete we recommend
+disabling TX/RX offloads for both the VM’s as well as the HyperV.</p>
+</li>
+</ul>
+</div>
+<div class="section" id="bootstrapping">
+<h2>Bootstrapping<a class="headerlink" href="#bootstrapping" title="Permalink to this headline">¶</a></h2>
+<p>This step is not needed if you have downloaded a released tarball. If
+you pulled the sources directly from an Open vSwitch Git tree or got a
+Git tree snapshot, then run boot.sh in the top source directory to build
+the “configure” script:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ ./boot.sh
+</pre></div>
+</div>
+</div>
+<div class="section" id="configuring">
+<span id="windows-configuring"></span><h2>Configuring<a class="headerlink" href="#configuring" title="Permalink to this headline">¶</a></h2>
+<p>Configure the package by running the configure script.  You should provide some
+configure options to choose the right compiler, linker, libraries, Open vSwitch
+component installation directories, etc. For example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ ./configure CC=./build-aux/cccl LD=&quot;$(which link)&quot; \
+    LIBS=&quot;-lws2_32 -liphlpapi -lwbemuuid -lole32 -loleaut32&quot; \
+    --prefix=&quot;C:/openvswitch/usr&quot; \
+    --localstatedir=&quot;C:/openvswitch/var&quot; \
+    --sysconfdir=&quot;C:/openvswitch/etc&quot; \
+    --with-pthread=&quot;C:/pthread&quot;
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">By default, the above enables compiler optimization for fast code.  For
+default compiler optimization, pass the <code class="docutils literal notranslate"><span class="pre">--with-debug</span></code> configure option.</p>
+</div>
+<p>To configure with SSL support, add the requisite additional options:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ ./configure CC=./build-aux/cccl LD=&quot;`which link`&quot;  \
+    LIBS=&quot;-lws2_32 -liphlpapi -lwbemuuid -lole32 -loleaut32&quot; \
+    --prefix=&quot;C:/openvswitch/usr&quot; \
+    --localstatedir=&quot;C:/openvswitch/var&quot;
+    --sysconfdir=&quot;C:/openvswitch/etc&quot; \
+    --with-pthread=&quot;C:/pthread&quot; \
+    --enable-ssl --with-openssl=&quot;C:/OpenSSL-Win32&quot;
+</pre></div>
+</div>
+<p>Finally, to the kernel module also:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ ./configure CC=./build-aux/cccl LD=&quot;`which link`&quot; \
+    LIBS=&quot;-lws2_32 -liphlpapi -lwbemuuid -lole32 -loleaut32&quot; \
+    --prefix=&quot;C:/openvswitch/usr&quot; \
+    --localstatedir=&quot;C:/openvswitch/var&quot; \
+    --sysconfdir=&quot;C:/openvswitch/etc&quot; \
+    --with-pthread=&quot;C:/pthread&quot; \
+    --enable-ssl --with-openssl=&quot;C:/OpenSSL-Win32&quot; \
+    --with-vstudiotarget=&quot;&lt;target type&gt;&quot;
+</pre></div>
+</div>
+<p>Possible values for <code class="docutils literal notranslate"><span class="pre">&lt;target</span> <span class="pre">type&gt;</span></code> are: <code class="docutils literal notranslate"><span class="pre">Debug</span></code> and <code class="docutils literal notranslate"><span class="pre">Release</span></code></p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">You can directly use the Visual Studio 2013 IDE to compile the kernel
+datapath. Open the ovsext.sln file in the IDE and build the solution.</p>
+</div>
+<p>Refer to <a class="reference internal" href="general.html"><span class="doc">Open vSwitch on Linux, FreeBSD and NetBSD</span></a> for information on additional configuration options.</p>
+</div>
+<div class="section" id="building">
+<span id="windows-building"></span><h2>Building<a class="headerlink" href="#building" title="Permalink to this headline">¶</a></h2>
+<p>Once correctly configured, building Open vSwitch on Windows is similar to
+building on Linux, FreeBSD, or NetBSD.</p>
+<ol class="arabic">
+<li><p class="first">Run make for the ported executables in the top source directory, e.g.:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ make
+</pre></div>
+</div>
+<p>For faster compilation, you can pass the <code class="docutils literal notranslate"><span class="pre">-j</span></code> argument to make.  For
+example, to run 4 jobs simultaneously, run <code class="docutils literal notranslate"><span class="pre">make</span> <span class="pre">-j4</span></code>.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>MSYS 1.0.18 has a bug that causes parallel make to hang. You can overcome
+this by downgrading to MSYS 1.0.17.  A simple way to downgrade is to exit
+all MinGW sessions and then run the below command from MSVC developers
+command prompt.:</p>
+<div class="last highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&gt;</span> <span class="n">mingw</span><span class="o">-</span><span class="n">get</span> <span class="n">upgrade</span> <span class="n">msys</span><span class="o">-</span><span class="n">core</span><span class="o">-</span><span class="nb">bin</span><span class="o">=</span><span class="mf">1.0</span><span class="o">.</span><span class="mi">17</span><span class="o">-</span><span class="mi">1</span>
+</pre></div>
+</div>
+</div>
+</li>
+<li><p class="first">To run all the unit tests in Open vSwitch, one at a time:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ make check
+</pre></div>
+</div>
+<p>To run all the unit tests in Open vSwitch, up to 8 in parallel:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ make check TESTSUITEFLAGS=&quot;-j8&quot;
+</pre></div>
+</div>
+</li>
+<li><p class="first">To install all the compiled executables on the local machine, run:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ make install
+</pre></div>
+</div>
+</li>
+</ol>
+<blockquote>
+<div><div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">This will install the Open vSwitch executables in <code class="docutils literal notranslate"><span class="pre">C:/openvswitch</span></code>.  You
+can add <code class="docutils literal notranslate"><span class="pre">C:\openvswitch\usr\bin</span></code> and <code class="docutils literal notranslate"><span class="pre">C:\openvswitch\usr\sbin</span></code> to
+Windows’ PATH environment variable for easy access.</p>
+</div>
+</div></blockquote>
+<div class="section" id="the-kernel-module">
+<h3>The Kernel Module<a class="headerlink" href="#the-kernel-module" title="Permalink to this headline">¶</a></h3>
+<p>If you are building the kernel module, you will need to copy the below files to
+the target Hyper-V machine.</p>
+<ul class="simple">
+<li><code class="docutils literal notranslate"><span class="pre">./datapath-windows/x64/Win8.1Debug/package/ovsext.inf</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">./datapath-windows/x64/Win8.1Debug/package/OVSExt.sys</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">./datapath-windows/x64/Win8.1Debug/package/ovsext.cat</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">./datapath-windows/misc/install.cmd</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">./datapath-windows/misc/uninstall.cmd</span></code></li>
+</ul>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The above path assumes that the kernel module has been built using Windows
+DDK 8.1 in Debug mode. Change the path appropriately, if a different WDK has
+been used.</p>
+</div>
+<p>Now run <code class="docutils literal notranslate"><span class="pre">./uninstall.cmd</span></code> to remove the old extension. Once complete, run
+<code class="docutils literal notranslate"><span class="pre">./install.cmd</span></code> to insert the new one.  For this to work you will have to
+turn on <code class="docutils literal notranslate"><span class="pre">TESTSIGNING</span></code> boot option or ‘Disable Driver Signature
+Enforcement’ during boot.  The following commands can be used:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&gt;</span> <span class="n">bcdedit</span> <span class="o">/</span><span class="nb">set</span> <span class="n">LOADOPTIONS</span> <span class="n">DISABLE_INTEGRITY_CHECKS</span>
+<span class="o">&gt;</span> <span class="n">bcdedit</span> <span class="o">/</span><span class="nb">set</span> <span class="n">TESTSIGNING</span> <span class="n">ON</span>
+<span class="o">&gt;</span> <span class="n">bcdedit</span> <span class="o">/</span><span class="nb">set</span> <span class="n">nointegritychecks</span> <span class="n">ON</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">You may have to restart the machine for the settings to take effect.</p>
+</div>
+<p>In the Virtual Switch Manager configuration you can enable the Open vSwitch
+Extension on an existing switch or create a new switch.  If you are using an
+existing switch, make sure to enable the “Allow Management OS” option for VXLAN
+to work (covered later).</p>
+<p>The command to create a new switch named ‘OVS-Extended-Switch’ using a physical
+NIC named ‘Ethernet 1’ is:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">PS</span> <span class="o">&gt;</span> <span class="n">New</span><span class="o">-</span><span class="n">VMSwitch</span> <span class="s2">&quot;OVS-Extended-Switch&quot;</span> <span class="o">-</span><span class="n">NetAdapterName</span> <span class="s2">&quot;Ethernet 1&quot;</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">You can obtain the list of physical NICs on the host using ‘Get-NetAdapter’
+command.</p>
+</div>
+<p>In the properties of any switch, you should should now see “Open vSwitch
+Extension” under ‘Extensions’.  Click the check box to enable the extension.
+An alternative way to do the same is to run the following command:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">PS</span> <span class="o">&gt;</span> <span class="n">Enable</span><span class="o">-</span><span class="n">VMSwitchExtension</span> <span class="s2">&quot;Open vSwitch Extension&quot;</span> <span class="n">OVS</span><span class="o">-</span><span class="n">Extended</span><span class="o">-</span><span class="n">Switch</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">If you enabled the extension using the command line, a delay of a few
+seconds has been observed for the change to be reflected in the UI.  This is
+not a bug in Open vSwitch.</p>
+</div>
+</div>
+</div>
+<div class="section" id="starting">
+<h2>Starting<a class="headerlink" href="#starting" title="Permalink to this headline">¶</a></h2>
+<div class="admonition important">
+<p class="first admonition-title">Important</p>
+<p class="last">The following steps assume that you have installed the Open vSwitch
+utilities in the local machine via ‘make install’.</p>
+</div>
+<p>Before starting ovs-vswitchd itself, you need to start its configuration
+database, ovsdb-server. Each machine on which Open vSwitch is installed should
+run its own copy of ovsdb-server. Before ovsdb-server itself can be started,
+configure a database that it can use:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&gt;</span> <span class="n">ovsdb</span><span class="o">-</span><span class="n">tool</span> <span class="n">create</span> <span class="n">C</span><span class="p">:</span>\<span class="n">openvswitch</span>\<span class="n">etc</span>\<span class="n">openvswitch</span>\<span class="n">conf</span><span class="o">.</span><span class="n">db</span> \
+    <span class="n">C</span><span class="p">:</span>\<span class="n">openvswitch</span>\<span class="n">usr</span>\<span class="n">share</span>\<span class="n">openvswitch</span>\<span class="n">vswitch</span><span class="o">.</span><span class="n">ovsschema</span>
+</pre></div>
+</div>
+<p>Configure ovsdb-server to use database created above and to listen on a Unix
+domain socket:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&gt;</span> <span class="n">ovsdb</span><span class="o">-</span><span class="n">server</span> <span class="o">-</span><span class="n">vfile</span><span class="p">:</span><span class="n">info</span> <span class="o">--</span><span class="n">remote</span><span class="o">=</span><span class="n">punix</span><span class="p">:</span><span class="n">db</span><span class="o">.</span><span class="n">sock</span> <span class="o">--</span><span class="n">log</span><span class="o">-</span><span class="n">file</span> \
+    <span class="o">--</span><span class="n">pidfile</span> <span class="o">--</span><span class="n">detach</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The logfile is created at <code class="docutils literal notranslate"><span class="pre">C:/openvswitch/var/log/openvswitch/</span></code></p>
+</div>
+<p>Initialize the database using ovs-vsctl. This is only necessary the first time
+after you create the database with ovsdb-tool, though running it at any time is
+harmless:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&gt;</span> <span class="n">ovs</span><span class="o">-</span><span class="n">vsctl</span> <span class="o">--</span><span class="n">no</span><span class="o">-</span><span class="n">wait</span> <span class="n">init</span>
+</pre></div>
+</div>
+<div class="admonition tip">
+<p class="first admonition-title">Tip</p>
+<p>If you would later like to terminate the started ovsdb-server, run:</p>
+<div class="last highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&gt;</span> <span class="n">ovs</span><span class="o">-</span><span class="n">appctl</span> <span class="o">-</span><span class="n">t</span> <span class="n">ovsdb</span><span class="o">-</span><span class="n">server</span> <span class="n">exit</span>
+</pre></div>
+</div>
+</div>
+<p>Start the main Open vSwitch daemon, telling it to connect to the same Unix
+domain socket:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&gt;</span> <span class="n">ovs</span><span class="o">-</span><span class="n">vswitchd</span> <span class="o">-</span><span class="n">vfile</span><span class="p">:</span><span class="n">info</span> <span class="o">--</span><span class="n">log</span><span class="o">-</span><span class="n">file</span> <span class="o">--</span><span class="n">pidfile</span> <span class="o">--</span><span class="n">detach</span>
+</pre></div>
+</div>
+<div class="admonition tip">
+<p class="first admonition-title">Tip</p>
+<p>If you would like to terminate the started ovs-vswitchd, run:</p>
+<div class="last highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&gt;</span> <span class="n">ovs</span><span class="o">-</span><span class="n">appctl</span> <span class="n">exit</span>
+</pre></div>
+</div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The logfile is created at <code class="docutils literal notranslate"><span class="pre">C:/openvswitch/var/log/openvswitch/</span></code></p>
+</div>
+</div>
+<div class="section" id="validating">
+<h2>Validating<a class="headerlink" href="#validating" title="Permalink to this headline">¶</a></h2>
+<p>At this point you can use ovs-vsctl to set up bridges and other Open vSwitch
+features.</p>
+<div class="section" id="add-bridges">
+<h3>Add bridges<a class="headerlink" href="#add-bridges" title="Permalink to this headline">¶</a></h3>
+<p>Let’s start by creating an integration bridge, <code class="docutils literal notranslate"><span class="pre">br-int</span></code> and a PIF bridge,
+<code class="docutils literal notranslate"><span class="pre">br-pif</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&gt;</span> <span class="n">ovs</span><span class="o">-</span><span class="n">vsctl</span> <span class="n">add</span><span class="o">-</span><span class="n">br</span> <span class="n">br</span><span class="o">-</span><span class="nb">int</span>
+<span class="o">&gt;</span> <span class="n">ovs</span><span class="o">-</span><span class="n">vsctl</span> <span class="n">add</span><span class="o">-</span><span class="n">br</span> <span class="n">br</span><span class="o">-</span><span class="n">pif</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">There’s a known bug that running the ovs-vsctl command does not terminate.
+This is generally solved by having ovs-vswitchd running.  If you face the
+issue despite that, hit Ctrl-C to terminate ovs-vsctl and check the output
+to see if your command succeeded.</p>
+</div>
+<p>Validate that ports are added by dumping from both ovs-dpctl and ovs-vsctl:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&gt;</span> <span class="n">ovs</span><span class="o">-</span><span class="n">dpctl</span> <span class="n">show</span>
+<span class="n">system</span><span class="nd">@ovs</span><span class="o">-</span><span class="n">system</span><span class="p">:</span>
+        <span class="n">lookups</span><span class="p">:</span> <span class="n">hit</span><span class="p">:</span><span class="mi">0</span> <span class="n">missed</span><span class="p">:</span><span class="mi">0</span> <span class="n">lost</span><span class="p">:</span><span class="mi">0</span>
+        <span class="n">flows</span><span class="p">:</span> <span class="mi">0</span>
+        <span class="n">port</span> <span class="mi">2</span><span class="p">:</span> <span class="n">br</span><span class="o">-</span><span class="n">pif</span> <span class="p">(</span><span class="n">internal</span><span class="p">)</span>     <span class="o">&lt;&lt;&lt;</span> <span class="n">internal</span> <span class="n">port</span> <span class="n">on</span> <span class="s1">&#39;br-pif&#39;</span> <span class="n">bridge</span>
+        <span class="n">port</span> <span class="mi">1</span><span class="p">:</span> <span class="n">br</span><span class="o">-</span><span class="nb">int</span> <span class="p">(</span><span class="n">internal</span><span class="p">)</span>     <span class="o">&lt;&lt;&lt;</span> <span class="n">internal</span> <span class="n">port</span> <span class="n">on</span> <span class="s1">&#39;br-int&#39;</span> <span class="n">bridge</span>
+
+<span class="o">&gt;</span> <span class="n">ovs</span><span class="o">-</span><span class="n">vsctl</span> <span class="n">show</span>
+<span class="n">a56ec7b5</span><span class="o">-</span><span class="mi">5</span><span class="n">b1f</span><span class="o">-</span><span class="mi">49</span><span class="n">ec</span><span class="o">-</span><span class="n">a795</span><span class="o">-</span><span class="mi">79</span><span class="n">f6eb63228b</span>
+    <span class="n">Bridge</span> <span class="n">br</span><span class="o">-</span><span class="n">pif</span>
+        <span class="n">Port</span> <span class="n">br</span><span class="o">-</span><span class="n">pif</span>
+            <span class="n">Interface</span> <span class="n">br</span><span class="o">-</span><span class="n">pif</span>
+                <span class="nb">type</span><span class="p">:</span> <span class="n">internal</span>
+    <span class="n">Bridge</span> <span class="n">br</span><span class="o">-</span><span class="nb">int</span>
+        <span class="n">Port</span> <span class="n">br</span><span class="o">-</span><span class="nb">int</span>
+            <span class="n">Interface</span> <span class="n">br</span><span class="o">-</span><span class="nb">int</span>
+                <span class="nb">type</span><span class="p">:</span> <span class="n">internal</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">There’s a known bug that the ports added to OVSDB via ovs-vsctl don’t get to
+the kernel datapath immediately, ie. they don’t show up in the output of
+<code class="docutils literal notranslate"><span class="pre">ovs-dpctl</span> <span class="pre">show</span></code> even though they show up in output of <code class="docutils literal notranslate"><span class="pre">ovs-vsctl</span> <span class="pre">show</span></code>.
+In order to workaround this issue, restart ovs-vswitchd. (You can terminate
+ovs-vswitchd by running <code class="docutils literal notranslate"><span class="pre">ovs-appctl</span> <span class="pre">exit</span></code>.)</p>
+</div>
+</div>
+<div class="section" id="add-physicals-nics-pif">
+<h3>Add physicals NICs (PIF)<a class="headerlink" href="#add-physicals-nics-pif" title="Permalink to this headline">¶</a></h3>
+<p>Now, let’s add the physical NIC and the internal port to <code class="docutils literal notranslate"><span class="pre">br-pif</span></code>. In OVS for
+Hyper-V, we use the name of the adapter on top of which the Hyper-V virtual
+switch was created, as a special name to refer to the physical NICs connected
+to the Hyper-V switch, e.g. if we created the Hyper-V virtual switch on top of
+the adapter named <code class="docutils literal notranslate"><span class="pre">Ethernet0</span></code>, then in OVS we use that name (<code class="docutils literal notranslate"><span class="pre">Ethernet0</span></code>)
+as a special name to refer to that adapter.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">We assume that the OVS extension is enabled Hyper-V switch.</p>
+</div>
+<p>Internal ports are the virtual adapters created on the Hyper-V switch using the
+<code class="docutils literal notranslate"><span class="pre">ovs-vsctl</span> <span class="pre">add-br</span> <span class="pre">&lt;bridge&gt;</span></code> command. By default they are created under the
+following rule “&lt;name of bridge&gt;” and the adapters are disabled. One needs to
+enable them and set the corresponding values to it to make them IP-able.</p>
+<p>As a whole example, if we issue the following in a powershell console:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">PS</span> <span class="o">&gt;</span> <span class="n">Get</span><span class="o">-</span><span class="n">NetAdapter</span> <span class="o">|</span> <span class="n">select</span> <span class="n">Name</span><span class="p">,</span><span class="n">InterfaceDescription</span>
+<span class="n">Name</span>                   <span class="n">InterfaceDescription</span>
+<span class="o">----</span>                   <span class="o">--------------------</span>
+<span class="n">Ethernet1</span>              <span class="n">Intel</span><span class="p">(</span><span class="n">R</span><span class="p">)</span> <span class="n">PRO</span><span class="o">/</span><span class="mi">1000</span> <span class="n">MT</span> <span class="n">Network</span> <span class="n">Connection</span>
+<span class="n">br</span><span class="o">-</span><span class="n">pif</span>                 <span class="n">Hyper</span><span class="o">-</span><span class="n">V</span> <span class="n">Virtual</span> <span class="n">Ethernet</span> <span class="n">Adapter</span> <span class="c1">#2</span>
+<span class="n">Ethernet0</span>              <span class="n">Intel</span><span class="p">(</span><span class="n">R</span><span class="p">)</span> <span class="n">PRO</span><span class="o">/</span><span class="mi">1000</span> <span class="n">MT</span> <span class="n">Network</span> <span class="n">Connection</span> <span class="c1">#2</span>
+<span class="n">br</span><span class="o">-</span><span class="nb">int</span>                 <span class="n">Hyper</span><span class="o">-</span><span class="n">V</span> <span class="n">Virtual</span> <span class="n">Ethernet</span> <span class="n">Adapter</span> <span class="c1">#3</span>
+
+<span class="n">PS</span> <span class="o">&gt;</span> <span class="n">Get</span><span class="o">-</span><span class="n">VMSwitch</span>
+<span class="n">Name</span>     <span class="n">SwitchType</span> <span class="n">NetAdapterInterfaceDescription</span>
+<span class="o">----</span>     <span class="o">----------</span> <span class="o">------------------------------</span>
+<span class="n">external</span> <span class="n">External</span>   <span class="n">Intel</span><span class="p">(</span><span class="n">R</span><span class="p">)</span> <span class="n">PRO</span><span class="o">/</span><span class="mi">1000</span> <span class="n">MT</span> <span class="n">Network</span> <span class="n">Connection</span> <span class="c1">#2</span>
+</pre></div>
+</div>
+<p>We can see that we have a switch(external) created upon adapter name
+‘Ethernet0’ with the internal ports under name ‘br-pif’ and ‘br-int’. Thus
+resulting into the following ovs-vsctl commands:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&gt;</span> <span class="n">ovs</span><span class="o">-</span><span class="n">vsctl</span> <span class="n">add</span><span class="o">-</span><span class="n">port</span> <span class="n">br</span><span class="o">-</span><span class="n">pif</span> <span class="n">Ethernet0</span>
+</pre></div>
+</div>
+<p>Dumping the ports should show the additional ports that were just added:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&gt;</span> <span class="n">ovs</span><span class="o">-</span><span class="n">dpctl</span> <span class="n">show</span>
+<span class="n">system</span><span class="nd">@ovs</span><span class="o">-</span><span class="n">system</span><span class="p">:</span>
+        <span class="n">lookups</span><span class="p">:</span> <span class="n">hit</span><span class="p">:</span><span class="mi">0</span> <span class="n">missed</span><span class="p">:</span><span class="mi">0</span> <span class="n">lost</span><span class="p">:</span><span class="mi">0</span>
+        <span class="n">flows</span><span class="p">:</span> <span class="mi">0</span>
+        <span class="n">port</span> <span class="mi">2</span><span class="p">:</span> <span class="n">br</span><span class="o">-</span><span class="n">pif</span> <span class="p">(</span><span class="n">internal</span><span class="p">)</span>               <span class="o">&lt;&lt;&lt;</span> <span class="n">internal</span> <span class="n">port</span>
+                                                    <span class="n">adapter</span> <span class="n">on</span>
+                                                    <span class="n">Hyper</span><span class="o">-</span><span class="n">V</span> <span class="n">switch</span>
+        <span class="n">port</span> <span class="mi">1</span><span class="p">:</span> <span class="n">br</span><span class="o">-</span><span class="nb">int</span> <span class="p">(</span><span class="n">internal</span><span class="p">)</span>               <span class="o">&lt;&lt;&lt;</span> <span class="n">internal</span> <span class="n">port</span>
+                                                    <span class="n">adapter</span> <span class="n">on</span>
+                                                    <span class="n">Hyper</span><span class="o">-</span><span class="n">V</span> <span class="n">switch</span>
+        <span class="n">port</span> <span class="mi">3</span><span class="p">:</span> <span class="n">Ethernet0</span>                       <span class="o">&lt;&lt;&lt;</span> <span class="n">Physical</span> <span class="n">NIC</span>
+
+<span class="o">&gt;</span> <span class="n">ovs</span><span class="o">-</span><span class="n">vsctl</span> <span class="n">show</span>
+<span class="n">a56ec7b5</span><span class="o">-</span><span class="mi">5</span><span class="n">b1f</span><span class="o">-</span><span class="mi">49</span><span class="n">ec</span><span class="o">-</span><span class="n">a795</span><span class="o">-</span><span class="mi">79</span><span class="n">f6eb63228b</span>
+    <span class="n">Bridge</span> <span class="n">br</span><span class="o">-</span><span class="n">pif</span>
+        <span class="n">Port</span> <span class="n">br</span><span class="o">-</span><span class="n">pif</span>
+            <span class="n">Interface</span> <span class="n">br</span><span class="o">-</span><span class="n">pif</span>
+                <span class="nb">type</span><span class="p">:</span> <span class="n">internal</span>
+        <span class="n">Port</span> <span class="s2">&quot;Ethernet0&quot;</span>
+            <span class="n">Interface</span> <span class="s2">&quot;Ethernet0&quot;</span>
+    <span class="n">Bridge</span> <span class="n">br</span><span class="o">-</span><span class="nb">int</span>
+        <span class="n">Port</span> <span class="n">br</span><span class="o">-</span><span class="nb">int</span>
+            <span class="n">Interface</span> <span class="n">br</span><span class="o">-</span><span class="nb">int</span>
+                <span class="nb">type</span><span class="p">:</span> <span class="n">internal</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="add-virtual-interfaces-vifs">
+<h3>Add virtual interfaces (VIFs)<a class="headerlink" href="#add-virtual-interfaces-vifs" title="Permalink to this headline">¶</a></h3>
+<p>Adding VIFs to openvswitch is a two step procedure.  The first step is to
+assign a ‘OVS port name’ which is a unique name across all VIFs on this
+Hyper-V.  The next step is to add the VIF to the ovsdb using its ‘OVS port
+name’ as key.</p>
+<p>First, assign a unique ‘OVS port name’ to the VIF. The VIF needs to have been
+disconnected from the Hyper-V switch before assigning a ‘OVS port name’ to it.
+In the example below, we assign a ‘OVS port name’ called <code class="docutils literal notranslate"><span class="pre">ovs-port-a</span></code> to a
+VIF on a VM <code class="docutils literal notranslate"><span class="pre">VM1</span></code>.  By using index 0 for <code class="docutils literal notranslate"><span class="pre">$vnic</span></code>, the first VIF of the VM
+is being addressed.  After assigning the name <code class="docutils literal notranslate"><span class="pre">ovs-port-a</span></code>, the VIF is
+connected back to the Hyper-V switch with name <code class="docutils literal notranslate"><span class="pre">OVS-HV-Switch</span></code>, which is
+assumed to be the Hyper-V switch with OVS extension enabled.:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>PS &gt; import-module .\datapath-windows\misc\OVS.psm1
+PS &gt; $vnic = Get-VMNetworkAdapter &lt;Name of the VM&gt;
+PS &gt; Disconnect-VMNetworkAdapter -VMNetworkAdapter $vnic[0]
+PS &gt; $vnic[0] | Set-VMNetworkAdapterOVSPort -OVSPortName ovs-port-a
+PS &gt; Connect-VMNetworkAdapter -VMNetworkAdapter $vnic[0] \
+      -SwitchName OVS-Extended-Switch
+</pre></div>
+</div>
+<p>Next, add the VIFs to <code class="docutils literal notranslate"><span class="pre">br-int</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&gt;</span> <span class="n">ovs</span><span class="o">-</span><span class="n">vsctl</span> <span class="n">add</span><span class="o">-</span><span class="n">port</span> <span class="n">br</span><span class="o">-</span><span class="nb">int</span> <span class="n">ovs</span><span class="o">-</span><span class="n">port</span><span class="o">-</span><span class="n">a</span>
+</pre></div>
+</div>
+<p>Dumping the ports should show the additional ports that were just added:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&gt;</span> <span class="n">ovs</span><span class="o">-</span><span class="n">dpctl</span> <span class="n">show</span>
+<span class="n">system</span><span class="nd">@ovs</span><span class="o">-</span><span class="n">system</span><span class="p">:</span>
+        <span class="n">lookups</span><span class="p">:</span> <span class="n">hit</span><span class="p">:</span><span class="mi">0</span> <span class="n">missed</span><span class="p">:</span><span class="mi">0</span> <span class="n">lost</span><span class="p">:</span><span class="mi">0</span>
+        <span class="n">flows</span><span class="p">:</span> <span class="mi">0</span>
+        <span class="n">port</span> <span class="mi">4</span><span class="p">:</span> <span class="n">ovs</span><span class="o">-</span><span class="n">port</span><span class="o">-</span><span class="n">a</span>
+        <span class="n">port</span> <span class="mi">2</span><span class="p">:</span> <span class="n">br</span><span class="o">-</span><span class="n">pif</span> <span class="p">(</span><span class="n">internal</span><span class="p">)</span>
+        <span class="n">port</span> <span class="mi">1</span><span class="p">:</span> <span class="n">br</span><span class="o">-</span><span class="nb">int</span> <span class="p">(</span><span class="n">internal</span>
+        <span class="n">port</span> <span class="mi">3</span><span class="p">:</span> <span class="n">Ethernet0</span>
+
+<span class="o">&gt;</span> <span class="n">ovs</span><span class="o">-</span><span class="n">vsctl</span> <span class="n">show</span>
+<span class="mi">4</span><span class="n">cd86499</span><span class="o">-</span><span class="mi">74</span><span class="n">df</span><span class="o">-</span><span class="mi">48</span><span class="n">bd</span><span class="o">-</span><span class="n">a64d</span><span class="o">-</span><span class="mi">8</span><span class="n">d115b12a9f2</span>
+    <span class="n">Bridge</span> <span class="n">br</span><span class="o">-</span><span class="n">pif</span>
+        <span class="n">Port</span> <span class="s2">&quot;vEthernet (external)&quot;</span>
+            <span class="n">Interface</span> <span class="s2">&quot;vEthernet (external)&quot;</span>
+        <span class="n">Port</span> <span class="s2">&quot;Ethernet0&quot;</span>
+            <span class="n">Interface</span> <span class="s2">&quot;Ethernet0&quot;</span>
+        <span class="n">Port</span> <span class="n">br</span><span class="o">-</span><span class="n">pif</span>
+            <span class="n">Interface</span> <span class="n">br</span><span class="o">-</span><span class="n">pif</span>
+                <span class="nb">type</span><span class="p">:</span> <span class="n">internal</span>
+    <span class="n">Bridge</span> <span class="n">br</span><span class="o">-</span><span class="nb">int</span>
+        <span class="n">Port</span> <span class="n">br</span><span class="o">-</span><span class="nb">int</span>
+            <span class="n">Interface</span> <span class="n">br</span><span class="o">-</span><span class="nb">int</span>
+                <span class="nb">type</span><span class="p">:</span> <span class="n">internal</span>
+        <span class="n">Port</span> <span class="s2">&quot;ovs-port-a&quot;</span>
+            <span class="n">Interface</span> <span class="s2">&quot;ovs-port-a&quot;</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="add-multiple-nics-to-be-managed-by-ovs">
+<h3>Add multiple NICs to be managed by OVS<a class="headerlink" href="#add-multiple-nics-to-be-managed-by-ovs" title="Permalink to this headline">¶</a></h3>
+<p>To leverage support of multiple NICs into OVS, we will be using the MSFT
+cmdlets for forwarding team extension. More documentation about them can be
+found at <a class="reference external" href="https://technet.microsoft.com/en-us/library/jj553812%28v=wps.630%29.aspx">technet</a>.</p>
+<p>For example, to set up a switch team combined from <code class="docutils literal notranslate"><span class="pre">Ethernet0</span> <span class="pre">2</span></code> and
+<code class="docutils literal notranslate"><span class="pre">Ethernet1</span> <span class="pre">2</span></code> named <code class="docutils literal notranslate"><span class="pre">external</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">PS</span> <span class="o">&gt;</span> <span class="n">Get</span><span class="o">-</span><span class="n">NetAdapter</span>
+<span class="n">Name</span>                      <span class="n">InterfaceDescription</span>
+<span class="o">----</span>                      <span class="o">--------------------</span>
+<span class="n">br</span><span class="o">-</span><span class="nb">int</span>                    <span class="n">Hyper</span><span class="o">-</span><span class="n">V</span> <span class="n">Virtual</span> <span class="n">Ethernet</span> <span class="n">Adapter</span> <span class="c1">#3</span>
+<span class="n">br</span><span class="o">-</span><span class="n">pif</span>                    <span class="n">Hyper</span><span class="o">-</span><span class="n">V</span> <span class="n">Virtual</span> <span class="n">Ethernet</span> <span class="n">Adapter</span> <span class="c1">#2</span>
+<span class="n">Ethernet3</span> <span class="mi">2</span>               <span class="n">Intel</span><span class="p">(</span><span class="n">R</span><span class="p">)</span> <span class="mi">82574</span><span class="n">L</span> <span class="n">Gigabit</span> <span class="n">Network</span> <span class="n">Co</span><span class="o">...</span><span class="c1">#3</span>
+<span class="n">Ethernet2</span> <span class="mi">2</span>               <span class="n">Intel</span><span class="p">(</span><span class="n">R</span><span class="p">)</span> <span class="mi">82574</span><span class="n">L</span> <span class="n">Gigabit</span> <span class="n">Network</span> <span class="n">Co</span><span class="o">...</span><span class="c1">#4</span>
+<span class="n">Ethernet1</span> <span class="mi">2</span>               <span class="n">Intel</span><span class="p">(</span><span class="n">R</span><span class="p">)</span> <span class="mi">82574</span><span class="n">L</span> <span class="n">Gigabit</span> <span class="n">Network</span> <span class="n">Co</span><span class="o">...</span><span class="c1">#2</span>
+<span class="n">Ethernet0</span> <span class="mi">2</span>               <span class="n">Intel</span><span class="p">(</span><span class="n">R</span><span class="p">)</span> <span class="mi">82574</span><span class="n">L</span> <span class="n">Gigabit</span> <span class="n">Network</span> <span class="n">Conn</span><span class="o">...</span>
+
+<span class="n">PS</span> <span class="o">&gt;</span> <span class="n">New</span><span class="o">-</span><span class="n">NetSwitchTeam</span> <span class="o">-</span><span class="n">Name</span> <span class="n">external</span> <span class="o">-</span><span class="n">TeamMembers</span> <span class="s2">&quot;Ethernet0 2&quot;</span><span class="p">,</span><span class="s2">&quot;Ethernet1 2&quot;</span>
+
+<span class="n">PS</span> <span class="o">&gt;</span> <span class="n">Get</span><span class="o">-</span><span class="n">NetSwitchTeam</span>
+<span class="n">Name</span>    <span class="p">:</span> <span class="n">external</span>
+<span class="n">Members</span> <span class="p">:</span> <span class="p">{</span><span class="n">Ethernet1</span> <span class="mi">2</span><span class="p">,</span> <span class="n">Ethernet0</span> <span class="mi">2</span><span class="p">}</span>
+</pre></div>
+</div>
+<p>This will result in a new adapter bound to the host called <code class="docutils literal notranslate"><span class="pre">external</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">PS</span> <span class="o">&gt;</span> <span class="n">Get</span><span class="o">-</span><span class="n">NetAdapter</span>
+<span class="n">Name</span>                      <span class="n">InterfaceDescription</span>
+<span class="o">----</span>                      <span class="o">--------------------</span>
+<span class="n">br</span><span class="o">-</span><span class="n">test</span>                   <span class="n">Hyper</span><span class="o">-</span><span class="n">V</span> <span class="n">Virtual</span> <span class="n">Ethernet</span> <span class="n">Adapter</span> <span class="c1">#4</span>
+<span class="n">br</span><span class="o">-</span><span class="n">pif</span>                    <span class="n">Hyper</span><span class="o">-</span><span class="n">V</span> <span class="n">Virtual</span> <span class="n">Ethernet</span> <span class="n">Adapter</span> <span class="c1">#2</span>
+<span class="n">external</span>                  <span class="n">Microsoft</span> <span class="n">Network</span> <span class="n">Adapter</span> <span class="n">Multiplexo</span><span class="o">...</span>
+<span class="n">Ethernet3</span> <span class="mi">2</span>               <span class="n">Intel</span><span class="p">(</span><span class="n">R</span><span class="p">)</span> <span class="mi">82574</span><span class="n">L</span> <span class="n">Gigabit</span> <span class="n">Network</span> <span class="n">Co</span><span class="o">...</span><span class="c1">#3</span>
+<span class="n">Ethernet2</span> <span class="mi">2</span>               <span class="n">Intel</span><span class="p">(</span><span class="n">R</span><span class="p">)</span> <span class="mi">82574</span><span class="n">L</span> <span class="n">Gigabit</span> <span class="n">Network</span> <span class="n">Co</span><span class="o">...</span><span class="c1">#4</span>
+<span class="n">Ethernet1</span> <span class="mi">2</span>               <span class="n">Intel</span><span class="p">(</span><span class="n">R</span><span class="p">)</span> <span class="mi">82574</span><span class="n">L</span> <span class="n">Gigabit</span> <span class="n">Network</span> <span class="n">Co</span><span class="o">...</span><span class="c1">#2</span>
+<span class="n">Ethernet0</span> <span class="mi">2</span>               <span class="n">Intel</span><span class="p">(</span><span class="n">R</span><span class="p">)</span> <span class="mi">82574</span><span class="n">L</span> <span class="n">Gigabit</span> <span class="n">Network</span> <span class="n">Conn</span><span class="o">...</span>
+</pre></div>
+</div>
+<p>Next we will set up the Hyper-V VMSwitch on the new adapter <code class="docutils literal notranslate"><span class="pre">external</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>PS &gt; New-VMSwitch -Name external -NetAdapterName external \
+     -AllowManagementOS $false
+</pre></div>
+</div>
+<p>Under OVS the adapters under the team <code class="docutils literal notranslate"><span class="pre">external</span></code>, <code class="docutils literal notranslate"><span class="pre">Ethernet0</span> <span class="pre">2</span></code> and
+<code class="docutils literal notranslate"><span class="pre">Ethernet1</span> <span class="pre">2</span></code>, can be added either under a bond device or separately.</p>
+<p>The following example shows how the bridges look with the NICs being
+separated:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&gt;</span> <span class="n">ovs</span><span class="o">-</span><span class="n">vsctl</span> <span class="n">show</span>
+<span class="mi">6</span><span class="n">cd9481b</span><span class="o">-</span><span class="n">c249</span><span class="o">-</span><span class="mi">4</span><span class="n">ee3</span><span class="o">-</span><span class="mi">8692</span><span class="o">-</span><span class="mi">97</span><span class="n">b399dd29d8</span>
+    <span class="n">Bridge</span> <span class="n">br</span><span class="o">-</span><span class="n">test</span>
+        <span class="n">Port</span> <span class="n">br</span><span class="o">-</span><span class="n">test</span>
+            <span class="n">Interface</span> <span class="n">br</span><span class="o">-</span><span class="n">test</span>
+                <span class="nb">type</span><span class="p">:</span> <span class="n">internal</span>
+        <span class="n">Port</span> <span class="s2">&quot;Ethernet1 2&quot;</span>
+            <span class="n">Interface</span> <span class="s2">&quot;Ethernet1 2&quot;</span>
+    <span class="n">Bridge</span> <span class="n">br</span><span class="o">-</span><span class="n">pif</span>
+        <span class="n">Port</span> <span class="s2">&quot;Ethernet0 2&quot;</span>
+            <span class="n">Interface</span> <span class="s2">&quot;Ethernet0 2&quot;</span>
+        <span class="n">Port</span> <span class="n">br</span><span class="o">-</span><span class="n">pif</span>
+            <span class="n">Interface</span> <span class="n">br</span><span class="o">-</span><span class="n">pif</span>
+                <span class="nb">type</span><span class="p">:</span> <span class="n">internal</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="add-patch-ports-and-configure-vlan-tagging">
+<h3>Add patch ports and configure VLAN tagging<a class="headerlink" href="#add-patch-ports-and-configure-vlan-tagging" title="Permalink to this headline">¶</a></h3>
+<p>The Windows Open vSwitch implementation support VLAN tagging in the switch.
+Switch VLAN tagging along with patch ports between <code class="docutils literal notranslate"><span class="pre">br-int</span></code> and <code class="docutils literal notranslate"><span class="pre">br-pif</span></code> is
+used to configure VLAN tagging functionality between two VMs on different
+Hyper-Vs.  To start, add a patch port from <code class="docutils literal notranslate"><span class="pre">br-int</span></code> to <code class="docutils literal notranslate"><span class="pre">br-pif</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&gt;</span> <span class="n">ovs</span><span class="o">-</span><span class="n">vsctl</span> <span class="n">add</span><span class="o">-</span><span class="n">port</span> <span class="n">br</span><span class="o">-</span><span class="nb">int</span> <span class="n">patch</span><span class="o">-</span><span class="n">to</span><span class="o">-</span><span class="n">pif</span>
+<span class="o">&gt;</span> <span class="n">ovs</span><span class="o">-</span><span class="n">vsctl</span> <span class="nb">set</span> <span class="n">interface</span> <span class="n">patch</span><span class="o">-</span><span class="n">to</span><span class="o">-</span><span class="n">pif</span> <span class="nb">type</span><span class="o">=</span><span class="n">patch</span> \
+    <span class="n">options</span><span class="p">:</span><span class="n">peer</span><span class="o">=</span><span class="n">patch</span><span class="o">-</span><span class="n">to</span><span class="o">-</span><span class="nb">int</span>
+</pre></div>
+</div>
+<p>Add a patch port from <code class="docutils literal notranslate"><span class="pre">br-pif</span></code> to <code class="docutils literal notranslate"><span class="pre">br-int</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&gt;</span> <span class="n">ovs</span><span class="o">-</span><span class="n">vsctl</span> <span class="n">add</span><span class="o">-</span><span class="n">port</span> <span class="n">br</span><span class="o">-</span><span class="n">pif</span> <span class="n">patch</span><span class="o">-</span><span class="n">to</span><span class="o">-</span><span class="nb">int</span>
+<span class="o">&gt;</span> <span class="n">ovs</span><span class="o">-</span><span class="n">vsctl</span> <span class="nb">set</span> <span class="n">interface</span> <span class="n">patch</span><span class="o">-</span><span class="n">to</span><span class="o">-</span><span class="nb">int</span> <span class="nb">type</span><span class="o">=</span><span class="n">patch</span> \
+    <span class="n">options</span><span class="p">:</span><span class="n">peer</span><span class="o">=</span><span class="n">patch</span><span class="o">-</span><span class="n">to</span><span class="o">-</span><span class="n">pif</span>
+</pre></div>
+</div>
+<p>Re-Add the VIF ports with the VLAN tag:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&gt;</span> <span class="n">ovs</span><span class="o">-</span><span class="n">vsctl</span> <span class="n">add</span><span class="o">-</span><span class="n">port</span> <span class="n">br</span><span class="o">-</span><span class="nb">int</span> <span class="n">ovs</span><span class="o">-</span><span class="n">port</span><span class="o">-</span><span class="n">a</span> <span class="n">tag</span><span class="o">=</span><span class="mi">900</span>
+<span class="o">&gt;</span> <span class="n">ovs</span><span class="o">-</span><span class="n">vsctl</span> <span class="n">add</span><span class="o">-</span><span class="n">port</span> <span class="n">br</span><span class="o">-</span><span class="nb">int</span> <span class="n">ovs</span><span class="o">-</span><span class="n">port</span><span class="o">-</span><span class="n">b</span> <span class="n">tag</span><span class="o">=</span><span class="mi">900</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="add-tunnels">
+<h3>Add tunnels<a class="headerlink" href="#add-tunnels" title="Permalink to this headline">¶</a></h3>
+<p>The Windows Open vSwitch implementation support VXLAN and STT tunnels. To add
+tunnels. For example, first add the tunnel port between 172.168.201.101 &lt;-&gt;
+172.168.201.102:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&gt;</span> <span class="n">ovs</span><span class="o">-</span><span class="n">vsctl</span> <span class="n">add</span><span class="o">-</span><span class="n">port</span> <span class="n">br</span><span class="o">-</span><span class="nb">int</span> <span class="n">tun</span><span class="o">-</span><span class="mi">1</span>
+<span class="o">&gt;</span> <span class="n">ovs</span><span class="o">-</span><span class="n">vsctl</span> <span class="nb">set</span> <span class="n">Interface</span> <span class="n">tun</span><span class="o">-</span><span class="mi">1</span> <span class="nb">type</span><span class="o">=&lt;</span><span class="n">port</span><span class="o">-</span><span class="nb">type</span><span class="o">&gt;</span>
+<span class="o">&gt;</span> <span class="n">ovs</span><span class="o">-</span><span class="n">vsctl</span> <span class="nb">set</span> <span class="n">Interface</span> <span class="n">tun</span><span class="o">-</span><span class="mi">1</span> <span class="n">options</span><span class="p">:</span><span class="n">local_ip</span><span class="o">=</span><span class="mf">172.168</span><span class="o">.</span><span class="mf">201.101</span>
+<span class="o">&gt;</span> <span class="n">ovs</span><span class="o">-</span><span class="n">vsctl</span> <span class="nb">set</span> <span class="n">Interface</span> <span class="n">tun</span><span class="o">-</span><span class="mi">1</span> <span class="n">options</span><span class="p">:</span><span class="n">remote_ip</span><span class="o">=</span><span class="mf">172.168</span><span class="o">.</span><span class="mf">201.102</span>
+<span class="o">&gt;</span> <span class="n">ovs</span><span class="o">-</span><span class="n">vsctl</span> <span class="nb">set</span> <span class="n">Interface</span> <span class="n">tun</span><span class="o">-</span><span class="mi">1</span> <span class="n">options</span><span class="p">:</span><span class="n">in_key</span><span class="o">=</span><span class="n">flow</span>
+<span class="o">&gt;</span> <span class="n">ovs</span><span class="o">-</span><span class="n">vsctl</span> <span class="nb">set</span> <span class="n">Interface</span> <span class="n">tun</span><span class="o">-</span><span class="mi">1</span> <span class="n">options</span><span class="p">:</span><span class="n">out_key</span><span class="o">=</span><span class="n">flow</span>
+</pre></div>
+</div>
+<p>…and the tunnel port between 172.168.201.101 &lt;-&gt; 172.168.201.105:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&gt;</span> <span class="n">ovs</span><span class="o">-</span><span class="n">vsctl</span> <span class="n">add</span><span class="o">-</span><span class="n">port</span> <span class="n">br</span><span class="o">-</span><span class="nb">int</span> <span class="n">tun</span><span class="o">-</span><span class="mi">2</span>
+<span class="o">&gt;</span> <span class="n">ovs</span><span class="o">-</span><span class="n">vsctl</span> <span class="nb">set</span> <span class="n">Interface</span> <span class="n">tun</span><span class="o">-</span><span class="mi">2</span> <span class="nb">type</span><span class="o">=&lt;</span><span class="n">port</span><span class="o">-</span><span class="nb">type</span><span class="o">&gt;</span>
+<span class="o">&gt;</span> <span class="n">ovs</span><span class="o">-</span><span class="n">vsctl</span> <span class="nb">set</span> <span class="n">Interface</span> <span class="n">tun</span><span class="o">-</span><span class="mi">2</span> <span class="n">options</span><span class="p">:</span><span class="n">local_ip</span><span class="o">=</span><span class="mf">172.168</span><span class="o">.</span><span class="mf">201.102</span>
+<span class="o">&gt;</span> <span class="n">ovs</span><span class="o">-</span><span class="n">vsctl</span> <span class="nb">set</span> <span class="n">Interface</span> <span class="n">tun</span><span class="o">-</span><span class="mi">2</span> <span class="n">options</span><span class="p">:</span><span class="n">remote_ip</span><span class="o">=</span><span class="mf">172.168</span><span class="o">.</span><span class="mf">201.105</span>
+<span class="o">&gt;</span> <span class="n">ovs</span><span class="o">-</span><span class="n">vsctl</span> <span class="nb">set</span> <span class="n">Interface</span> <span class="n">tun</span><span class="o">-</span><span class="mi">2</span> <span class="n">options</span><span class="p">:</span><span class="n">in_key</span><span class="o">=</span><span class="n">flow</span>
+<span class="o">&gt;</span> <span class="n">ovs</span><span class="o">-</span><span class="n">vsctl</span> <span class="nb">set</span> <span class="n">Interface</span> <span class="n">tun</span><span class="o">-</span><span class="mi">2</span> <span class="n">options</span><span class="p">:</span><span class="n">out_key</span><span class="o">=</span><span class="n">flow</span>
+</pre></div>
+</div>
+<p>Where <code class="docutils literal notranslate"><span class="pre">&lt;port-type&gt;</span></code> is one of: <code class="docutils literal notranslate"><span class="pre">stt</span></code> or <code class="docutils literal notranslate"><span class="pre">vxlan</span></code></p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Any patch ports created between br-int and br-pif MUST be be deleted prior
+to adding tunnels.</p>
+</div>
+</div>
+</div>
+<div class="section" id="windows-services">
+<h2>Windows Services<a class="headerlink" href="#windows-services" title="Permalink to this headline">¶</a></h2>
+<p>Open vSwitch daemons come with support to run as a Windows service. The
+instructions here assume that you have installed the Open vSwitch utilities and
+daemons via <code class="docutils literal notranslate"><span class="pre">make</span> <span class="pre">install</span></code>.</p>
+<p>To start, create the database:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&gt;</span> <span class="n">ovsdb</span><span class="o">-</span><span class="n">tool</span> <span class="n">create</span> <span class="n">C</span><span class="p">:</span><span class="o">/</span><span class="n">openvswitch</span><span class="o">/</span><span class="n">etc</span><span class="o">/</span><span class="n">openvswitch</span><span class="o">/</span><span class="n">conf</span><span class="o">.</span><span class="n">db</span> \
+    <span class="s2">&quot;C:/openvswitch/usr/share/openvswitch/vswitch.ovsschema&quot;</span>
+</pre></div>
+</div>
+<p>Create the ovsdb-server service and start it:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&gt;</span> <span class="n">sc</span> <span class="n">create</span> <span class="n">ovsdb</span><span class="o">-</span><span class="n">server</span> \
+    <span class="n">binpath</span><span class="o">=</span><span class="s2">&quot;C:/openvswitch/usr/sbin/ovsdb-server.exe </span><span class="se">\</span>
+<span class="s2">    C:/openvswitch/etc/openvswitch/conf.db </span><span class="se">\</span>
+<span class="s2">    -vfile:info --log-file --pidfile </span><span class="se">\</span>
+<span class="s2">    --remote=punix:db.sock --service --service-monitor&quot;</span>
+<span class="o">&gt;</span> <span class="n">sc</span> <span class="n">start</span> <span class="n">ovsdb</span><span class="o">-</span><span class="n">server</span>
+</pre></div>
+</div>
+<div class="admonition tip">
+<p class="first admonition-title">Tip</p>
+<p>One of the common issues with creating a Windows service is with mungled
+paths.  You can make sure that the correct path has been registered with the
+Windows services manager by running:</p>
+<div class="last highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&gt;</span> <span class="n">sc</span> <span class="n">qc</span> <span class="n">ovsdb</span><span class="o">-</span><span class="n">server</span>
+</pre></div>
+</div>
+</div>
+<p>Check that the service is healthy by running:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&gt;</span> <span class="n">sc</span> <span class="n">query</span> <span class="n">ovsdb</span><span class="o">-</span><span class="n">server</span>
+</pre></div>
+</div>
+<p>Initialize the database:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&gt;</span> <span class="n">ovs</span><span class="o">-</span><span class="n">vsctl</span> <span class="o">--</span><span class="n">no</span><span class="o">-</span><span class="n">wait</span> <span class="n">init</span>
+</pre></div>
+</div>
+<p>Create the ovs-vswitchd service and start it:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&gt;</span> <span class="n">sc</span> <span class="n">create</span> <span class="n">ovs</span><span class="o">-</span><span class="n">vswitchd</span> \
+    <span class="n">binpath</span><span class="o">=</span><span class="s2">&quot;C:/openvswitch/usr/sbin/ovs-vswitchd.exe </span><span class="se">\</span>
+<span class="s2">    --pidfile -vfile:info --log-file  --service --service-monitor&quot;</span>
+<span class="o">&gt;</span> <span class="n">sc</span> <span class="n">start</span> <span class="n">ovs</span><span class="o">-</span><span class="n">vswitchd</span>
+</pre></div>
+</div>
+<p>Check that the service is healthy by running:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&gt;</span> <span class="n">sc</span> <span class="n">query</span> <span class="n">ovs</span><span class="o">-</span><span class="n">vswitchd</span>
+</pre></div>
+</div>
+<p>To stop and delete the services, run:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&gt;</span> <span class="n">sc</span> <span class="n">stop</span> <span class="n">ovs</span><span class="o">-</span><span class="n">vswitchd</span>
+<span class="o">&gt;</span> <span class="n">sc</span> <span class="n">stop</span> <span class="n">ovsdb</span><span class="o">-</span><span class="n">server</span>
+<span class="o">&gt;</span> <span class="n">sc</span> <span class="n">delete</span> <span class="n">ovs</span><span class="o">-</span><span class="n">vswitchd</span>
+<span class="o">&gt;</span> <span class="n">sc</span> <span class="n">delete</span> <span class="n">ovsdb</span><span class="o">-</span><span class="n">server</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="windows-ci-service">
+<h2>Windows CI Service<a class="headerlink" href="#windows-ci-service" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference external" href="www.appveyor.com">AppVeyor</a> provides a free Windows autobuild service for
+opensource projects.  Open vSwitch has integration with AppVeyor for continuous
+build.  A developer can build test his changes for Windows by logging into
+appveyor.com using a github account, creating a new project by linking it to
+his development repository in github and triggering a new build.</p>
+</div>
+<div class="section" id="todo">
+<h2>TODO<a class="headerlink" href="#todo" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Investigate the working of sFlow on Windows and re-enable the unit tests.</li>
+<li>Investigate and add the feature to provide QoS.</li>
+<li>Sign the driver &amp; create an MSI for installing the different OpenvSwitch
+components on Windows.</li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../contents.html">
+              <img class="logo" src="../../_static/logo.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="../../contents.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Open vSwitch on Windows</a><ul>
+<li><a class="reference internal" href="#build-requirements">Build Requirements</a></li>
+<li><a class="reference internal" href="#install-requirements">Install Requirements</a></li>
+<li><a class="reference internal" href="#bootstrapping">Bootstrapping</a></li>
+<li><a class="reference internal" href="#configuring">Configuring</a></li>
+<li><a class="reference internal" href="#building">Building</a><ul>
+<li><a class="reference internal" href="#the-kernel-module">The Kernel Module</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#starting">Starting</a></li>
+<li><a class="reference internal" href="#validating">Validating</a><ul>
+<li><a class="reference internal" href="#add-bridges">Add bridges</a></li>
+<li><a class="reference internal" href="#add-physicals-nics-pif">Add physicals NICs (PIF)</a></li>
+<li><a class="reference internal" href="#add-virtual-interfaces-vifs">Add virtual interfaces (VIFs)</a></li>
+<li><a class="reference internal" href="#add-multiple-nics-to-be-managed-by-ovs">Add multiple NICs to be managed by OVS</a></li>
+<li><a class="reference internal" href="#add-patch-ports-and-configure-vlan-tagging">Add patch ports and configure VLAN tagging</a></li>
+<li><a class="reference internal" href="#add-tunnels">Add tunnels</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#windows-services">Windows Services</a></li>
+<li><a class="reference internal" href="#windows-ci-service">Windows CI Service</a></li>
+<li><a class="reference internal" href="#todo">TODO</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../contents.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Getting Started</a><ul>
+  <li><a href="index.html">Installing Open vSwitch</a><ul>
+      <li>Previous: <a href="netbsd.html" title="previous chapter">Open vSwitch on NetBSD</a></li>
+      <li>Next: <a href="xenserver.html" title="next chapter">Open vSwitch on Citrix XenServer</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/intro/install/windows.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, The Open vSwitch Development Community.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.4</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="../../_sources/intro/install/windows.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

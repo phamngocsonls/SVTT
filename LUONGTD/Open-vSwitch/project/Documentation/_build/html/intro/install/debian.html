@@ -1,0 +1,210 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Debian Packaging for Open vSwitch &#8212; Open vSwitch 2.9.2 documentation</title>
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" src="../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Fedora, RHEL 7.x Packaging for Open vSwitch" href="fedora.html" />
+    <link rel="prev" title="Distributions packaging Open vSwitch" href="distributions.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="debian-packaging-for-open-vswitch">
+<h1>Debian Packaging for Open vSwitch<a class="headerlink" href="#debian-packaging-for-open-vswitch" title="Permalink to this headline">¶</a></h1>
+<p>This document describes how to build Debian packages for Open vSwitch. To
+install Open vSwitch on Debian without building Debian packages, refer to
+<a class="reference internal" href="general.html"><span class="doc">Open vSwitch on Linux, FreeBSD and NetBSD</span></a> instead.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">These instructions should also work on Ubuntu and other Debian derivative
+distributions.</p>
+</div>
+<div class="section" id="before-you-begin">
+<h2>Before You Begin<a class="headerlink" href="#before-you-begin" title="Permalink to this headline">¶</a></h2>
+<p>Before you begin, consider whether you really need to build packages yourself.
+Debian “wheezy” and “sid”, as well as recent versions of Ubuntu, contain
+pre-built Debian packages for Open vSwitch. It is easier to install these than
+to build your own. To use packages from your distribution, skip ahead to
+“Installing .deb Packages”, below.</p>
+</div>
+<div class="section" id="building-open-vswitch-debian-packages">
+<h2>Building Open vSwitch Debian packages<a class="headerlink" href="#building-open-vswitch-debian-packages" title="Permalink to this headline">¶</a></h2>
+<p>You may build from an Open vSwitch distribution tarball or from an Open vSwitch
+Git tree with these instructions.</p>
+<p>You do not need to be the superuser to build the Debian packages.</p>
+<ol class="arabic">
+<li><p class="first">Install the “build-essential” and “fakeroot” packages. For example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ apt-get install build-essential fakeroot
+</pre></div>
+</div>
+</li>
+<li><p class="first">Obtain and unpack an Open vSwitch source distribution and <code class="docutils literal notranslate"><span class="pre">cd</span></code> into its
+top level directory.</p>
+</li>
+<li><p class="first">Install the build dependencies listed under “Build-Depends:” near the top of
+<code class="docutils literal notranslate"><span class="pre">debian/control</span></code>. You can install these any way you like, e.g.  with
+<code class="docutils literal notranslate"><span class="pre">apt-get</span> <span class="pre">install</span></code>.</p>
+</li>
+</ol>
+<p>Check your work by running <code class="docutils literal notranslate"><span class="pre">dpkg-checkbuilddeps</span></code> in the top level of your ovs
+directory. If you’ve installed all the dependencies properly,
+<code class="docutils literal notranslate"><span class="pre">dpkg-checkbuilddeps</span></code> will exit without printing anything. If you forgot to
+install some dependencies, it will tell you which ones.</p>
+<ol class="arabic" start="4">
+<li><p class="first">Build the package:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ fakeroot debian/rules binary
+</pre></div>
+</div>
+<p>This will do a serial build that runs the unit tests. This will take
+approximately 8 to 10 minutes. If you prefer, you can run a faster parallel
+build:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ DEB_BUILD_OPTIONS=&#39;parallel=8&#39; fakeroot debian/rules binary
+</pre></div>
+</div>
+<p>If you are in a big hurry, you can even skip the unit tests:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ DEB_BUILD_OPTIONS=&#39;parallel=8 nocheck&#39; fakeroot debian/rules binary
+</pre></div>
+</div>
+</li>
+</ol>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>There are a few pitfalls in the Debian packaging building system so that,
+occasionally, you may find that in a tree that you have using for a while,
+the build command above exits immediately without actually building anything.
+To fix the problem, run:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ fakeroot debian/rules clean
+</pre></div>
+</div>
+<p class="last">or start over from a fresh copy of the source tree.</p>
+</div>
+<ol class="arabic simple" start="5">
+<li>The generated .deb files will be in the parent directory of the Open vSwitch
+source distribution.</li>
+</ol>
+</div>
+<div class="section" id="installing-deb-packages">
+<h2>Installing .deb Packages<a class="headerlink" href="#installing-deb-packages" title="Permalink to this headline">¶</a></h2>
+<p>These instructions apply to installing from Debian packages that you built
+yourself, as described in the previous section.  In this case, use a command
+such as <code class="docutils literal notranslate"><span class="pre">dpkg</span> <span class="pre">-i</span></code> to install the .deb files that you build.  You will have to
+manually install any missing dependencies.</p>
+<p>You can also use these instruction to install from packages provided by Debian
+or a Debian derivative distribution such as Ubuntu.  In this case, use a
+program such as <code class="docutils literal notranslate"><span class="pre">apt-get</span></code> or <code class="docutils literal notranslate"><span class="pre">aptitude</span></code> to download and install the
+provided packages.  These programs will also automatically download and install
+any missing dependencies.</p>
+<div class="admonition important">
+<p class="first admonition-title">Important</p>
+<p class="last">You must be superuser to install Debian packages.</p>
+</div>
+<ol class="arabic simple">
+<li>Start by installing an Open vSwitch kernel module. See
+<code class="docutils literal notranslate"><span class="pre">debian/openvswitch-switch.README.Debian</span></code> for the available options.</li>
+<li>Install the <code class="docutils literal notranslate"><span class="pre">openvswitch-switch</span></code> and <code class="docutils literal notranslate"><span class="pre">openvswitch-common</span></code> packages.
+These packages include the core userspace components of the switch.</li>
+</ol>
+<p>Open vSwitch <code class="docutils literal notranslate"><span class="pre">.deb</span></code> packages not mentioned above are rarely useful. Refer to
+their individual package descriptions to find out whether any of them are
+useful to you.</p>
+</div>
+<div class="section" id="reporting-bugs">
+<h2>Reporting Bugs<a class="headerlink" href="#reporting-bugs" title="Permalink to this headline">¶</a></h2>
+<p>Report problems to <a class="reference external" href="mailto:bugs&#37;&#52;&#48;openvswitch&#46;org">bugs<span>&#64;</span>openvswitch<span>&#46;</span>org</a>.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../contents.html">
+              <img class="logo" src="../../_static/logo.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="../../contents.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Debian Packaging for Open vSwitch</a><ul>
+<li><a class="reference internal" href="#before-you-begin">Before You Begin</a></li>
+<li><a class="reference internal" href="#building-open-vswitch-debian-packages">Building Open vSwitch Debian packages</a></li>
+<li><a class="reference internal" href="#installing-deb-packages">Installing .deb Packages</a></li>
+<li><a class="reference internal" href="#reporting-bugs">Reporting Bugs</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../contents.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Getting Started</a><ul>
+  <li><a href="index.html">Installing Open vSwitch</a><ul>
+      <li>Previous: <a href="distributions.html" title="previous chapter">Distributions packaging Open vSwitch</a></li>
+      <li>Next: <a href="fedora.html" title="next chapter">Fedora, RHEL 7.x Packaging for Open vSwitch</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/intro/install/debian.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, The Open vSwitch Development Community.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.4</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="../../_sources/intro/install/debian.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
