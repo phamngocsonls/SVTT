@@ -18,7 +18,6 @@
     - [3.8 Share servers](#38)
     - [3.9 Share replication](#39)
 - [4. Networking](#4)
-- [5. Security services](#5)
 
 
 <a name="1"></a>
