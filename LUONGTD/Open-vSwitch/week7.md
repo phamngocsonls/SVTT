@@ -1,7 +1,8 @@
 # ovs-vswitchd
-
+## [1. Kiến trúc](#architech)
+## [2. Unit tests](#test)
 ---
-## 1. Kiến trúc
+## <a name="architech"></a> 1. Kiến trúc
 ### 1.1. Hàm main trong file vswitchd/ovs-vswitchd.c:
 
 ```c
@@ -49,7 +50,7 @@ int main()
 
 ![](images/vswitchd/understand_1.png)
 
-## 2. Unit tests
+## <a name="test"></a> 2. Unit tests
 Danh sách các test cho ```ovs-vswitchd```:
 ```sh
 $ make check TESTSUITEFLAGS="-l -k ovs-vswitchd"
@@ -80,7 +81,7 @@ dnl Create database.
 touch .conf.db.~lock~
 AT_CHECK([ovsdb-tool create conf.db $abs_top_srcdir/vswitchd/vswitch.ovsschema])
 
-dnl Start ovsdb-server.  *Don't* initialize database.
+dnl Start ovsdb-server. Don't initialize database.
 AT_CHECK([ovsdb-server --detach --no-chdir --pidfile --log-file --remote=punix:$OVS_RUNDIR/db.sock], [0], [ignore], [ignore])
 AT_CAPTURE_FILE([ovsdb-server.log])
 
