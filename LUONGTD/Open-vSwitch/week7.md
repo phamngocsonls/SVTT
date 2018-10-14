@@ -94,10 +94,7 @@ OVS_APP_EXIT_AND_WAIT([ovsdb-server])
 AT_CLEANUP
 ```
 
-
 ### Test 1: stats-update-interval
-- Khi bắt đầu, update của rx_packets sẽ xảy ra mỗi 5s
-- Đặt stats update interval thành 100K ms
 ```sh
 AT_SETUP([ovs-vswitchd -- stats-update-interval])
 OVS_VSWITCHD_START([add-port br0 p1 -- set int p1 type=internal])
@@ -206,7 +203,9 @@ AT_CLEANUP
 ```
 
 ### Test 4: invalid database path
-
+- Bắt đầu một tiến trình ovs-vswitchd với invalid db path
+- Dừng tiến trình này lại
+- Kiểm tra file log (không có WARN/ERR/ỂM log nào thì test đúng)
 ```sh
 AT_SETUP([ovs-vswitchd -- invalid database path])
 
@@ -236,30 +235,20 @@ AT_CLEANUP
 
 ### Test 5: set service controller
 ```sh
-AT_SETUP([ovs-vswitchd -- invalid database path])
+AT_SETUP([ovs-vswitchd -- set service controller])
+AT_SKIP_IF([test "$IS_WIN32" = "yes"])
+OVS_VSWITCHD_START
 
-# start an ovs-vswitchd process with invalid db path.
-ovs-vswitchd unix:invalid.db.sock --log-file --enable-dummy --pidfile &
-on_exit 'kill `cat ovs-vswitchd.pid`'
+AT_CHECK([ovs-vsctl set-controller br0 punix:$(pwd)/br0.void])
+OVS_WAIT_UNTIL([test -e br0.void])
 
-# sleep for a while.
-sleep 10
+AT_CHECK([ovs-vsctl set-controller br0 punix:$(pwd)/br0.void/../overwrite.file])
+OVS_WAIT_UNTIL([test -n "`grep ERR ovs-vswitchd.log | grep overwrite.file`"])
 
-# stop the process.
-OVS_APP_EXIT_AND_WAIT([ovs-vswitchd])
-
-# should not see this log (which indicates high cpu utilization).
-AT_CHECK([grep "wakeup due to" ovs-vswitchd.log], [ignore])
-
-# check the log, should not see any WARN/ERR/EMER log.
-AT_CHECK([sed -n "
-/|WARN|/p
-/|ERR|/p
-/|EMER|/p" ovs-vswitchd.log
-])
-
+OVS_VSWITCHD_STOP(["/Not adding Unix domain socket controller/d"])
 AT_CLEANUP
 ```
+
 ### Test 6: Compatible with OVSDB server - w/o monitor_cond
 ```sh
 dnl OVSDB server before release version 2.5 does not support the monitor_cond
@@ -286,6 +275,7 @@ OVS_VSWITCHD_STOP
 AT_CLEANUP
 
 ```
+
 ### Test 7: do not create sockets with unsafe names
 ```sh
 AT_SETUP([ovs-vswitchd - do not create sockets with unsafe names])
@@ -320,6 +310,7 @@ AT_CHECK([test ! -e b/c.mgmt])
 OVS_VSWITCHD_STOP(['/ignoring bridge with invalid name/d'])
 AT_CLEANUP
 ```
+
 ### Test 8: set datapath IDs
 ```sh
 AT_SETUP([ovs-vswitchd - set datapath IDs])
