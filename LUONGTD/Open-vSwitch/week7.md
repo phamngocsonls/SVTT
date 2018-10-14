@@ -56,17 +56,28 @@ Danh sách các test cho ```ovs-vswitchd```:
 $ make check TESTSUITEFLAGS="-l -k ovs-vswitchd"
 ```
 ```sh
- NUM: 	FILE-NAME:LINE     		TEST-GROUP-NAME
-     
- 846: 	ovs-vswitchd.at:7  		ovs-vswitchd detaches correctly with empty db
- 847: 	ovs-vswitchd.at:36 		ovs-vswitchd -- stats-update-interval
- 848: 	ovs-vswitchd.at:69 		ovs-vswitchd -- start additional ovs-vswitchd process
- 849: 	ovs-vswitchd.at:94 		ovs-vswitchd -- switch over to another ovs-vswitchd process
- 850: 	ovs-vswitchd.at:134 	ovs-vswitchd -- invalid database path
- 851: 	ovs-vswitchd.at:159 	ovs-vswitchd -- set service controller
- 852: 	ovs-vswitchd.at:176 	ovs-vswitchd -- Compatible with OVSDB server - w/o monitor_cond
- 853: 	ovs-vswitchd.at:197 	ovs-vswitchd - do not create sockets with unsafe names
- 854: 	ovs-vswitchd.at:230 	ovs-vswitchd - set datapath IDs
+ NUM: FILE-NAME:LINE     TEST-GROUP-NAME
+      KEYWORDS
+
+ 537: unixctl-py.at:20   unixctl ovs-vswitchd exit - Python2
+      python unixctl
+ 538: unixctl-py.at:21   unixctl ovs-vswitchd exit - Python3
+      python unixctl
+ 539: unixctl-py.at:38   unixctl ovs-vswitchd list-commands - Python2
+ 540: unixctl-py.at:39   unixctl ovs-vswitchd list-commands - Python3
+ 541: unixctl-py.at:84   unixctl ovs-vswitchd arguments - Python2
+ 542: unixctl-py.at:85   unixctl ovs-vswitchd arguments - Python3
+ 846: ovs-vswitchd.at:7  ovs-vswitchd detaches correctly with empty db
+ 847: ovs-vswitchd.at:36 ovs-vswitchd -- stats-update-interval
+ 848: ovs-vswitchd.at:69 ovs-vswitchd -- start additional ovs-vswitchd process
+ 849: ovs-vswitchd.at:94 ovs-vswitchd -- switch over to another ovs-vswitchd process
+ 850: ovs-vswitchd.at:134 ovs-vswitchd -- invalid database path
+ 851: ovs-vswitchd.at:159 ovs-vswitchd -- set service controller
+ 852: ovs-vswitchd.at:176 ovs-vswitchd -- Compatible with OVSDB server - w/o monitor_cond
+ 853: ovs-vswitchd.at:197 ovs-vswitchd - do not create sockets with unsafe names
+ 854: ovs-vswitchd.at:230 ovs-vswitchd - set datapath IDs
+ 2454: ovn.at:5297        ovn -- ovs-vswitchd restart
+      vswitchd
 ```
 ### Test 0: detaches correctly with empty db
 ```sh
@@ -130,7 +141,7 @@ OVS_VSWITCHD_STOP
 AT_CLEANUP
 ```
 
-### Test 2: start additional ovs-vswitchd process
+### Test 2: khởi động ovs-vswitchd process phụ
 ```sh
 dnl ----------------------------------------------------------------------
 AT_SETUP([ovs-vswitchd -- start additional ovs-vswitchd process])
@@ -159,7 +170,7 @@ AT_CLEANUP
 
 ```
 
-### Test 3: switch over to another ovs-vswitchd process
+### Test 3: chuyển sang ovs-vswitchd process khác
 ```sh
 dnl ----------------------------------------------------------------------
 AT_SETUP([ovs-vswitchd -- switch over to another ovs-vswitchd process])
@@ -233,7 +244,6 @@ AT_CHECK([sed -n "
 AT_CLEANUP
 ```
 
-
 ### Test 5: set service controller
 ```sh
 AT_SETUP([ovs-vswitchd -- set service controller])
@@ -250,7 +260,7 @@ OVS_VSWITCHD_STOP(["/Not adding Unix domain socket controller/d"])
 AT_CLEANUP
 ```
 
-### Test 6: Compatible with OVSDB server - w/o monitor_cond
+### Test 6: Tương thích với OVSDB server - w/o monitor_cond
 ```sh
 dnl OVSDB server before release version 2.5 does not support the monitor_cond
 dnl method.  This test defeatures the OVSDB server to simulate an older
@@ -277,7 +287,7 @@ AT_CLEANUP
 
 ```
 
-### Test 7: do not create sockets with unsafe names
+### Test 7: Tạo sockets với unsafe names
 ```sh
 AT_SETUP([ovs-vswitchd - do not create sockets with unsafe names])
 OVS_VSWITCHD_START
