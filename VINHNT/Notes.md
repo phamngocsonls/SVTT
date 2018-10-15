@@ -60,3 +60,9 @@ Filesystem cũng là một kiến trúc lưu trữ dữ liệu máy tính nhưng
 <a name="virtio"></a>
 
 **VirtIO - An I/O virtualization framework for linux** là một chuẩn ảo hóa cho các thiết bị mạng và đĩa cứng. Virtio làm cho máy ảo biết nó là máy ảo và vì thế sẽ hợp tác với trình ảo hóa để tăng tốc các thiết bị mạng và ổ cứng(bình thường nó chạy như một máy thật sử dụng các thiết bị ảo, các thiết bị này rất phức tạp, khiến cho tốc độ chậm)
+
+<a name="san"></a>
+
+**SAN - Storage Area Network** Có thể hiểu như là một phương pháp truy cập dữ liệu dựa trên nền tảng mạng mà quá trình truyền dữ liệu trên mạng tương tự như quá trình truyền dữ liệu từ các thiết bị quen thuộc trên máy chủ như Disks Drivers.
+
+Trong một storage network máy chủ sử dụng một yêu cầu cho một gói dữ liệu cụ thể hay một dữ liệu cụ thể từ một đĩa lưu trữ và các yêu cầu được đáp ứng.Các thiết bị được làm vvieecj như một thiết bị lưu trữ bên trong máy chủ và được truy cập một cách bình thường thông qua các yêu cầu cụ thể và quá trình đáp ứng bằng cách gửi các yêu cầu và nhận được trên môi trường mạng.

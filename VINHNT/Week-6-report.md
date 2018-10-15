@@ -242,6 +242,9 @@ int main (int argc, const char **argv)
     }
 }
 ```
+Một ví dụ thực hiện trên ceph storage:
+
+![](./Image/w6-read-write-object2.png)
 
 ### Closing session
 
