@@ -1,0 +1,445 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>ovsdb &#8212; Open vSwitch 2.9.2 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="ovsdb" href="ovsdb.7.html" />
+    <link rel="prev" title="ovsdb-server" href="ovsdb-server.7.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="ovsdb">
+<h1>ovsdb<a class="headerlink" href="#ovsdb" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="description">
+<h2>Description<a class="headerlink" href="#description" title="Permalink to this headline">¶</a></h2>
+<p>OVSDB, the Open vSwitch Database, is a database system whose network protocol
+is specified by RFC 7047.  The RFC does not specify an on-disk storage format.
+The OVSDB implementation in Open vSwitch implements two storage formats: one
+for standalone (and active-backup) databases, and the other for clustered
+databases.  This manpage documents both of these formats.</p>
+<p>Most users do not need to be concerned with this specification.  Instead,
+to manipulate OVSDB files, refer to <cite>ovsdb-tool(1)</cite>.  For an
+introduction to OVSDB as a whole, read <cite>ovsdb(7)</cite>.</p>
+<p>OVSDB files explicitly record changes that are implied by the database schema.
+For example, the OVSDB “garbage collection” feature means that when a client
+removes the last reference to a garbage-collected row, the database server
+automatically removes that row.  The database file explicitly records the
+deletion of the garbage-collected row, so that the reader does not need to
+infer it.</p>
+<p>OVSDB files do not include the values of ephemeral columns.</p>
+<p>Standalone and clustered database files share the common structure described
+here.  They are text files encoded in UTF-8 with LF (U+000A) line ends,
+organized as append-only series of records.  Each record consists of 2 lines of
+text.</p>
+<p>The first line in each record has the format <code class="docutils literal notranslate"><span class="pre">OVSDB</span> <span class="pre">&lt;magic&gt;</span> <span class="pre">&lt;length&gt;</span> <span class="pre">&lt;hash&gt;</span></code>,
+where &lt;magic&gt; is <code class="docutils literal notranslate"><span class="pre">JSON</span></code> for standalone databases or <code class="docutils literal notranslate"><span class="pre">CLUSTER</span></code> for clustered
+databases, &lt;length&gt; is a positive decimal integer, and &lt;hash&gt; is a SHA-1
+checksum expressed as 40 hexadecimal digits.  Words in the first line must be
+separated by exactly one space.</p>
+<p>The second line must be exactly <em>length</em> bytes long (including the LF) and its
+SHA-1 checksum (including the LF) must match <em>hash</em> exactly.  The line’s
+contents must be a valid JSON object as specified by RFC 4627.  Strings in the
+JSON object must be valid UTF-8.  To ensure that the second line is exactly one
+line of text, the OVSDB implementation expresses any LF characters within a
+JSON string as <code class="docutils literal notranslate"><span class="pre">\n</span></code>.  For the same reason, and to save space, the OVSDB
+implementation does not “pretty print” the JSON object with spaces and LFs.
+(The OVSDB implementation tolerates LFs when reading an OVSDB database file, as
+long as <em>length</em> and <em>hash</em> are correct.)</p>
+<div class="section" id="json-notation">
+<h3>JSON Notation<a class="headerlink" href="#json-notation" title="Permalink to this headline">¶</a></h3>
+<p>We use notation from RFC 7047 here to describe the JSON data in records.
+In addition to the notation defined there, we add the following:</p>
+<dl class="docutils">
+<dt>&lt;raw-uuid&gt;</dt>
+<dd>A 36-character JSON string that contains a UUID in the format described by
+RFC 4122, e.g. <code class="docutils literal notranslate"><span class="pre">&quot;550e8400-e29b-41d4-a716-446655440000&quot;</span></code></dd>
+</dl>
+</div>
+<div class="section" id="standalone-format">
+<h3>Standalone Format<a class="headerlink" href="#standalone-format" title="Permalink to this headline">¶</a></h3>
+<p>The first record in a standalone database contains the JSON schema for the
+database, as specified in RFC 7047.  Only this record is mandatory (a
+standalone file that contains only a schema represents an empty database).</p>
+<p>The second and subsequent records in a standalone database are transaction
+records.  Each record may have the following optional special members,
+which do not have any semantics but are often useful to administrators
+looking through a database log with <code class="docutils literal notranslate"><span class="pre">ovsdb-tool</span> <span class="pre">show-log</span></code>:</p>
+<dl class="docutils">
+<dt><code class="docutils literal notranslate"><span class="pre">&quot;_date&quot;:</span> <span class="pre">&lt;integer&gt;</span></code></dt>
+<dd><p class="first">The time at which the transaction was committed, as an integer number of
+milliseconds since the Unix epoch.  Early versions of OVSDB counted seconds
+instead of milliseconds; these can be detected by noticing that their
+values are less than 2**32.</p>
+<p class="last">OVSDB always writes a <code class="docutils literal notranslate"><span class="pre">_date</span></code> member.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">&quot;_comment&quot;:</span> <span class="pre">&lt;string&gt;</span></code></dt>
+<dd><p class="first">A JSON string that specifies the comment provided in a transaction
+<code class="docutils literal notranslate"><span class="pre">comment</span></code> operation.  If a transaction has multiple <code class="docutils literal notranslate"><span class="pre">comment</span></code>
+operations, OVSDB concatenates them into a single <code class="docutils literal notranslate"><span class="pre">_comment</span></code> member,
+separated by a new-line.</p>
+<p class="last">OVSDB only writes a <code class="docutils literal notranslate"><span class="pre">_comment</span></code> member if it would be a nonempty string.</p>
+</dd>
+</dl>
+<p>Each of these records also has one or more additional members, each of which
+maps from the name of a database table to a &lt;table-txn&gt;:</p>
+<dl class="docutils">
+<dt>&lt;table-txn&gt;</dt>
+<dd>A JSON object that describes the effects of a transaction on a database
+table.  Its names are &lt;raw-uuid&gt;s for rows in the table and its values are
+&lt;row-txn&gt;s.</dd>
+<dt>&lt;row-txn&gt;</dt>
+<dd><p class="first">Either <code class="docutils literal notranslate"><span class="pre">null</span></code>, which indicates that the transaction deleted this row, or
+a JSON object that describes how the transaction inserted or modified the
+row, whose names are the names of columns and whose values are &lt;value&gt;s
+that give the column’s new value.</p>
+<p class="last">For new rows, the OVSDB implementation omits columns whose values have the
+default values for their types defined in RFC 7047 section 5.2.1; for
+modified rows, the OVSDB implementation omits columns whose values are
+unchanged.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="clustered-format">
+<h3>Clustered Format<a class="headerlink" href="#clustered-format" title="Permalink to this headline">¶</a></h3>
+<p>The clustered format has the following additional notation:</p>
+<dl class="docutils">
+<dt>&lt;uint64&gt;</dt>
+<dd>A JSON integer that represents a 64-bit unsigned integer.  The OVS JSON
+implementation only supports integers in the range -2**63 through 2**63-1,
+so 64-bit unsigned integer values from 2**63 through 2**64-1 are expressed
+as negative numbers.</dd>
+<dt>&lt;address&gt;</dt>
+<dd>A JSON string that represents a network address to support clustering, in
+the <code class="docutils literal notranslate"><span class="pre">&lt;protocol&gt;:&lt;ip&gt;:&lt;port&gt;</span></code> syntax described in <code class="docutils literal notranslate"><span class="pre">ovsdb-tool(1)</span></code>.</dd>
+<dt>&lt;servers&gt;</dt>
+<dd>A JSON object whose names are &lt;raw-uuid&gt;s that identify servers and
+whose values are &lt;address&gt;es that specify those servers’ addresses.</dd>
+<dt>&lt;cluster-txn&gt;</dt>
+<dd><p class="first">A JSON array with two elements:</p>
+<ol class="arabic simple">
+<li>The first element is either a &lt;database-schema&gt; or <code class="docutils literal notranslate"><span class="pre">null</span></code>.  A
+&lt;database-schema&gt; element is always present in the first record of a
+clustered database to indicate the database’s initial schema.  If it is
+not <code class="docutils literal notranslate"><span class="pre">null</span></code> in a later record, it indicates a change of schema for the
+database.</li>
+<li>The second element is either a transaction record in the format
+described under <code class="docutils literal notranslate"><span class="pre">Standalone</span> <span class="pre">Format''</span> <span class="pre">above,</span> <span class="pre">or</span> <span class="pre">``null</span></code>.</li>
+</ol>
+<p class="last">When a schema is present, the transaction record is relative to an empty
+database.  That is, a schema change effectively resets the database to
+empty and the transaction record represents the full database contents.
+This allows readers to be ignorant of the full semantics of schema change.</p>
+</dd>
+</dl>
+<p>The first record in a clustered database contains the following members,
+all of which are required:</p>
+<dl class="docutils">
+<dt><code class="docutils literal notranslate"><span class="pre">&quot;server_id&quot;:</span> <span class="pre">&lt;raw-uuid&gt;</span></code></dt>
+<dd>The server’s own UUID, which must be unique within the cluster.</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">&quot;local_address&quot;:</span> <span class="pre">&lt;address&gt;</span></code></dt>
+<dd>The address on which the server listens for connections from other
+servers in the cluster.</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">name&quot;:</span> <span class="pre">&lt;id&gt;</span></code></dt>
+<dd>The database schema name.  It is only important when a server is in the
+process of joining a cluster: a server will only join a cluster if the
+name matches.  (If the database schema name were unique, then we would
+not also need a cluster ID.)</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">&quot;cluster_id&quot;:</span> <span class="pre">&lt;raw-uuid&gt;</span></code></dt>
+<dd>The cluster’s UUID.  The all-zeros UUID is not a valid cluster ID.</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">&quot;prev_term&quot;:</span> <span class="pre">&lt;uint64&gt;</span></code> and <code class="docutils literal notranslate"><span class="pre">&quot;prev_index&quot;:</span> <span class="pre">&lt;uint64&gt;</span></code></dt>
+<dd>The Raft term and index just before the beginning of the log.</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">&quot;prev_servers&quot;:</span> <span class="pre">&lt;servers&gt;</span></code></dt>
+<dd>The set of one or more servers in the cluster at index “prev_index” and
+term “prev_term”.  It might not include this server, if it was not the
+initial server in the cluster.</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">&quot;prev_data&quot;:</span> <span class="pre">&lt;json-value&gt;</span></code> and <code class="docutils literal notranslate"><span class="pre">&quot;prev_eid&quot;:</span> <span class="pre">&lt;raw-uuid&gt;</span></code></dt>
+<dd>A snapshot of the data in the database at index “prev_index” and term
+“prev_term”, and the entry ID for that data.  The snapshot must contain a
+schema.</dd>
+</dl>
+<p>The second and subsequent records, if present, in a clustered database
+represent changes to the database, to the cluster state, or both.  There are
+several types of these records.  The most important types of records directly
+represent persistent state described in the Raft specification:</p>
+<dl class="docutils">
+<dt>Entry</dt>
+<dd>A Raft log entry.</dd>
+<dt>Term</dt>
+<dd>The start of a new term.</dd>
+<dt>Vote</dt>
+<dd>The server’s vote for a leader in the current term.</dd>
+</dl>
+<p>The following additional types of records aid debugging and troubleshooting,
+but they do not affect correctness.</p>
+<dl class="docutils">
+<dt>Leader</dt>
+<dd>Identifies a newly elected leader for the current term.</dd>
+<dt>Commit Index</dt>
+<dd>An update to the server’s <code class="docutils literal notranslate"><span class="pre">commit_index</span></code>.</dd>
+<dt>Note</dt>
+<dd>A human-readable description of some event.</dd>
+</dl>
+<p>The table below identifies the members that each type of record contains.
+“yes” indicates that a member is required, “?” that it is optional, blank that
+it is forbidden, and [1] that <code class="docutils literal notranslate"><span class="pre">data</span></code> and <code class="docutils literal notranslate"><span class="pre">eid</span></code> must be either both present
+or both absent.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="26%" />
+<col width="11%" />
+<col width="9%" />
+<col width="9%" />
+<col width="13%" />
+<col width="26%" />
+<col width="9%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">member</th>
+<th class="head">Entry</th>
+<th class="head">Term</th>
+<th class="head">Vote</th>
+<th class="head">Leader</th>
+<th class="head">Commit Index</th>
+<th class="head">Note</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>comment</td>
+<td>?</td>
+<td>?</td>
+<td>?</td>
+<td>?</td>
+<td>?</td>
+<td>?</td>
+</tr>
+<tr class="row-odd"><td>term</td>
+<td>yes</td>
+<td>yes</td>
+<td>yes</td>
+<td>yes</td>
+<td>&#160;</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-even"><td>index</td>
+<td>yes</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td>servers</td>
+<td>?</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-even"><td>data</td>
+<td>[1]</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td>eid</td>
+<td>[1]</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-even"><td>vote</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>yes</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td>leader</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>yes</td>
+<td>&#160;</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-even"><td>commit_index</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>yes</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td>note</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>yes</td>
+</tr>
+</tbody>
+</table>
+<p>The members are:</p>
+<dl class="docutils">
+<dt><code class="docutils literal notranslate"><span class="pre">&quot;comment&quot;:</span> <span class="pre">&lt;string&gt;</span></code></dt>
+<dd>A human-readable string giving an administrator more information about
+the reason a record was emitted.</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">&quot;term&quot;:</span> <span class="pre">&lt;uint64&gt;</span></code></dt>
+<dd>The term in which the activity occurred.</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">&quot;index&quot;:</span> <span class="pre">&lt;uint64&gt;</span></code></dt>
+<dd>The index of a log entry.</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">&quot;servers&quot;:</span> <span class="pre">&lt;servers&gt;</span></code></dt>
+<dd>Server configuration in a log entry.</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">&quot;data&quot;:</span> <span class="pre">&lt;json-value&gt;</span></code></dt>
+<dd>The data in a log entry.</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">&quot;eid&quot;:</span> <span class="pre">&lt;raw-uuid&gt;</span></code></dt>
+<dd>Entry ID in a log entry.</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">&quot;vote&quot;:</span> <span class="pre">&lt;raw-uuid&gt;</span></code></dt>
+<dd>The server ID for which this server voted.</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">&quot;leader&quot;:</span> <span class="pre">&lt;raw-uuid&gt;</span></code></dt>
+<dd>The server ID of the server.  Emitted by both leaders and followers when a
+leader is elected.</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">&quot;commit_index&quot;:</span> <span class="pre">&lt;uint64&gt;</span></code></dt>
+<dd>Updated <code class="docutils literal notranslate"><span class="pre">commit_index</span></code> value.</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">&quot;note&quot;:</span> <span class="pre">&lt;string&gt;</span></code></dt>
+<dd><p class="first">One of a few special strings indicating important events.  The currently
+defined strings are:</p>
+<dl class="last docutils">
+<dt><code class="docutils literal notranslate"><span class="pre">&quot;transfer</span> <span class="pre">leadership&quot;</span></code></dt>
+<dd>This server transferred leadership to a different server (with details
+included in <code class="docutils literal notranslate"><span class="pre">comment</span></code>).</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">&quot;left&quot;</span></code></dt>
+<dd>This server finished leaving the cluster.  (This lets subsequent
+readers know that the server is not part of the cluster and should not
+attempt to connect to it.)</dd>
+</dl>
+</dd>
+</dl>
+<div class="section" id="joining-a-cluster">
+<h4>Joining a Cluster<a class="headerlink" href="#joining-a-cluster" title="Permalink to this headline">¶</a></h4>
+<p>In addition to general format for a clustered database, there is also a special
+case for a database file created by <code class="docutils literal notranslate"><span class="pre">ovsdb-tool</span> <span class="pre">join-cluster</span></code>.  Such a file
+contains exactly one record, which conveys the information passed to the
+<code class="docutils literal notranslate"><span class="pre">join-cluster</span></code> command.  It has the following members:</p>
+<dl class="docutils">
+<dt><code class="docutils literal notranslate"><span class="pre">&quot;server_id&quot;:</span> <span class="pre">&lt;raw-uuid&gt;</span></code> and <code class="docutils literal notranslate"><span class="pre">&quot;local_address&quot;:</span> <span class="pre">&lt;address&gt;</span></code> and <code class="docutils literal notranslate"><span class="pre">&quot;name&quot;:</span> <span class="pre">&lt;id&gt;</span></code></dt>
+<dd>These have the same semantics described above in the general description
+of the format.</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">&quot;cluster_id&quot;:</span> <span class="pre">&lt;raw-uuid&gt;</span></code></dt>
+<dd>This is provided only if the user gave the <code class="docutils literal notranslate"><span class="pre">--cid</span></code> option to
+<code class="docutils literal notranslate"><span class="pre">join-cluster</span></code>.  It has the same semantics described above.</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">&quot;remote_addresses&quot;;</span> <span class="pre">[&lt;address&gt;*]</span></code></dt>
+<dd>One or more remote servers to contact for joining the cluster.</dd>
+</dl>
+<p>When the server successfully joins the cluster, the database file is replaced
+by one described in <a class="reference internal" href="#clustered-format">Clustered Format</a>.</p>
+</div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../contents.html">
+              <img class="logo" src="../_static/logo.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="../contents.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">ovsdb</a><ul>
+<li><a class="reference internal" href="#description">Description</a><ul>
+<li><a class="reference internal" href="#json-notation">JSON Notation</a></li>
+<li><a class="reference internal" href="#standalone-format">Standalone Format</a></li>
+<li><a class="reference internal" href="#clustered-format">Clustered Format</a><ul>
+<li><a class="reference internal" href="#joining-a-cluster">Joining a Cluster</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../contents.html">Documentation overview</a><ul>
+  <li><a href="index.html">Reference Guide</a><ul>
+      <li>Previous: <a href="ovsdb-server.7.html" title="previous chapter">ovsdb-server</a></li>
+      <li>Next: <a href="ovsdb.7.html" title="next chapter">ovsdb</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/ref/ovsdb.5.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, The Open vSwitch Development Community.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.4</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="../_sources/ref/ovsdb.5.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

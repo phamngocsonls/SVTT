@@ -1,0 +1,175 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Open Virtual Network With firewalld &#8212; Open vSwitch 2.9.2 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Reference Guide" href="../ref/index.html" />
+    <link rel="prev" title="Integration of Containers with OVN and OpenStack" href="openstack-containers.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="open-virtual-network-with-firewalld">
+<h1>Open Virtual Network With firewalld<a class="headerlink" href="#open-virtual-network-with-firewalld" title="Permalink to this headline">¶</a></h1>
+<p>firewalld is a service that allows for easy administration of firewalls. OVN
+ships with a set of service files that can be used with firewalld to allow
+for remote connections to the northbound and southbound databases.</p>
+<p>This guide will describe how you can use these files with your existing
+firewalld setup. Setup and administration of firewalld is outside the scope
+of this document.</p>
+<div class="section" id="installation">
+<h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
+<p>If you have installed OVN from an RPM, then the service files for firewalld
+will automatically be installed in <code class="docutils literal notranslate"><span class="pre">/usr/lib/firewalld/services</span></code>.
+Installation from RPM includes installation from the yum or dnf package
+managers.</p>
+<p>If you have installed OVN from source, then from the top level source
+directory, issue the following commands to copy the firewalld service files:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ cp rhel/usr_lib_firewalld_services_ovn-central-firewall-service.xml \
+/etc/firewalld/services/
+$ cp rhel/usr_lib_firewalld_services_ovn-host-firewall-service.xml \
+/etc/firewalld/services/
+</pre></div>
+</div>
+</div>
+<div class="section" id="activation">
+<h2>Activation<a class="headerlink" href="#activation" title="Permalink to this headline">¶</a></h2>
+<p>Assuming you are already running firewalld, you can issue the following
+commands to enable the OVN services.</p>
+<p>On the central server (the one running <code class="docutils literal notranslate"><span class="pre">ovn-northd</span></code>), issue the following:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ firewall-cmd --zone=public --add-service=ovn-central-firewall-service
+</pre></div>
+</div>
+<p>This will open TCP ports 6641 and 6642, allowing for remote connections to the
+northbound and southbound databases.</p>
+<p>On the OVN hosts (the ones running <code class="docutils literal notranslate"><span class="pre">ovn-controller</span></code>), issue the following:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ firewall-cmd --zone=public --add-service=ovn-host-firewall-service
+</pre></div>
+</div>
+<p>This will open UDP port 6081, allowing for geneve traffic to flow between the
+controllers.</p>
+</div>
+<div class="section" id="variations">
+<h2>Variations<a class="headerlink" href="#variations" title="Permalink to this headline">¶</a></h2>
+<p>When installing the XML service files, you have the choice of copying them to
+<code class="docutils literal notranslate"><span class="pre">/etc/firewalld/services</span></code> or <code class="docutils literal notranslate"><span class="pre">/usr/lib/firewalld/services</span></code>. The former is
+recommened since the latter can be overwritten if firewalld is upgraded.</p>
+<p>The above commands assumed your underlay network interfaces are in the
+“public” firewalld zone. If your underlay network interfaces are in a separate
+zone, then adjust the above commands accordingly.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">--permanent</span></code> option may be passed to the above firewall-cmd invocations
+in order for the services to be permanently added to the firewalld
+configuration. This way it is not necessary to re-issue the commands each
+time the firewalld service restarts.</p>
+<p>The ovn-host-firewall-service only opens port 6081. This is because the
+default protocol for OVN tunnels is geneve. If you are using a different
+encapsulation protocol, you will need to modify the XML service file to open
+the appropriate port(s). For VXLAN, open port 4789. For STT, open port 7471.</p>
+</div>
+<div class="section" id="recommendations">
+<h2>Recommendations<a class="headerlink" href="#recommendations" title="Permalink to this headline">¶</a></h2>
+<p>The firewalld service files included with the OVS repo are meant as a
+convenience for firewalld users. All that the service files do is to open
+the common ports used by OVN. No additional security is provided. To ensure a
+more secure environment, it is a good idea to do the following</p>
+<ul class="simple">
+<li>Use tools such as iptables or nftables to restrict access to known hosts.</li>
+<li>Use SSL for all remote connections to OVN databases.</li>
+<li>Use role-based access control for connections to the OVN southbound
+database.</li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../contents.html">
+              <img class="logo" src="../_static/logo.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="../contents.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Open Virtual Network With firewalld</a><ul>
+<li><a class="reference internal" href="#installation">Installation</a></li>
+<li><a class="reference internal" href="#activation">Activation</a></li>
+<li><a class="reference internal" href="#variations">Variations</a></li>
+<li><a class="reference internal" href="#recommendations">Recommendations</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../contents.html">Documentation overview</a><ul>
+  <li><a href="index.html">How-to Guides</a><ul>
+      <li>Previous: <a href="openstack-containers.html" title="previous chapter">Integration of Containers with OVN and OpenStack</a></li>
+      <li>Next: <a href="../ref/index.html" title="next chapter">Reference Guide</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/howto/firewalld.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, The Open vSwitch Development Community.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.4</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="../_sources/howto/firewalld.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

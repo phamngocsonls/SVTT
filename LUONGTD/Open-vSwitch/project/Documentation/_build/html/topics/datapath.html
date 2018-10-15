@@ -1,0 +1,324 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Open vSwitch Datapath Development Guide &#8212; Open vSwitch 2.9.2 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Integration Guide for Centralized Control" href="integration.html" />
+    <link rel="prev" title="Design Decisions In Open vSwitch" href="design.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="open-vswitch-datapath-development-guide">
+<h1>Open vSwitch Datapath Development Guide<a class="headerlink" href="#open-vswitch-datapath-development-guide" title="Permalink to this headline">¶</a></h1>
+<p>The Open vSwitch kernel module allows flexible userspace control over
+flow-level packet processing on selected network devices.  It can be used to
+implement a plain Ethernet switch, network device bonding, VLAN processing,
+network access control, flow-based network control, and so on.</p>
+<p>The kernel module implements multiple “datapaths” (analogous to bridges), each
+of which can have multiple “vports” (analogous to ports within a bridge).  Each
+datapath also has associated with it a “flow table” that userspace populates
+with “flows” that map from keys based on packet headers and metadata to sets of
+actions.  The most common action forwards the packet to another vport; other
+actions are also implemented.</p>
+<p>When a packet arrives on a vport, the kernel module processes it by extracting
+its flow key and looking it up in the flow table.  If there is a matching flow,
+it executes the associated actions.  If there is no match, it queues the packet
+to userspace for processing (as part of its processing, userspace will likely
+set up a flow to handle further packets of the same type entirely in-kernel).</p>
+<div class="section" id="flow-key-compatibility">
+<h2>Flow Key Compatibility<a class="headerlink" href="#flow-key-compatibility" title="Permalink to this headline">¶</a></h2>
+<p>Network protocols evolve over time.  New protocols become important and
+existing protocols lose their prominence.  For the Open vSwitch kernel module
+to remain relevant, it must be possible for newer versions to parse additional
+protocols as part of the flow key.  It might even be desirable, someday, to
+drop support for parsing protocols that have become obsolete.  Therefore, the
+Netlink interface to Open vSwitch is designed to allow carefully written
+userspace applications to work with any version of the flow key, past or
+future.</p>
+<p>To support this forward and backward compatibility, whenever the kernel module
+passes a packet to userspace, it also passes along the flow key that it parsed
+from the packet.  Userspace then extracts its own notion of a flow key from the
+packet and compares it against the kernel-provided version:</p>
+<ul class="simple">
+<li>If userspace’s notion of the flow key for the packet matches the kernel’s,
+then nothing special is necessary.</li>
+<li>If the kernel’s flow key includes more fields than the userspace version of
+the flow key, for example if the kernel decoded IPv6 headers but userspace
+stopped at the Ethernet type (because it does not understand IPv6), then
+again nothing special is necessary.  Userspace can still set up a flow in the
+usual way, as long as it uses the kernel-provided flow key to do it.</li>
+<li>If the userspace flow key includes more fields than the kernel’s, for example
+if userspace decoded an IPv6 header but the kernel stopped at the Ethernet
+type, then userspace can forward the packet manually, without setting up a
+flow in the kernel.  This case is bad for performance because every packet
+that the kernel considers part of the flow must go to userspace, but the
+forwarding behavior is correct.  (If userspace can determine that the values
+of the extra fields would not affect forwarding behavior, then it could set
+up a flow anyway.)</li>
+</ul>
+<p>How flow keys evolve over time is important to making this work, so
+the following sections go into detail.</p>
+</div>
+<div class="section" id="flow-key-format">
+<h2>Flow Key Format<a class="headerlink" href="#flow-key-format" title="Permalink to this headline">¶</a></h2>
+<p>A flow key is passed over a Netlink socket as a sequence of Netlink attributes.
+Some attributes represent packet metadata, defined as any information about a
+packet that cannot be extracted from the packet itself, e.g. the vport on which
+the packet was received.  Most attributes, however, are extracted from headers
+within the packet, e.g. source and destination addresses from Ethernet, IP, or
+TCP headers.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">&lt;linux/openvswitch.h&gt;</span></code> header file defines the exact format of the flow
+key attributes.  For informal explanatory purposes here, we write them as
+comma-separated strings, with parentheses indicating arguments and nesting.
+For example, the following could represent a flow key corresponding to a TCP
+packet that arrived on vport 1:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">in_port</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">eth</span><span class="p">(</span><span class="n">src</span><span class="o">=</span><span class="n">e0</span><span class="p">:</span><span class="mi">91</span><span class="p">:</span><span class="n">f5</span><span class="p">:</span><span class="mi">21</span><span class="p">:</span><span class="n">d0</span><span class="p">:</span><span class="n">b2</span><span class="p">,</span> <span class="n">dst</span><span class="o">=</span><span class="mi">00</span><span class="p">:</span><span class="mi">02</span><span class="p">:</span><span class="n">e3</span><span class="p">:</span><span class="mi">0</span><span class="n">f</span><span class="p">:</span><span class="mi">80</span><span class="p">:</span><span class="n">a4</span><span class="p">),</span>
+<span class="n">eth_type</span><span class="p">(</span><span class="mh">0x0800</span><span class="p">),</span> <span class="n">ipv4</span><span class="p">(</span><span class="n">src</span><span class="o">=</span><span class="mf">172.16</span><span class="o">.</span><span class="mf">0.20</span><span class="p">,</span> <span class="n">dst</span><span class="o">=</span><span class="mf">172.18</span><span class="o">.</span><span class="mf">0.52</span><span class="p">,</span> <span class="n">proto</span><span class="o">=</span><span class="mi">17</span><span class="p">,</span> <span class="n">tos</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+<span class="n">frag</span><span class="o">=</span><span class="n">no</span><span class="p">),</span> <span class="n">tcp</span><span class="p">(</span><span class="n">src</span><span class="o">=</span><span class="mi">49163</span><span class="p">,</span> <span class="n">dst</span><span class="o">=</span><span class="mi">80</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Often we ellipsize arguments not important to the discussion, e.g.:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">in_port</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">eth</span><span class="p">(</span><span class="o">...</span><span class="p">),</span> <span class="n">eth_type</span><span class="p">(</span><span class="mh">0x0800</span><span class="p">),</span> <span class="n">ipv4</span><span class="p">(</span><span class="o">...</span><span class="p">),</span> <span class="n">tcp</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="wildcarded-flow-key-format">
+<h2>Wildcarded Flow Key Format<a class="headerlink" href="#wildcarded-flow-key-format" title="Permalink to this headline">¶</a></h2>
+<p>A wildcarded flow is described with two sequences of Netlink attributes passed
+over the Netlink socket. A flow key, exactly as described above, and an
+optional corresponding flow mask.</p>
+<p>A wildcarded flow can represent a group of exact match flows. Each <code class="docutils literal notranslate"><span class="pre">1</span></code> bit
+in the mask specifies an exact match with the corresponding bit in the flow key.
+A <code class="docutils literal notranslate"><span class="pre">0</span></code> bit specifies a don’t care bit, which will match either a <code class="docutils literal notranslate"><span class="pre">1</span></code> or
+<code class="docutils literal notranslate"><span class="pre">0</span></code> bit of an incoming packet. Using a wildcarded flow can improve the flow
+set up rate by reducing the number of new flows that need to be processed by
+the user space program.</p>
+<p>Support for the mask Netlink attribute is optional for both the kernel and user
+space program. The kernel can ignore the mask attribute, installing an exact
+match flow, or reduce the number of don’t care bits in the kernel to less than
+what was specified by the user space program. In this case, variations in bits
+that the kernel does not implement will simply result in additional flow
+setups.  The kernel module will also work with user space programs that neither
+support nor supply flow mask attributes.</p>
+<p>Since the kernel may ignore or modify wildcard bits, it can be difficult for
+the userspace program to know exactly what matches are installed. There are two
+possible approaches: reactively install flows as they miss the kernel flow
+table (and therefore not attempt to determine wildcard changes at all) or use
+the kernel’s response messages to determine the installed wildcards.</p>
+<p>When interacting with userspace, the kernel should maintain the match portion
+of the key exactly as originally installed. This will provides a handle to
+identify the flow for all future operations. However, when reporting the mask
+of an installed flow, the mask should include any restrictions imposed by the
+kernel.</p>
+<p>The behavior when using overlapping wildcarded flows is undefined. It is the
+responsibility of the user space program to ensure that any incoming packet can
+match at most one flow, wildcarded or not. The current implementation performs
+best-effort detection of overlapping wildcarded flows and may reject some but
+not all of them. However, this behavior may change in future versions.</p>
+</div>
+<div class="section" id="unique-flow-identifiers">
+<h2>Unique Flow Identifiers<a class="headerlink" href="#unique-flow-identifiers" title="Permalink to this headline">¶</a></h2>
+<p>An alternative to using the original match portion of a key as the handle for
+flow identification is a unique flow identifier, or “UFID”. UFIDs are optional
+for both the kernel and user space program.</p>
+<p>User space programs that support UFID are expected to provide it during flow
+setup in addition to the flow, then refer to the flow using the UFID for all
+future operations. The kernel is not required to index flows by the original
+flow key if a UFID is specified.</p>
+</div>
+<div class="section" id="basic-rule-for-evolving-flow-keys">
+<h2>Basic Rule for Evolving Flow Keys<a class="headerlink" href="#basic-rule-for-evolving-flow-keys" title="Permalink to this headline">¶</a></h2>
+<p>Some care is needed to really maintain forward and backward compatibility for
+applications that follow the rules listed under “Flow key compatibility” above.</p>
+<p>The basic rule is obvious:</p>
+<blockquote>
+<div>New network protocol support must only supplement existing flow key
+attributes.  It must not change the meaning of already defined flow key
+attributes.</div></blockquote>
+<p>This rule does have less-obvious consequences so it is worth working through a
+few examples.  Suppose, for example, that the kernel module did not already
+implement VLAN parsing.  Instead, it just interpreted the 802.1Q TPID
+(<code class="docutils literal notranslate"><span class="pre">0x8100</span></code>) as the Ethertype then stopped parsing the packet.  The flow key
+for any packet with an 802.1Q header would look essentially like this, ignoring
+metadata:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">eth</span><span class="p">(</span><span class="o">...</span><span class="p">),</span> <span class="n">eth_type</span><span class="p">(</span><span class="mh">0x8100</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Naively, to add VLAN support, it makes sense to add a new “vlan” flow key
+attribute to contain the VLAN tag, then continue to decode the encapsulated
+headers beyond the VLAN tag using the existing field definitions.  With this
+change, a TCP packet in VLAN 10 would have a flow key much like this:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">eth</span><span class="p">(</span><span class="o">...</span><span class="p">),</span> <span class="n">vlan</span><span class="p">(</span><span class="n">vid</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">pcp</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span> <span class="n">eth_type</span><span class="p">(</span><span class="mh">0x0800</span><span class="p">),</span> <span class="n">ip</span><span class="p">(</span><span class="n">proto</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span> <span class="o">...</span><span class="p">),</span> <span class="n">tcp</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>But this change would negatively affect a userspace application that has not
+been updated to understand the new “vlan” flow key attribute.  The application
+could, following the flow compatibility rules above, ignore the “vlan”
+attribute that it does not understand and therefore assume that the flow
+contained IP packets.  This is a bad assumption (the flow only contains IP
+packets if one parses and skips over the 802.1Q header) and it could cause the
+application’s behavior to change across kernel versions even though it follows
+the compatibility rules.</p>
+<p>The solution is to use a set of nested attributes.  This is, for example, why
+802.1Q support uses nested attributes.  A TCP packet in VLAN 10 is actually
+expressed as:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">eth</span><span class="p">(</span><span class="o">...</span><span class="p">),</span> <span class="n">eth_type</span><span class="p">(</span><span class="mh">0x8100</span><span class="p">),</span> <span class="n">vlan</span><span class="p">(</span><span class="n">vid</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">pcp</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span> <span class="n">encap</span><span class="p">(</span><span class="n">eth_type</span><span class="p">(</span><span class="mh">0x0800</span><span class="p">),</span>
+<span class="n">ip</span><span class="p">(</span><span class="n">proto</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span> <span class="o">...</span><span class="p">),</span> <span class="n">tcp</span><span class="p">(</span><span class="o">...</span><span class="p">)))</span>
+</pre></div>
+</div>
+<p>Notice how the <code class="docutils literal notranslate"><span class="pre">eth_type</span></code>, <code class="docutils literal notranslate"><span class="pre">ip</span></code>, and <code class="docutils literal notranslate"><span class="pre">tcp</span></code> flow key attributes are nested
+inside the <code class="docutils literal notranslate"><span class="pre">encap</span></code> attribute.  Thus, an application that does not understand
+the <code class="docutils literal notranslate"><span class="pre">vlan</span></code> key will not see either of those attributes and therefore will not
+misinterpret them.  (Also, the outer <code class="docutils literal notranslate"><span class="pre">eth_type</span></code> is still <code class="docutils literal notranslate"><span class="pre">0x8100</span></code>, not
+changed to <code class="docutils literal notranslate"><span class="pre">0x0800</span></code>)</p>
+</div>
+<div class="section" id="handling-malformed-packets">
+<h2>Handling Malformed Packets<a class="headerlink" href="#handling-malformed-packets" title="Permalink to this headline">¶</a></h2>
+<p>Don’t drop packets in the kernel for malformed protocol headers, bad checksums,
+etc.  This would prevent userspace from implementing a simple Ethernet switch
+that forwards every packet.</p>
+<p>Instead, in such a case, include an attribute with “empty” content.  It doesn’t
+matter if the empty content could be valid protocol values, as long as those
+values are rarely seen in practice, because userspace can always forward all
+packets with those values to userspace and handle them individually.</p>
+<p>For example, consider a packet that contains an IP header that indicates
+protocol 6 for TCP, but which is truncated just after the IP header, so that
+the TCP header is missing.  The flow key for this packet would include a tcp
+attribute with all-zero <code class="docutils literal notranslate"><span class="pre">src</span></code> and <code class="docutils literal notranslate"><span class="pre">dst</span></code>, like this:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">eth</span><span class="p">(</span><span class="o">...</span><span class="p">),</span> <span class="n">eth_type</span><span class="p">(</span><span class="mh">0x0800</span><span class="p">),</span> <span class="n">ip</span><span class="p">(</span><span class="n">proto</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span> <span class="o">...</span><span class="p">),</span> <span class="n">tcp</span><span class="p">(</span><span class="n">src</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">dst</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>As another example, consider a packet with an Ethernet type of 0x8100,
+indicating that a VLAN TCI should follow, but which is truncated just after the
+Ethernet type.  The flow key for this packet would include an all-zero-bits
+vlan and an empty encap attribute, like this:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">eth</span><span class="p">(</span><span class="o">...</span><span class="p">),</span> <span class="n">eth_type</span><span class="p">(</span><span class="mh">0x8100</span><span class="p">),</span> <span class="n">vlan</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="n">encap</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Unlike a TCP packet with source and destination ports 0, an all-zero-bits VLAN
+TCI is not that rare, so the CFI bit (aka VLAN_TAG_PRESENT inside the kernel)
+is ordinarily set in a vlan attribute expressly to allow this situation to be
+distinguished.  Thus, the flow key in this second example unambiguously
+indicates a missing or malformed VLAN TCI.</p>
+</div>
+<div class="section" id="other-rules">
+<h2>Other Rules<a class="headerlink" href="#other-rules" title="Permalink to this headline">¶</a></h2>
+<p>The other rules for flow keys are much less subtle:</p>
+<ul class="simple">
+<li>Duplicate attributes are not allowed at a given nesting level.</li>
+<li>Ordering of attributes is not significant.</li>
+<li>When the kernel sends a given flow key to userspace, it always composes it
+the same way.  This allows userspace to hash and compare entire flow keys
+that it may not be able to fully interpret.</li>
+</ul>
+</div>
+<div class="section" id="coding-rules">
+<h2>Coding Rules<a class="headerlink" href="#coding-rules" title="Permalink to this headline">¶</a></h2>
+<p>Implement the headers and codes for compatibility with older kernel in
+<code class="docutils literal notranslate"><span class="pre">linux/compat/</span></code> directory.  All public functions should be exported using
+<code class="docutils literal notranslate"><span class="pre">EXPORT_SYMBOL</span></code> macro.  Public function replacing the same-named kernel
+function should be prefixed with <code class="docutils literal notranslate"><span class="pre">rpl_</span></code>.  Otherwise, the function should be
+prefixed with <code class="docutils literal notranslate"><span class="pre">ovs_</span></code>.  For special case when it is not possible to follow
+this rule (e.g., the <code class="docutils literal notranslate"><span class="pre">pskb_expand_head()</span></code> function), the function name must
+be added to <code class="docutils literal notranslate"><span class="pre">linux/compat/build-aux/export-check-whitelist</span></code>, otherwise, the
+compilation check <code class="docutils literal notranslate"><span class="pre">check-export-symbol</span></code> will fail.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../contents.html">
+              <img class="logo" src="../_static/logo.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="../contents.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Open vSwitch Datapath Development Guide</a><ul>
+<li><a class="reference internal" href="#flow-key-compatibility">Flow Key Compatibility</a></li>
+<li><a class="reference internal" href="#flow-key-format">Flow Key Format</a></li>
+<li><a class="reference internal" href="#wildcarded-flow-key-format">Wildcarded Flow Key Format</a></li>
+<li><a class="reference internal" href="#unique-flow-identifiers">Unique Flow Identifiers</a></li>
+<li><a class="reference internal" href="#basic-rule-for-evolving-flow-keys">Basic Rule for Evolving Flow Keys</a></li>
+<li><a class="reference internal" href="#handling-malformed-packets">Handling Malformed Packets</a></li>
+<li><a class="reference internal" href="#other-rules">Other Rules</a></li>
+<li><a class="reference internal" href="#coding-rules">Coding Rules</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../contents.html">Documentation overview</a><ul>
+  <li><a href="index.html">Deep Dive</a><ul>
+      <li>Previous: <a href="design.html" title="previous chapter">Design Decisions In Open vSwitch</a></li>
+      <li>Next: <a href="integration.html" title="next chapter">Integration Guide for Centralized Control</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/topics/datapath.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, The Open vSwitch Development Community.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.4</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="../_sources/topics/datapath.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

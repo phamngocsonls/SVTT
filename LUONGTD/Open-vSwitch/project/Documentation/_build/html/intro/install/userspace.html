@@ -1,0 +1,183 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Open vSwitch without Kernel Support &#8212; Open vSwitch 2.9.2 documentation</title>
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" src="../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Open vSwitch with DPDK" href="dpdk.html" />
+    <link rel="prev" title="Open vSwitch on Citrix XenServer" href="xenserver.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="open-vswitch-without-kernel-support">
+<h1>Open vSwitch without Kernel Support<a class="headerlink" href="#open-vswitch-without-kernel-support" title="Permalink to this headline">¶</a></h1>
+<p>Open vSwitch can operate, at a cost in performance, entirely in userspace,
+without assistance from a kernel module.  This file explains how to install
+Open vSwitch in such a mode.</p>
+<p>This version of Open vSwitch should be built manually with <code class="docutils literal notranslate"><span class="pre">configure</span></code> and
+<code class="docutils literal notranslate"><span class="pre">make</span></code>.  Debian packaging for Open vSwitch is also included, but it has not
+been recently tested, and so Debian packages are not a recommended way to use
+this version of Open vSwitch.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">The userspace-only mode of Open vSwitch without DPDK is considered
+experimental. It has not been thoroughly tested.</p>
+</div>
+<div class="section" id="building-and-installing">
+<h2>Building and Installing<a class="headerlink" href="#building-and-installing" title="Permalink to this headline">¶</a></h2>
+<p>The requirements and procedure for building, installing, and configuring Open
+vSwitch are the same as those given in <a class="reference internal" href="general.html"><span class="doc">Open vSwitch on Linux, FreeBSD and NetBSD</span></a>. You may omit
+configuring, building, and installing the kernel module, and the related
+requirements.</p>
+<p>On Linux, the userspace switch additionally requires the kernel TUN/TAP driver
+to be available, either built into the kernel or loaded as a module.  If you
+are not sure, check for a directory named <code class="docutils literal notranslate"><span class="pre">/sys/class/misc/tun</span></code>.  If it does
+not exist, then attempt to load the module with <code class="docutils literal notranslate"><span class="pre">modprobe</span> <span class="pre">tun</span></code>.</p>
+<p>The tun device must also exist as <code class="docutils literal notranslate"><span class="pre">/dev/net/tun</span></code>.  If it does not exist, then
+create <code class="docutils literal notranslate"><span class="pre">/dev/net</span></code> (if necessary) with <code class="docutils literal notranslate"><span class="pre">mkdir</span> <span class="pre">/dev/net</span></code>, then create
+<code class="docutils literal notranslate"><span class="pre">/dev/net/tun</span></code> with <code class="docutils literal notranslate"><span class="pre">mknod</span> <span class="pre">/dev/net/tun</span> <span class="pre">c</span> <span class="pre">10</span> <span class="pre">200</span></code>.</p>
+<p>On FreeBSD and NetBSD, the userspace switch additionally requires the kernel
+tap(4) driver to be available, either built into the kernel or loaded as a
+module.</p>
+</div>
+<div class="section" id="using-the-userspace-datapath-with-ovs-vswitchd">
+<h2>Using the Userspace Datapath with ovs-vswitchd<a class="headerlink" href="#using-the-userspace-datapath-with-ovs-vswitchd" title="Permalink to this headline">¶</a></h2>
+<p>To use ovs-vswitchd in userspace mode, create a bridge with
+<code class="docutils literal notranslate"><span class="pre">datapath_type=netdev</span></code> in the configuration database.  For example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ ovs-vsctl add-br br0
+$ ovs-vsctl set bridge br0 datapath_type=netdev
+$ ovs-vsctl add-port br0 eth0
+$ ovs-vsctl add-port br0 eth1
+$ ovs-vsctl add-port br0 eth2
+</pre></div>
+</div>
+<p>ovs-vswitchd will create a TAP device as the bridge’s local interface, named
+the same as the bridge, as well as for each configured internal interface.</p>
+<p>Currently, on FreeBSD, the functionality required for in-band control support
+is not implemented.  To avoid related errors, you can disable the in-band
+support with the following command:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ ovs-vsctl set bridge br0 other_config:disable-in-band=true
+</pre></div>
+</div>
+</div>
+<div class="section" id="firewall-rules">
+<h2>Firewall Rules<a class="headerlink" href="#firewall-rules" title="Permalink to this headline">¶</a></h2>
+<p>On Linux, when a physical interface is in use by the userspace datapath,
+packets received on the interface still also pass into the kernel TCP/IP stack.
+This can cause surprising and incorrect behavior.  You can use “iptables” to
+avoid this behavior, by using it to drop received packets.  For example, to
+drop packets received on eth0:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ iptables -A INPUT -i eth0 -j DROP
+$ iptables -A FORWARD -i eth0 -j DROP
+</pre></div>
+</div>
+</div>
+<div class="section" id="other-settings">
+<h2>Other Settings<a class="headerlink" href="#other-settings" title="Permalink to this headline">¶</a></h2>
+<p>On NetBSD, depending on your network topology and applications, the following
+configuration might help.  See sysctl(7).:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ sysctl -w net.inet.ip.checkinterface=1
+</pre></div>
+</div>
+</div>
+<div class="section" id="reporting-bugs">
+<h2>Reporting Bugs<a class="headerlink" href="#reporting-bugs" title="Permalink to this headline">¶</a></h2>
+<p>Report problems to <a class="reference external" href="mailto:bugs&#37;&#52;&#48;openvswitch&#46;org">bugs<span>&#64;</span>openvswitch<span>&#46;</span>org</a>.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../contents.html">
+              <img class="logo" src="../../_static/logo.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="../../contents.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Open vSwitch without Kernel Support</a><ul>
+<li><a class="reference internal" href="#building-and-installing">Building and Installing</a></li>
+<li><a class="reference internal" href="#using-the-userspace-datapath-with-ovs-vswitchd">Using the Userspace Datapath with ovs-vswitchd</a></li>
+<li><a class="reference internal" href="#firewall-rules">Firewall Rules</a></li>
+<li><a class="reference internal" href="#other-settings">Other Settings</a></li>
+<li><a class="reference internal" href="#reporting-bugs">Reporting Bugs</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../contents.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Getting Started</a><ul>
+  <li><a href="index.html">Installing Open vSwitch</a><ul>
+      <li>Previous: <a href="xenserver.html" title="previous chapter">Open vSwitch on Citrix XenServer</a></li>
+      <li>Next: <a href="dpdk.html" title="next chapter">Open vSwitch with DPDK</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/intro/install/userspace.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, The Open vSwitch Development Community.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.4</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="../../_sources/intro/install/userspace.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

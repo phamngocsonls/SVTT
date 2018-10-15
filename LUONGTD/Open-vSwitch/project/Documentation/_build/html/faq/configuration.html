@@ -1,0 +1,289 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Basic Configuration &#8212; Open vSwitch 2.9.2 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Development" href="contributing.html" />
+    <link rel="prev" title="Open vSwitch FAQ" href="index.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="basic-configuration">
+<h1>Basic Configuration<a class="headerlink" href="#basic-configuration" title="Permalink to this headline">¶</a></h1>
+<p>Q: How do I configure a port as an access port?</p>
+<blockquote>
+<div><p>A. Add <code class="docutils literal notranslate"><span class="pre">tag=VLAN</span></code> to your <code class="docutils literal notranslate"><span class="pre">ovs-vsctl</span> <span class="pre">add-port</span></code> command. For example,
+the following commands configure br0 with eth0 as a trunk port (the
+default) and tap0 as an access port for VLAN 9:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ ovs-vsctl add-br br0
+$ ovs-vsctl add-port br0 eth0
+$ ovs-vsctl add-port br0 tap0 tag=9
+</pre></div>
+</div>
+<p>If you want to configure an already added port as an access port, use
+<code class="docutils literal notranslate"><span class="pre">ovs-vsctl</span> <span class="pre">set</span></code>, e.g.:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ ovs-vsctl set port tap0 tag=9
+</pre></div>
+</div>
+</div></blockquote>
+<p>Q: How do I configure a port as a SPAN port, that is, enable mirroring of all
+traffic to that port?</p>
+<blockquote>
+<div><p>A. The following commands configure br0 with eth0 and tap0 as trunk ports.
+All traffic coming in or going out on eth0 or tap0 is also mirrored to
+tap1; any traffic arriving on tap1 is dropped:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ ovs-vsctl add-br br0
+$ ovs-vsctl add-port br0 eth0
+$ ovs-vsctl add-port br0 tap0
+$ ovs-vsctl add-port br0 tap1 \
+    -- --id=@p get port tap1 \
+    -- --id=@m create mirror name=m0 select-all=true output-port=@p \
+    -- set bridge br0 mirrors=@m
+</pre></div>
+</div>
+<p>To later disable mirroring, run:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ ovs-vsctl clear bridge br0 mirrors
+</pre></div>
+</div>
+</div></blockquote>
+<p>Q: Does Open vSwitch support configuring a port in promiscuous mode?</p>
+<blockquote>
+<div><p>A: Yes.  How you configure it depends on what you mean by “promiscuous
+mode”:</p>
+<ul>
+<li><p class="first">Conventionally, “promiscuous mode” is a feature of a network interface
+card.  Ordinarily, a NIC passes to the CPU only the packets actually
+destined to its host machine.  It discards the rest to avoid wasting
+memory and CPU cycles.  When promiscuous mode is enabled, however, it
+passes every packet to the CPU.  On an old-style shared-media or
+hub-based network, this allows the host to spy on all packets on the
+network.  But in the switched networks that are almost everywhere these
+days, promiscuous mode doesn’t have much effect, because few packets not
+destined to a host are delivered to the host’s NIC.</p>
+<p>This form of promiscuous mode is configured in the guest OS of the VMs on
+your bridge, e.g. with “ip link set &lt;device&gt; promisc”.</p>
+</li>
+<li><p class="first">The VMware vSwitch uses a different definition of “promiscuous mode”.
+When you configure promiscuous mode on a VMware vNIC, the vSwitch sends a
+copy of every packet received by the vSwitch to that vNIC.  That has a
+much bigger effect than just enabling promiscuous mode in a guest OS.
+Rather than getting a few stray packets for which the switch does not yet
+know the correct destination, the vNIC gets every packet.  The effect is
+similar to replacing the vSwitch by a virtual hub.</p>
+<p>This “promiscuous mode” is what switches normally call “port mirroring”
+or “SPAN”.  For information on how to configure SPAN, see “How do I
+configure a port as a SPAN port, that is, enable mirroring of all traffic
+to that port?”</p>
+</li>
+</ul>
+</div></blockquote>
+<p>Q: How do I configure a DPDK port as an access port?</p>
+<blockquote>
+<div><p>A: Firstly, you must have a DPDK-enabled version of Open vSwitch.</p>
+<p>If your version is DPDK-enabled it will support the other-config:dpdk-init
+configuration in the database and will display lines with “EAL:…” during
+startup when other_config:dpdk-init is set to ‘true’.</p>
+<p>Secondly, when adding a DPDK port, unlike a system port, the type for the
+interface and valid dpdk-devargs must be specified. For example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ ovs-vsctl add-br br0
+$ ovs-vsctl add-port br0 myportname -- set Interface myportname \
+    type=dpdk options:dpdk-devargs=0000:06:00.0
+</pre></div>
+</div>
+<p>Refer to <a class="reference internal" href="../intro/install/dpdk.html"><span class="doc">Open vSwitch with DPDK</span></a> for more information on enabling and
+using DPDK with Open vSwitch.</p>
+</div></blockquote>
+<p>Q: How do I configure a VLAN as an RSPAN VLAN, that is, enable mirroring of all
+traffic to that VLAN?</p>
+<blockquote>
+<div><p>A: The following commands configure br0 with eth0 as a trunk port and tap0
+as an access port for VLAN 10.  All traffic coming in or going out on tap0,
+as well as traffic coming in or going out on eth0 in VLAN 10, is also
+mirrored to VLAN 15 on eth0.  The original tag for VLAN 10, in cases where
+one is present, is dropped as part of mirroring:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ ovs-vsctl add-br br0
+$ ovs-vsctl add-port br0 eth0
+$ ovs-vsctl add-port br0 tap0 tag=10
+$ ovs-vsctl \
+    -- --id=@m create mirror name=m0 select-all=true select-vlan=10 \
+       output-vlan=15 \
+    -- set bridge br0 mirrors=@m
+</pre></div>
+</div>
+<p>To later disable mirroring, run:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ ovs-vsctl clear bridge br0 mirrors
+</pre></div>
+</div>
+<p>Mirroring to a VLAN can disrupt a network that contains unmanaged switches.
+See ovs-vswitchd.conf.db(5) for details. Mirroring to a GRE tunnel has
+fewer caveats than mirroring to a VLAN and should generally be preferred.</p>
+</div></blockquote>
+<p>Q: Can I mirror more than one input VLAN to an RSPAN VLAN?</p>
+<blockquote>
+<div><p>A: Yes, but mirroring to a VLAN strips the original VLAN tag in favor of
+the specified output-vlan.  This loss of information may make the mirrored
+traffic too hard to interpret.</p>
+<p>To mirror multiple VLANs, use the commands above, but specify a
+comma-separated list of VLANs as the value for select-vlan.  To mirror
+every VLAN, use the commands above, but omit select-vlan and its value
+entirely.</p>
+<p>When a packet arrives on a VLAN that is used as a mirror output VLAN, the
+mirror is disregarded.  Instead, in standalone mode, OVS floods the packet
+across all the ports for which the mirror output VLAN is configured.  (If
+an OpenFlow controller is in use, then it can override this behavior
+through the flow table.)  If OVS is used as an intermediate switch, rather
+than an edge switch, this ensures that the RSPAN traffic is distributed
+through the network.</p>
+<p>Mirroring to a VLAN can disrupt a network that contains unmanaged switches.
+See ovs-vswitchd.conf.db(5) for details.  Mirroring to a GRE tunnel has
+fewer caveats than mirroring to a VLAN and should generally be preferred.</p>
+</div></blockquote>
+<p>Q: How do I configure mirroring of all traffic to a GRE tunnel?</p>
+<blockquote>
+<div><p>A: The following commands configure br0 with eth0 and tap0 as trunk ports.
+All traffic coming in or going out on eth0 or tap0 is also mirrored to
+gre0, a GRE tunnel to the remote host 192.168.1.10; any traffic arriving on
+gre0 is dropped:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ ovs-vsctl add-br br0
+$ ovs-vsctl add-port br0 eth0
+$ ovs-vsctl add-port br0 tap0
+$ ovs-vsctl add-port br0 gre0 \
+     -- set interface gre0 type=gre options:remote_ip=192.168.1.10 \
+     -- --id=@p get port gre0 \
+     -- --id=@m create mirror name=m0 select-all=true output-port=@p \
+     -- set bridge br0 mirrors=@m
+</pre></div>
+</div>
+<p>To later disable mirroring and destroy the GRE tunnel:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ ovs-vsctl clear bridge br0 mirrors
+$ ovs-vsctl del-port br0 gre0
+</pre></div>
+</div>
+</div></blockquote>
+<p>Q: Does Open vSwitch support ERSPAN?</p>
+<blockquote>
+<div>A: No.  As an alternative, Open vSwitch supports mirroring to a GRE tunnel
+(see above).</div></blockquote>
+<p>Q: How do I connect two bridges?</p>
+<blockquote>
+<div><p>A: First, why do you want to do this?  Two connected bridges are not much
+different from a single bridge, so you might as well just have a single
+bridge with all your ports on it.</p>
+<p>If you still want to connect two bridges, you can use a pair of patch
+ports.  The following example creates bridges br0 and br1, adds eth0 and
+tap0 to br0, adds tap1 to br1, and then connects br0 and br1 with a pair of
+patch ports.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ ovs-vsctl add-br br0
+$ ovs-vsctl add-port br0 eth0
+$ ovs-vsctl add-port br0 tap0
+$ ovs-vsctl add-br br1
+$ ovs-vsctl add-port br1 tap1
+$ ovs-vsctl \
+    -- add-port br0 patch0 \
+    -- set interface patch0 type=patch options:peer=patch1 \
+    -- add-port br1 patch1 \
+    -- set interface patch1 type=patch options:peer=patch0
+</pre></div>
+</div>
+<p>Bridges connected with patch ports are much like a single bridge. For
+instance, if the example above also added eth1 to br1, and both eth0 and
+eth1 happened to be connected to the same next-hop switch, then you could
+loop your network just as you would if you added eth0 and eth1 to the same
+bridge (see the “Configuration Problems” section below for more
+information).</p>
+<p>If you are using Open vSwitch 1.9 or an earlier version, then you need to
+be using the kernel module bundled with Open vSwitch rather than the one
+that is integrated into Linux 3.3 and later, because Open vSwitch 1.9 and
+earlier versions need kernel support for patch ports. This also means that
+in Open vSwitch 1.9 and earlier, patch ports will not work with the
+userspace datapath, only with the kernel module.</p>
+</div></blockquote>
+<p>Q: How do I configure a bridge without an OpenFlow local port?  (Local port in
+the sense of OFPP_LOCAL)</p>
+<blockquote>
+<div>A: Open vSwitch does not support such a configuration.  Bridges always have
+their local ports.</div></blockquote>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../contents.html">
+              <img class="logo" src="../_static/logo.png" alt="Logo"/>
+            </a></p><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../contents.html">Documentation overview</a><ul>
+  <li><a href="index.html">Open vSwitch FAQ</a><ul>
+      <li>Previous: <a href="index.html" title="previous chapter">Open vSwitch FAQ</a></li>
+      <li>Next: <a href="contributing.html" title="next chapter">Development</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/faq/configuration.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, The Open vSwitch Development Community.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.4</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="../_sources/faq/configuration.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

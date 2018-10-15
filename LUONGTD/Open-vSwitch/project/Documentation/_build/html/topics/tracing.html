@@ -1,0 +1,200 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Tracing packets inside Open vSwitch &#8212; Open vSwitch 2.9.2 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="C IDL Compound Indexes" href="idl-compound-indexes.html" />
+    <link rel="prev" title="Testing" href="testing.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="tracing-packets-inside-open-vswitch">
+<h1>Tracing packets inside Open vSwitch<a class="headerlink" href="#tracing-packets-inside-open-vswitch" title="Permalink to this headline">¶</a></h1>
+<p>Open vSwitch (OVS) is a programmable software switch that can execute actions
+at per packet level. This document explains how to use the tracing tool
+to know what is happening with packets as they go through the data plane
+processing.</p>
+<p>The <a class="reference external" href="http://openvswitch.org/support/dist-docs/ovs-vswitchd.8.html">ovs-vswitchd(8)</a> manpage describes basic usage of the
+ofproto/trace command used for tracing in Open vSwitch.  For a tool
+with a goal similar to ofproto/trace for tracing packets through OVN
+logical switches, see <a class="reference external" href="http://openvswitch.org/support/dist-docs/ovn-trace.8.html">ovn-trace(8)</a>.</p>
+<div class="section" id="packet-tracing">
+<h2>Packet Tracing<a class="headerlink" href="#packet-tracing" title="Permalink to this headline">¶</a></h2>
+<p>In order to understand the tool, let’s use the following flows as an
+example:</p>
+<blockquote>
+<div>table=3,ip,tcp,tcp_dst=80,action=output:2
+table=2,ip,tcp,tcp_dst=22,action=output:1
+table=0,in_port=3,ip,nw_src=192.0.2.0/24,action=resubmit(,2)
+table=0,in_port=3,ip,nw_src=198.51.100.0/24,action=resubmit(,3)</div></blockquote>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">If you can’t use a “real” OVS setup you can use <code class="docutils literal notranslate"><span class="pre">ovs-sandbox</span></code>,
+as described in <a class="reference internal" href="../tutorials/ovs-advanced.html"><span class="doc">Open vSwitch Advanced Features</span></a>, which also provides
+additional tracing examples.</p>
+</div>
+<p>The first line adds a rule in table 3 matching on TCP/IP packet with
+destination port 80 (HTTP). If a packet matches, the action is to output the
+packet on OpenFlow port 2.</p>
+<p>The second line is similar but matches on destination port 22. If a packet
+matches, the action is to output the packet on OpenFlow port 1.</p>
+<p>The next two lines matches on source IP addresses. If there is a match, the
+packet is submitted to table indicated as parameter to the resubmit() action.</p>
+<p>Now let’s see if a packet from IP address 192.0.2.1 and destination
+port 22 would really go to OpenFlow port 1:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ ovs-appctl ofproto/trace br0 in_port=3,tcp,nw_src=192.0.2.2,tcp_dst=22
+Flow: tcp,in_port=3,vlan_tci=0x0000,dl_src=00:00:00:00:00:00,dl_dst=00:00:00:00:00:00,nw_src=192.0.2.2,nw_dst=0.0.0.0,nw_tos=0,nw_ecn=0,nw_ttl=0,tp_src=0,tp_dst=22,tcp_flags=0
+
+bridge(&quot;br0&quot;)
+-------------
+ 0. ip,in_port=3,nw_src=192.0.2.0/24, priority 32768
+    resubmit(,2)
+ 2. tcp,tp_dst=22, priority 32768
+    output:1
+
+Final flow: unchanged
+Megaflow: recirc_id=0,tcp,in_port=3,nw_src=192.0.2.0/24,nw_frag=no,tp_dst=22
+Datapath actions: 1
+</pre></div>
+</div>
+<p>The first line is the trace command. The br0 is the bridge where the packet is
+going through. The next arguments describe the packet itself. For instance,
+the nw_src matches with the IP source address. All the packet fields are well
+documented in the <a class="reference external" href="http://openvswitch.org/support/dist-docs/ovs-fields.7.pdf">ovs-fields(7)</a> man-page.</p>
+<p>The second line shows the flow extracted from the packet described in the
+command line. Unspecified packet fields are zeroed.</p>
+<p>The second group of lines shows the packet’s trip through bridge br0. We see,
+in table 0, the OpenFlow flow that the fields matched, along with its
+priority, followed by its actions, one per line. In this case, we see that
+this packet matches the flow that resubmit those packets to table 2.
+The “resubmit” causes a second lookup in OpenFlow table 2, described by the
+block of text that starts with “2.”. In the second lookup we see that this
+packet matches the rule that outputs those packets to OpenFlow port #1.</p>
+<p>In summary, it is possible to follow the flow entries and actions until the
+final decision is made. At the end, the trace tool shows the Megaflow which
+matches on all relevant fields followed by the data path actions.</p>
+<p>Let’s see what happens with the same packet but with another TCP destination
+port:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ ovs-appctl ofproto/trace br0 in_port=3,tcp,nw_src=192.0.2.2,tcp_dst=80
+Flow: tcp,in_port=3,vlan_tci=0x0000,dl_src=00:00:00:00:00:00,dl_dst=00:00:00:00:00:00,nw_src=192.0.2.2,nw_dst=0.0.0.0,nw_tos=0,nw_ecn=0,nw_ttl=0,tp_src=0,tp_dst=80,tcp_flags=0
+
+bridge(&quot;br0&quot;)
+-------------
+ 0. ip,in_port=3,nw_src=192.0.2.0/24, priority 32768
+    resubmit(,2)
+ 2. No match.
+    drop
+
+Final flow: unchanged
+Megaflow: recirc_id=0,tcp,in_port=3,nw_src=192.0.2.0/24,nw_frag=no,tp_dst=0x40/0xffc0
+Datapath actions: drop
+</pre></div>
+</div>
+<p>In the second group of lines, in table 0, you can see that the packet matches
+with the rule because of the source IP address, so it is resubmitted to the
+table 2 as before. However, it doesn’t match any rule there. When the packet
+doesn’t match any rule in the flow tables, it is called a table miss. The
+virtual switch table miss behavior can be configured and it depends on the
+OpenFlow version being used. In this example the default action was to drop the
+packet.</p>
+</div>
+<div class="section" id="credits">
+<h2>Credits<a class="headerlink" href="#credits" title="Permalink to this headline">¶</a></h2>
+<p>This document is heavily based on content from Flavio Bruno Leitner at Red Hat:</p>
+<ul class="simple">
+<li><a class="reference external" href="https://developers.redhat.com/blog/2016/10/12/tracing-packets-inside-open-vswitch/">https://developers.redhat.com/blog/2016/10/12/tracing-packets-inside-open-vswitch/</a></li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../contents.html">
+              <img class="logo" src="../_static/logo.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="../contents.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Tracing packets inside Open vSwitch</a><ul>
+<li><a class="reference internal" href="#packet-tracing">Packet Tracing</a></li>
+<li><a class="reference internal" href="#credits">Credits</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../contents.html">Documentation overview</a><ul>
+  <li><a href="index.html">Deep Dive</a><ul>
+      <li>Previous: <a href="testing.html" title="previous chapter">Testing</a></li>
+      <li>Next: <a href="idl-compound-indexes.html" title="next chapter">C IDL Compound Indexes</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/topics/tracing.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, The Open vSwitch Development Community.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.4</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="../_sources/topics/tracing.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

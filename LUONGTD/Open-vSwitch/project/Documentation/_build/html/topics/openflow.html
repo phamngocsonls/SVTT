@@ -1,0 +1,389 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>OpenFlow Support in Open vSwitch &#8212; Open vSwitch 2.9.2 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Bonding" href="bonding.html" />
+    <link rel="prev" title="Porting Open vSwitch to New Software or Hardware" href="porting.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="openflow-support-in-open-vswitch">
+<h1>OpenFlow Support in Open vSwitch<a class="headerlink" href="#openflow-support-in-open-vswitch" title="Permalink to this headline">¶</a></h1>
+<p>Open vSwitch support for OpenFlow 1.1 and beyond is a work in progress.  This
+file describes the work still to be done.</p>
+<div class="section" id="the-plan">
+<h2>The Plan<a class="headerlink" href="#the-plan" title="Permalink to this headline">¶</a></h2>
+<p>OpenFlow version support is not a build-time option.  A single build of Open
+vSwitch must be able to handle all supported versions of OpenFlow.  Ideally,
+even at runtime it should be able to support all protocol versions at the same
+time on different OpenFlow bridges (and perhaps even on the same bridge).</p>
+<p>At the same time, it would be a shame to litter the core of the OVS code with
+lots of ugly code concerned with the details of various OpenFlow protocol
+versions.</p>
+<p>The primary approach to compatibility is to abstract most of the details of the
+differences from the core code, by adding a protocol layer that translates
+between OF1.x and a slightly higher-level abstract representation.  The core of
+this approach is the many <code class="docutils literal notranslate"><span class="pre">struct</span> <span class="pre">ofputil_*</span></code> structures in
+<code class="docutils literal notranslate"><span class="pre">include/openvswitch/ofp-util.h</span></code>.</p>
+<p>As a consequence of this approach, OVS cannot use OpenFlow protocol definitions
+that closely resemble those in the OpenFlow specification, because
+<code class="docutils literal notranslate"><span class="pre">openflow.h</span></code> in different versions of the OpenFlow specification defines the
+same identifier with different values.  Instead, <code class="docutils literal notranslate"><span class="pre">openflow-common.h</span></code> contains
+definitions that are common to all the specifications and separate protocol
+version-specific headers contain protocol-specific definitions renamed so as
+not to conflict, e.g. <code class="docutils literal notranslate"><span class="pre">OFPAT10_ENQUEUE</span></code> and <code class="docutils literal notranslate"><span class="pre">OFPAT11_ENQUEUE</span></code> for the
+OpenFlow 1.0 and 1.1 values for <code class="docutils literal notranslate"><span class="pre">OFPAT_ENQUEUE</span></code>.  Generally, in cases of
+conflict, the protocol layer will define a more abstract <code class="docutils literal notranslate"><span class="pre">OFPUTIL_*</span></code> or
+struct <code class="docutils literal notranslate"><span class="pre">ofputil_*</span></code>.</p>
+<p>Here are the current approaches in a few tricky areas:</p>
+<ul>
+<li><p class="first">Port numbering.</p>
+<p>OpenFlow 1.0 has 16-bit port numbers and later OpenFlow versions have 32-bit
+port numbers.  For now, OVS support for later protocol versions requires all
+port numbers to fall into the 16-bit range, translating the reserved
+<code class="docutils literal notranslate"><span class="pre">OFPP_*</span></code> port numbers.</p>
+</li>
+<li><p class="first">Actions.</p>
+<p>OpenFlow 1.0 and later versions have very different ideas of actions.  OVS
+reconciles by translating all the versions’ actions (and instructions) to and
+from a common internal representation.</p>
+</li>
+</ul>
+</div>
+<div class="section" id="openflow-1-1">
+<h2>OpenFlow 1.1<a class="headerlink" href="#openflow-1-1" title="Permalink to this headline">¶</a></h2>
+<p>OpenFlow 1.1 support is complete.</p>
+</div>
+<div class="section" id="openflow-1-2">
+<h2>OpenFlow 1.2<a class="headerlink" href="#openflow-1-2" title="Permalink to this headline">¶</a></h2>
+<p>OpenFlow 1.2 support is complete.</p>
+</div>
+<div class="section" id="openflow-1-3">
+<h2>OpenFlow 1.3<a class="headerlink" href="#openflow-1-3" title="Permalink to this headline">¶</a></h2>
+<p>OpenFlow 1.3 support requires OpenFlow 1.2 as a prerequisite, plus the
+following additional work.  (This is based on the change log at the end of the
+OF1.3 spec, reusing most of the section titles directly.  I didn’t compare the
+specs carefully yet.)</p>
+<ul>
+<li><p class="first">Add support for multipart requests.</p>
+<p>Currently we always report <code class="docutils literal notranslate"><span class="pre">OFPBRC_MULTIPART_BUFFER_OVERFLOW</span></code>.</p>
+<p>(optional for OF1.3+)</p>
+</li>
+<li><p class="first">IPv6 extension header handling support.</p>
+<p>Fully implementing this requires kernel support.  This likely will take some
+careful and probably time-consuming design work.  The actual coding, once
+that is all done, is probably 2 or 3 days work.</p>
+<p>(optional for OF1.3+)</p>
+</li>
+<li><p class="first">Per-flow meters.</p>
+<p>OpenFlow protocol support is now implemented.  Support for the special
+<code class="docutils literal notranslate"><span class="pre">OFPM_SLOWPATH</span></code> and <code class="docutils literal notranslate"><span class="pre">OFPM_CONTROLLER</span></code> meters is missing.  Support for
+the software switch is under review.</p>
+<p>(optional for OF1.3+)</p>
+</li>
+<li><p class="first">Auxiliary connections.</p>
+<p>An implementation in generic code might be a week’s worth of work.  The value
+of an implementation in generic code is questionable, though, since much of
+the benefit of axuiliary connections is supposed to be to take advantage of
+hardware support.  (We could make the kernel module somehow send packets
+across the auxiliary connections directly, for some kind of “hardware”
+support, if we judged it useful enough.)</p>
+<p>(optional for OF1.3+)</p>
+</li>
+<li><p class="first">Provider Backbone Bridge tagging.</p>
+<p>I don’t plan to implement this (but we’d accept an implementation).</p>
+<p>(optional for OF1.3+)</p>
+</li>
+<li><p class="first">On-demand flow counters.</p>
+<p>I think this might be a real optimization in some cases for the software
+switch.</p>
+<p>(optional for OF1.3+)</p>
+</li>
+</ul>
+</div>
+<div class="section" id="openflow-1-4-onf-extensions-for-1-3-x-pack1">
+<h2>OpenFlow 1.4 &amp; ONF Extensions for 1.3.X Pack1<a class="headerlink" href="#openflow-1-4-onf-extensions-for-1-3-x-pack1" title="Permalink to this headline">¶</a></h2>
+<p>The following features are both defined as a set of ONF Extensions for 1.3 and
+integrated in 1.4.</p>
+<p>When defined as an ONF Extension for 1.3, the feature is using the Experimenter
+mechanism with the ONF Experimenter ID.</p>
+<p>When defined integrated in 1.4, the feature use the standard OpenFlow
+structures (for example defined in openflow-1.4.h).</p>
+<p>The two definitions for each feature are independent and can exist in parallel
+in OVS.</p>
+<ul>
+<li><p class="first">Flow entry notifications</p>
+<p>This seems to be modelled after OVS’s NXST_FLOW_MONITOR.</p>
+<p>(EXT-187)
+(optional for OF1.4+)</p>
+</li>
+<li><p class="first">Role Status</p>
+<p>Already implemented as a 1.4 feature.</p>
+<p>(EXT-191)</p>
+<p>(required for OF1.4+)</p>
+</li>
+<li><p class="first">Flow entry eviction</p>
+<p>OVS has flow eviction functionality.  <code class="docutils literal notranslate"><span class="pre">table_mod</span> <span class="pre">OFPTC_EVICTION</span></code>,
+<code class="docutils literal notranslate"><span class="pre">flow_mod</span> <span class="pre">'importance'</span></code>, and <code class="docutils literal notranslate"><span class="pre">table_desc</span> <span class="pre">ofp_table_mod_prop_eviction</span></code>
+need to be implemented.</p>
+<p>(EXT-192-e)</p>
+<p>(optional for OF1.4+)</p>
+</li>
+<li><p class="first">Vacancy events</p>
+<p>(EXT-192-v)</p>
+<p>(optional for OF1.4+)</p>
+</li>
+<li><p class="first">Bundle</p>
+<p>Transactional modification.  OpenFlow 1.4 requires to support
+<code class="docutils literal notranslate"><span class="pre">flow_mods</span></code> and <code class="docutils literal notranslate"><span class="pre">port_mods</span></code> in a bundle if bundle is supported.
+(Not related to OVS’s ‘ofbundle’ stuff.)</p>
+<p>Implemented as an OpenFlow 1.4 feature.  Only flow_mods and port_mods are
+supported in a bundle.  If the bundle includes port mods, it may not specify
+the <code class="docutils literal notranslate"><span class="pre">OFPBF_ATOMIC</span></code> flag.  Nevertheless, port mods and flow mods in a bundle
+are always applied in order and consecutive flow mods between port mods are
+made available to lookups atomically.</p>
+<p>(EXT-230)</p>
+<p>(optional for OF1.4+)</p>
+</li>
+<li><p class="first">Table synchronisation</p>
+<p>Probably not so useful to the software switch.</p>
+<p>(EXT-232)</p>
+<p>(optional for OF1.4+)</p>
+</li>
+<li><p class="first">Group and Meter change notifications</p>
+<p>(EXT-235)</p>
+<p>(optional for OF1.4+)</p>
+</li>
+<li><p class="first">Bad flow entry priority error</p>
+<p>Probably not so useful to the software switch.</p>
+<p>(EXT-236)</p>
+<p>(optional for OF1.4+)</p>
+</li>
+<li><p class="first">Set async config error</p>
+<p>(EXT-237)</p>
+<p>(optional for OF1.4+)</p>
+</li>
+<li><p class="first">PBB UCA header field</p>
+<p>See comment on Provider Backbone Bridge in section about OpenFlow 1.3.</p>
+<p>(EXT-256)</p>
+<p>(optional for OF1.4+)</p>
+</li>
+<li><p class="first">Multipart timeout error</p>
+<p>(EXT-264)</p>
+<p>(required for OF1.4+)</p>
+</li>
+</ul>
+</div>
+<div class="section" id="openflow-1-4-only">
+<h2>OpenFlow 1.4 only<a class="headerlink" href="#openflow-1-4-only" title="Permalink to this headline">¶</a></h2>
+<p>Those features are those only available in OpenFlow 1.4, other OpenFlow 1.4
+features are listed in the previous section.</p>
+<ul>
+<li><p class="first">More extensible wire protocol</p>
+<p>Many on-wire structures got TLVs.</p>
+<p>All required features are now supported.
+Remaining optional: table desc, table-status</p>
+<p>(EXT-262)</p>
+<p>(required for OF1.4+)</p>
+</li>
+<li><p class="first">Optical port properties</p>
+<p>(EXT-154)</p>
+<p>(optional for OF1.4+)</p>
+</li>
+</ul>
+</div>
+<div class="section" id="openflow-1-5-onf-extensions-for-1-3-x-pack2">
+<h2>OpenFlow 1.5 &amp; ONF Extensions for 1.3.X Pack2<a class="headerlink" href="#openflow-1-5-onf-extensions-for-1-3-x-pack2" title="Permalink to this headline">¶</a></h2>
+<p>The following features are both defined as a set of ONF Extensions for 1.3 and
+integrated in 1.5. Note that this list is not definitive as those are not yet
+published.</p>
+<p>When defined as an ONF Extension for 1.3, the feature is using the Experimenter
+mechanism with the ONF Experimenter ID.  When defined integrated in 1.5, the
+feature use the standard OpenFlow structures (for example defined in
+openflow-1.5.h).</p>
+<p>The two definitions for each feature are independent and can exist in parallel
+in OVS.</p>
+<ul>
+<li><p class="first">Time scheduled bundles</p>
+<p>(EXT-340)</p>
+<p>(optional for OF1.5+)</p>
+</li>
+</ul>
+</div>
+<div class="section" id="openflow-1-5-only">
+<h2>OpenFlow 1.5 only<a class="headerlink" href="#openflow-1-5-only" title="Permalink to this headline">¶</a></h2>
+<p>Those features are those only available in OpenFlow 1.5, other OpenFlow 1.5
+features are listed in the previous section.  Note that this list is not
+definitive as OpenFlow 1.5 is not yet published.</p>
+<ul>
+<li><p class="first">Egress Tables</p>
+<p>(EXT-306)</p>
+<p>(optional for OF1.5+)</p>
+</li>
+<li><p class="first">Packet Type aware pipeline</p>
+<p>Prototype for OVS was done during specification.</p>
+<p>(EXT-112)</p>
+<p>(optional for OF1.5+)</p>
+</li>
+<li><p class="first">Extensible Flow Entry Statistics</p>
+<p>(EXT-334)</p>
+<p>(required for OF1.5+)</p>
+</li>
+<li><p class="first">Flow Entry Statistics Trigger</p>
+<p>(EXT-335)</p>
+<p>(optional for OF1.5+)</p>
+</li>
+<li><p class="first">Controller connection status</p>
+<p>Prototype for OVS was done during specification.</p>
+<p>(EXT-454)</p>
+<p>(optional for OF1.5+)</p>
+</li>
+<li><p class="first">Meter action</p>
+<p>(EXT-379)</p>
+<p>(required for OF1.5+ if metering is supported)</p>
+</li>
+<li><p class="first">Port properties for pipeline fields</p>
+<p>Prototype for OVS was done during specification.</p>
+<p>(EXT-388)</p>
+<p>(optional for OF1.5+)</p>
+</li>
+<li><p class="first">Port property for recirculation</p>
+<p>Prototype for OVS was done during specification.</p>
+<p>(EXT-399)</p>
+<p>(optional for OF1.5+)</p>
+</li>
+</ul>
+</div>
+<div class="section" id="general">
+<h2>General<a class="headerlink" href="#general" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>ovs-ofctl(8) often lists as Nicira extensions features that later OpenFlow
+versions support in standard ways.</li>
+</ul>
+</div>
+<div class="section" id="how-to-contribute">
+<h2>How to contribute<a class="headerlink" href="#how-to-contribute" title="Permalink to this headline">¶</a></h2>
+<p>If you plan to contribute code for a feature, please let everyone know on
+ovs-dev before you start work.  This will help avoid duplicating work.</p>
+<p>Consider the following:</p>
+<ul>
+<li><p class="first">Testing.</p>
+<p>Please test your code.</p>
+</li>
+<li><p class="first">Unit tests.</p>
+<p>Consider writing some.  The tests directory has many examples that you can
+use as a starting point.</p>
+</li>
+<li><p class="first">ovs-ofctl.</p>
+<p>If you add a feature that is useful for some ovs-ofctl command then you
+should add support for it there.</p>
+</li>
+<li><p class="first">Documentation.</p>
+<p>If you add a user-visible feature, then you should document it in the
+appropriate manpage and mention it in NEWS as well.</p>
+</li>
+</ul>
+<p>Refer to <a class="reference internal" href="../internals/contributing/index.html"><span class="doc">Contributing to Open vSwitch</span></a> for more information.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../contents.html">
+              <img class="logo" src="../_static/logo.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="../contents.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">OpenFlow Support in Open vSwitch</a><ul>
+<li><a class="reference internal" href="#the-plan">The Plan</a></li>
+<li><a class="reference internal" href="#openflow-1-1">OpenFlow 1.1</a></li>
+<li><a class="reference internal" href="#openflow-1-2">OpenFlow 1.2</a></li>
+<li><a class="reference internal" href="#openflow-1-3">OpenFlow 1.3</a></li>
+<li><a class="reference internal" href="#openflow-1-4-onf-extensions-for-1-3-x-pack1">OpenFlow 1.4 &amp; ONF Extensions for 1.3.X Pack1</a></li>
+<li><a class="reference internal" href="#openflow-1-4-only">OpenFlow 1.4 only</a></li>
+<li><a class="reference internal" href="#openflow-1-5-onf-extensions-for-1-3-x-pack2">OpenFlow 1.5 &amp; ONF Extensions for 1.3.X Pack2</a></li>
+<li><a class="reference internal" href="#openflow-1-5-only">OpenFlow 1.5 only</a></li>
+<li><a class="reference internal" href="#general">General</a></li>
+<li><a class="reference internal" href="#how-to-contribute">How to contribute</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../contents.html">Documentation overview</a><ul>
+  <li><a href="index.html">Deep Dive</a><ul>
+      <li>Previous: <a href="porting.html" title="previous chapter">Porting Open vSwitch to New Software or Hardware</a></li>
+      <li>Next: <a href="bonding.html" title="next chapter">Bonding</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/topics/openflow.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, The Open vSwitch Development Community.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.4</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="../_sources/topics/openflow.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
