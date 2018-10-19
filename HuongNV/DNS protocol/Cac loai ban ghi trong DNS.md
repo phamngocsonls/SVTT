@@ -63,7 +63,7 @@ matbao.com. IN NS ns2.matbao.com.
 
 <a name="23"></a>
 
-## A (Address) và CNAME(Canonical Name)
+## 2.3 A (Address) và CNAME(Canonical Name)
 
 - A record - Address record: Dùng để phân giải host ra một địa chỉ IPv4, dùng để trỏ tên website như www.domain.com đến một server hosting website đó
 - Record CNAME: Tạo tên bí danh (alias) trỏ vào Server Hosting website đó.Thông thường thì máy tính trên Internet có nhiều dịch vụ như Web Server, FTP Server, Chat Server, …. Để lọc hay nói nôm na là kiểm soát, CNAME Records đã được sử dụng.
