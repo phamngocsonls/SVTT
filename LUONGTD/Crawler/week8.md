@@ -6,4 +6,3 @@
 ## Vấn đề:
 ### 1. Một số website trong list không truy cập được (ví dụ: microsoftonline.com)
 ### 2. Một số HTTP response không có thông tin về web-server
-### 3. Thời gian để chạy hết 1,000,000 url quá lớn
