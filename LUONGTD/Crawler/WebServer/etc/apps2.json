@@ -1,0 +1,1044 @@
+{
+	"apps": {
+		"3ware": {
+			"cats": [
+				22
+			],
+			"headers": {
+				"Server": "3ware"
+			},
+			"website": "www.3ware.com"
+		},
+		"AOLserver": {
+			"cats": [
+				22
+			],
+			"headers": {
+				"Server": "AOLserver"
+			},
+			"website": "aolserver.com"
+		},
+		"ATEN": {
+			"cats": [
+				22
+			],
+			"headers": {
+				"Server": "ATEN HTTP Server"
+			},
+			"website": "www.aten.com"
+		},		
+		"Allegro RomPager": {
+			"cats": [
+				22
+			],
+			"headers": {
+				"Server": "Allegro-Software-RomPager"
+			},
+			"website": "allegrosoft.com/embedded-web-server-s2"
+		},
+		"Apache": {
+			"cats": [
+				22
+			],
+			"headers": {
+				"Server": "Apache"
+			},
+			"website": "apache.org"
+		},
+		"Apache Tomcat": {
+			"cats": [
+				22
+			],
+			"headers": {
+				"Server": "Apache-Coyote",
+				"X-Powered-By": "\bTomcat\b(?:-([\\d.]+))?\\;version:\\1"
+			},
+			"website": "tomcat.apache.org"
+		},
+		"Apache Traffic Server": {
+			"cats": [
+				22
+			],
+			"headers": {
+				"Server": "ATS"
+			},
+			"website": "trafficserver.apache.org/"
+		},
+		"Artifactory Web Server": {
+			"cats": [
+				22
+			],
+			"headers": {
+				"Server": "Artifactory"
+			},
+			"implies": [
+				"Artifactory"
+			],
+			"website": "jfrog.com/open-source/#os-arti"
+		},
+		"BaseHTTP": {
+			"cats": [
+				22
+			],
+			"headers": {
+				"Server": "BaseHTTP"
+			},
+			"implies": "Python",
+			"website": "docs.python.org/2/library/basehttpserver.html"
+		},
+		"Boa": {
+			"cats": [
+				22
+			],
+			"headers": {
+				"Server": "Boa"
+			},
+			"website": "www.boa.org"
+		},
+		"Canon HTTP Server": {
+			"cats": [
+				22
+			],
+			"headers": {
+				"Server": "CANON HTTP Server"
+			},
+			"implies": [
+				"Canon"
+			],
+			"website": "www.canon.com"
+		},
+		"Catwalk": {
+			"cats": [
+				22
+			],
+			"headers": {
+				"Server": "Catwalk"
+			},
+			"implies": "Canon",
+			"website": "www.canon.com"
+		},
+		"CenteHTTPd": {
+			"cats": [
+				22
+			],
+			"headers": {
+				"Server": "CenteHTTPd"
+			},
+			"website": "cente.jp/cente/app/HTTPdc.html"
+		},
+		"Cherokee": {
+			"cats": [
+				22
+			],
+			"headers": {
+				"Server": "Cherokee"
+			},
+			"website": "www.cherokee-project.com"
+		},
+		"CherryPy": {
+			"cats": [
+				18,
+				22
+			],
+			"headers": {
+				"Server": "CherryPy"
+			},
+			"implies": "Python",
+			"website": "www.cherrypy.org"
+		},
+		"CompaqHTTPServer": {
+			"cats": [
+				22
+			],
+			"headers": {
+				"Server": "CompaqHTTPServer"
+			},
+			"website": "www.hp.com"
+		},
+		"CouchDB": {
+			"cats": [
+				22
+			],
+			"headers": {
+				"Server": "CouchDB"
+			},
+			"website": "couchdb.apache.org"
+		},
+		"Cowboy": {
+			"cats": [
+				18,
+				22
+			],
+			"headers": {
+				"Server": "Cowboy"
+			},
+			"implies": "Erlang",
+			"website": "ninenines.eu"
+		},
+		"David Webbox": {
+			"cats": [
+				22
+			],
+			"headers": {
+				"Server": "David-WebBox"
+			},
+			"website": "www.tobit.com"
+		},
+		"Decorum": {
+			"cats": [
+				22
+			],
+			"headers": {
+				"Server": "DECORUM"
+			},
+			"website": "???"
+		},
+		"ELOG HTTP": {
+			"cats": [
+				22
+			],
+			"headers": {
+				"Server": "ELOG HTTP"
+			},
+			"implies": "ELOG",
+			"website": "midas.psi.ch/elog"
+		},
+		"ESERV-10": {
+			"cats": [
+				22
+			],
+			"headers": {
+				"Server": "ESERV-10"
+			},
+			"website": "www.violasystems.com"
+		},
+		"EWS-NIC4": {
+			"cats": [
+				22
+			],
+			"headers": {
+				"Server": "EWS-NIC4"
+			},
+			"implies": "Dell",
+			"website": "dell.com"
+		},
+		"EmbedThis Appweb": {
+			"cats": [
+				22
+			],
+			"headers": {
+				"Server": "Mbedthis-Appweb"
+			},
+			"website": "embedthis.com/appweb"
+		},
+		"Embedthis-http": {
+			"cats": [
+				22
+			],
+			"headers": {
+				"Server": "Embedthis-http"
+			},
+			"website": "github.com/embedthis/http"
+		},
+		"FlashCom": {
+			"cats": [
+				22
+			],
+			"headers": {
+				"Server": "FlashCom"
+			},
+			"website": "???"
+		},
+		"Flask": {
+			"cats": [
+				18,
+				22
+			],
+			"headers": {
+				"Server": "Werkzeug"
+			},
+			"implies": "Python",
+			"website": "flask.pocoo.org"
+		},
+		"G-WAN": {
+			"cats": [
+				22
+			],
+			"headers": {
+				"Server": "G-WAN"
+			},
+			"website": "gwan.com"
+		},
+		"GlassFish": {
+			"cats": [
+				22
+			],
+			"headers": {
+				"Server": "GlassFish"
+			},
+			"implies": [
+				"Java"
+			],
+			"website": "glassfish.java.net"
+		},
+		"GoAhead": {
+			"cats": [
+				22
+			],
+			"headers": {
+				"Server": "GoAhead"
+			},
+			"website": "embedthis.com/products/goahead/index.html"
+		},
+		"Google App Engine": {
+			"cats": [
+				22
+			],
+			"headers": {
+				"Server": "Google Frontend"
+			},
+			"website": "code.google.com/appengine"
+		},
+		"Google Servers": {
+			"cats": [
+				22
+			],
+			"headers": {
+				"Server": "gws"
+			},
+			"website": "code.google.com/appengine"
+		},
+		"Grandstream": {
+			"cats": [
+				22,
+				39
+			],
+			"headers": {
+				"Server": "Grandstream"
+			},
+			"website": "www.grandstream.com"
+		},
+		"HHVM": {
+			"cats": [
+				22
+			],
+			"headers": {
+				"X-Powered-By": "HHVM"
+			},
+			"implies": "PHP\\;confidence:50",
+			"website": "hhvm.com"
+		},
+		"HP ChaiServer": {
+			"cats": [
+				22
+			],
+			"headers": {
+				"Server": "HP-Chai"
+			},
+			"implies": [
+				"HP"
+			],
+			"website": "hp.com"
+		},
+		"HP Compact Server": {
+			"cats": [
+				22
+			],
+			"headers": {
+				"Server": "HP_Compact_Server"
+			},
+			"website": "hp.com"
+		},
+		"HP iLO": {
+			"cats": [
+				22,
+				46
+			],
+			"headers": {
+				"Server": "HP-iLO-Server"
+			},
+			"website": "hp.com"
+		},
+		"HTTP Kit": {
+			"cats": [
+				22
+			],
+			"headers": {
+				"Server": "^http-kit"
+			},
+			"implies": "Java",
+			"website": "http-kit.org"
+		},
+		"HTTP-Server": {
+			"cats": [
+				22
+			],
+			"headers": {
+				"Server": "HTTP-Server"
+			},
+			"website": "???"
+		},
+		"Happy ICS Server": {
+			"cats": [
+				22
+			],
+			"headers": {
+				"Server": "Happy ICS Server"
+			},
+			"implies": "OmniTouch 8660 My Teamwork",
+			"website": "???"
+		},
+		"Hiawatha": {
+			"cats": [
+				22
+			],
+			"headers": {
+				"Server": "Hiawatha"
+			},
+			"website": "hiawatha-webserver.org"
+		},
+		"IBM HTTP Server": {
+			"cats": [
+				22
+			],
+			"headers": {
+				"Server": "IBM_HTTP_Server"
+			},
+			"website": "ibm.com/software/webservers/httpservers"
+		},
+		"IBM Tivoli Storage Manager": {
+			"cats": [
+				22
+			],
+			"headers": {
+				"Server": "TSM_HTTP"
+			},
+			"website": "ibm.com"
+		},
+		"Microsoft-IIS": {
+			"cats": [
+				22
+			],
+			"headers": {
+				"Server": "IIS"
+			},
+			"implies": "Windows Server",
+			"website": "www.iis.net"
+		},
+		"Microsoft-IIS": {
+			"cats": [
+				22
+			],
+			"headers": {
+				"Server": "Internet Information Service"
+			},
+			"implies": "Windows Server",
+			"website": "www.iis.net"
+		}, 
+		"Microsoft-IIS": {
+			"cats": [
+				22
+			],
+			"headers": {
+				"Server": "microsoft-iis"
+			},
+			"implies": "Windows Server",
+			"website": "www.iis.net"
+		},
+
+		"Indy": {
+			"cats": [
+				22
+			],
+			"headers": {
+				"Server": "Indy"
+			},
+			"website": "indyproject.org"
+		},
+		"Intel Active Management Technology": {
+			"cats": [
+				22,
+				46
+			],
+			"headers": {
+				"Server": "Intel"
+			},
+			"website": "intel.com"
+		},
+		"JBoss Application Server": {
+			"cats": [
+				22
+			],
+			"headers": {
+				"X-Powered-By": "JBoss"
+			},
+			"website": "jboss.org/jbossas.html"
+		},
+		"JBoss Web": {
+			"cats": [
+				22
+			],
+			"excludes": "Apache Tomcat",
+			"headers": {
+				"X-Powered-By": "JBossWeb"
+			},
+			"implies": "JBoss Application Server",
+			"website": "jboss.org/jbossweb"
+		},
+		"JC-HTTPD": {
+			"cats": [
+				22
+			],
+			"excludes": "Apache",
+			"headers": {
+				"Server": "JC-HTTPD"
+			},
+			"implies": [
+				"Canon"
+			],
+			"website": "canon.com"
+		},
+		"Jetty": {
+			"cats": [
+				22
+			],
+			"headers": {
+				"Server": "Jetty"
+			},
+			"implies": "Java",
+			"website": "www.eclipse.org/jetty"
+		},
+		"KS_HTTP": {
+			"cats": [
+				22
+			],
+			"headers": {
+				"Server": "KS_HTTP"
+			},
+			"implies": "Canon",
+			"website": "www.canon.com"
+		},
+		"LabVIEW": {
+			"cats": [
+				22
+			],
+			"headers": {
+				"Server": "LabVIEW"
+			},
+			"website": "ni.com/labview"
+		},
+		"LiteSpeed": {
+			"cats": [
+				22
+			],
+			"headers": {
+				"Server": "LiteSpeed"
+			},
+			"website": "litespeedtech.com"
+		},
+		"Logitech Media Server": {
+			"cats": [
+				22,
+				38
+			],
+			"headers": {
+				"Server": "Logitech Media Server"
+			},
+			"website": "www.mysqueezebox.com"
+		},
+		"Lotus Domino": {
+			"cats": [
+				22
+			],
+			"headers": {
+				"Server": "Lotus-Domino"
+			},
+			"website": "www-01.ibm.com/software/lotus/products/domino"
+		},
+		"M.R. Inc Webserver": {
+			"cats": [
+				22
+			],
+			"headers": {
+				"Server": "M\\.R\\. Inc Webserver"
+			},
+			"website": "mrincworld.com"
+		},
+		"Microsoft HTTPAPI": {
+			"cats": [
+				22
+			],
+			"headers": {
+				"Server": "Microsoft-HTTPAPI"
+			},
+			"website": "microsoft.com"
+		},
+		"MiniServ": {
+			"cats": [
+				22
+			],
+			"headers": {
+				"Server": "MiniServ"
+			},
+			"website": "sourceforge.net/projects/miniserv"
+		},
+		"MochiWeb": {
+			"cats": [
+				22
+			],
+			"headers": {
+				"Server": "MochiWeb"
+			},
+			"website": "github.com/mochi/mochiweb"
+		},
+		"Mongrel": {
+			"cats": [
+				22
+			],
+			"headers": {
+				"Server": "Mongrel"
+			},
+			"implies": "Ruby",
+			"website": "mongrel2.org"
+		},
+		"Monkey HTTP Server": {
+			"cats": [
+				22
+			],
+			"headers": {
+				"Server": "Monkey"
+			},
+			"website": "monkey-project.com"
+		},
+		"Motion-httpd": {
+			"cats": [
+				22
+			],
+			"excludes": "Apache",
+			"headers": {
+				"Server": "Motion-httpd"
+			},
+			"website": "lavrsen.dk/foswiki/bin/view/Motion"
+		},
+		"Nginx": {
+			"cats": [
+				22
+			],
+			"headers": {
+				"Server": "nginx"
+			},
+			"website": "nginx.org"
+		},
+		"OpenGSE": {
+			"cats": [
+				22
+			],
+			"headers": {
+				"Server": "GSE"
+			},
+			"implies": "Java",
+			"website": "code.google.com/p/opengse"
+		},
+		"Oracle Application Server": {
+			"cats": [
+				22
+			],
+			"headers": {
+				"Server": "Oracle[- ]Application[- ]Server"
+			},
+			"website": "www.oracle.com/technetwork/middleware/ias/overview/index.html"
+		},
+		"Oracle HTTP Server": {
+			"cats": [
+				22
+			],
+			"headers": {
+				"Server": "Oracle-HTTP-Server"
+			},
+			"website": "oracle.com"
+		},
+		"Phusion Passenger": {
+			"cats": [
+				22
+			],
+			"headers": {
+				"X-Powered-By": "^Phusion Passenger"
+			},
+			"website": "phusionpassenger.com"
+		},
+		"RAID HTTPServer": {
+			"cats": [
+				22
+			],
+			"headers": {
+				"Server": "RAID HTTPServer"
+			},
+			"website": "???"
+		},
+		"Rapid Logic": {
+			"cats": [
+				22
+			],
+			"headers": {
+				"Server": "Rapid Logic"
+			},
+			"website": "???"
+		},
+		"Resin": {
+			"cats": [
+				22
+			],
+			"headers": {
+				"Server": "^Resin"
+			},
+			"implies": "Java",
+			"website": "caucho.com"
+		},
+		"SAP": {
+			"cats": [
+				22
+			],
+			"headers": {
+				"Server": "SAP NetWeaver Application Server"
+			},
+			"website": "sap.com"
+		},
+		"Schneider Web Server": {
+			"cats": [
+				22
+			],
+			"headers": {
+				"Server": "Schneider-WEB"
+			},
+			"implies": [
+				"Schneider"
+			],
+			"website": "schneider-electric.com"
+		},
+		"Sentinel Keys Server": {
+			"cats": [
+				22
+			],
+			"headers": {
+				"Server": "SentinelKeysServer"
+			},
+			"website": "www.safenet-inc.com/software-monetization/sentinel-rms"
+		},
+		"Sentinel Protection Server": {
+			"cats": [
+				22
+			],
+			"headers": {
+				"Server": "SentinelProtectionServer"
+			},
+			"website": "www.safenet-inc.com/software-monetization/sentinel-rms/"
+		},
+		"SimpleHTTP": {
+			"cats": [
+				22
+			],
+			"headers": {
+				"Server": "SimpleHTTP"
+			},
+			"website": "???"
+		},
+		"Snap": {
+			"cats": [
+				18,
+				22
+			],
+			"headers": {
+				"Server": "Snap"
+			},
+			"implies": "Haskell",
+			"website": "snapframework.com"
+		},
+		"Splunkd": {
+			"cats": [
+				22
+			],
+			"headers": {
+				"Server": "Splunkd"
+			},
+			"website": "splunk.com"
+		},
+
+		"Starlet": {
+			"cats": [
+				22
+			],
+			"headers": {
+				"Server": "^Plack::Handler::Starlet"
+			},
+			"implies": "Perl",
+			"website": "metacpan.org/pod/Starlet"
+		},
+		"Tengine": {
+			"cats": [
+				22
+			],
+			"headers": {
+				"Server": "Tengine"
+			},
+			"website": "tengine.taobao.org"
+		},
+		"TornadoServer": {
+			"cats": [
+				22
+			],
+			"headers": {
+				"Server": "TornadoServer"
+			},
+			"website": "tornadoweb.org"
+		},
+		"TwistedWeb": {
+			"cats": [
+				22
+			],
+			"headers": {
+				"Server": "TwistedWeb"
+			},
+			"website": "twistedmatrix.com/trac/wiki/TwistedWeb"
+		},
+		"Virata EmWeb": {
+			"cats": [
+				22
+			],
+			"headers": {
+				"Server": "Virata-EmWeb"
+			},
+			"implies": [
+				"HP"
+			],
+			"website": "???"
+		},
+		"Warp": {
+			"cats": [
+				22
+			],
+			"headers": {
+				"Server": "Warp"
+			},
+			"implies": "Haskell",
+			"website": "www.stackage.org/package/warp"
+		},
+		"Winstone Servlet Container": {
+			"cats": [
+				22
+			],
+			"headers": {
+				"Server": "Winstone Servlet",
+				"X-Powered-By": "Winstone(?:.([\\d.]+))?\\;version:\\1"
+			},
+			"website": "winstone.sourceforge.net"
+		},
+		"XAMPP": {
+			"cats": [
+				22
+			],
+			"headers": "XAMPP",
+			"implies": [
+				"Apache",
+				"MySQL",
+				"PHP",
+				"Perl"
+			],
+			"meta": {
+				"author": "Kai Oswald Seidler\\;confidence:10"
+			},
+			"website": "www.apachefriends.org/en/xampp.html"
+		},
+		"Xitami": {
+			"cats": [
+				22
+			],
+			"headers": {
+				"Server": "Xitami"
+			},
+			"website": "xitami.com"
+		},
+		"Zend": {
+			"cats": [
+				22
+			],
+			"headers": {
+				"Set-Cookie": "ZENDSERVERSESSID",
+				"X-Powered-By": "Zend"
+			},
+			"website": "zend.com"
+		},
+		"Zope": {
+			"cats": [
+				22
+			],
+			"headers": {
+				"Server": "Zope"
+			},
+			"website": "zope.org"
+		},
+		"node.js": {
+			"cats": [
+				1,
+				18,
+				22
+			],
+			"env": "^actionheroClient$",
+			"headers": {
+				"X-Powered-By": "actionhero API"
+			},
+			"implies": "node.js",
+			"script": "actionheroClient\\.js",
+			"website": "www.actionherojs.com"
+		},
+		"debut": {
+			"cats": [
+				22
+			],
+			"headers": {
+				"Server": "debut"
+			},
+			"implies": "Brother",
+			"website": "www.brother.com"
+		},
+		"dwhttpd": {
+			"cats": [
+				22
+			],
+			"headers": {
+				"Server": "dwhttpd"
+			},
+			"website": "???"
+		},
+		"eDevice SmartStack": {
+			"cats": [
+				22
+			],
+			"headers": {
+				"Server": "eDevice SmartStack"
+			},
+			"website": "edevice.com"
+		},
+		"eHTTP": {
+			"cats": [
+				22
+			],
+			"headers": {
+				"Server": "eHTTP"
+			},
+			"implies": "HP ProCurve",
+			"website": "???"
+		},
+		"gunicorn": {
+			"cats": [
+				22
+			],
+			"headers": {
+				"Server": "gunicorn"
+			},
+			"implies": [
+				"Python"
+			],
+			"website": "gunicorn.org"
+		},
+		"node.js": {
+			"cats": [
+				18,
+				22
+			],
+			"headers": {
+				"Set-Cookie": "Fe26"
+			},
+			"implies": "node.js",
+			"website": "hapijs.com"
+		},
+		"libwww-perl-daemon": {
+			"cats": [
+				22
+			],
+			"headers": {
+				"Server": "libwww-perl-daemon"
+			},
+			"implies": "Perl",
+			"website": "metacpan.org/pod/HTTP::Daemon"
+		},
+		"lighttpd": {
+			"cats": [
+				22
+			],
+			"headers": {
+				"Server": "lighttpd"
+			},
+			"website": "www.lighttpd.net"
+		},
+		"mini_httpd": {
+			"cats": [
+				22
+			],
+			"headers": {
+				"Server": "mini_httpd"
+			},
+			"website": "acme.com/software/mini_httpd"
+		},
+		"thttpd": {
+			"cats": [
+				22
+			],
+			"headers": {
+				"Server": "thttpd"
+			},
+			"website": "acme.com/software/thttpd"
+		}
+	},
+	"categories": {
+		"1": "cms",
+		"2": "message-boards",
+		"3": "database-managers",
+		"4": "documentation-tools",
+		"5": "widgets",
+		"6": "ecommerce",
+		"7": "photo-galleries",
+		"8": "wikis",
+		"9": "hosting-panels",
+		"10": "analytics",
+		"11": "blogs",
+		"12": "javascript-frameworks",
+		"13": "issue-trackers",
+		"14": "video-players",
+		"15": "comment-systems",
+		"16": "captchas",
+		"17": "font-scripts",
+		"18": "web-frameworks",
+		"19": "miscellaneous",
+		"20": "editors",
+		"21": "lms",
+		"22": "web-servers",
+		"23": "cache-tools",
+		"24": "rich-text-editors",
+		"25": "javascript-graphics",
+		"26": "mobile-frameworks",
+		"27": "programming-languages",
+		"28": "operating-systems",
+		"29": "search-engines",
+		"30": "web-mail",
+		"31": "cdn",
+		"32": "marketing-automation",
+		"33": "web-server-extensions",
+		"34": "databases",
+		"35": "maps",
+		"36": "advertising-networks",
+		"37": "network-devices",
+		"38": "media-servers",
+		"39": "webcams",
+		"40": "printers",
+		"41": "payment-processors",
+		"42": "tag-managers",
+		"43": "paywalls",
+		"44": "build-ci-systems",
+		"45": "control-systems",
+		"46": "remote-access",
+		"47": "dev-tools",
+		"48": "network-storage",
+		"49": "feed-readers",
+		"50": "document-management-systems"
+	}	
+}
