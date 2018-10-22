@@ -3,7 +3,7 @@
 ## ----------------------------- ##
 
 testsuite: command line was:
-  $ ./tests/testsuite -C tests AUTOTEST_PATH=utilities:vswitchd:ovsdb:vtep:tests::ovn/controller-vtep:ovn/northd:ovn/utilities:ovn/controller -k ovs-vswitchd
+  $ ./tests/testsuite -C tests AUTOTEST_PATH=utilities:vswitchd:ovsdb:vtep:tests::ovn/controller-vtep:ovn/northd:ovn/utilities:ovn/controller 2454
 
 ## --------- ##
 ## Platform. ##
@@ -273,28 +273,13 @@ DB Schema 7.15.1
 ## ------------------ ##
 ## Running the tests. ##
 ## ------------------ ##
-testsuite: starting at: Sat Oct 13 16:58:25 +07 2018
-537. unixctl ovs-vswitchd exit - Python2 (unixctl-py.at:20): ok     (0m0.293s 0m0.123s)
-538. unixctl ovs-vswitchd exit - Python3 (unixctl-py.at:21): ok     (0m0.278s 0m0.058s)
-539. unixctl ovs-vswitchd list-commands - Python2 (unixctl-py.at:38): ok     (0m0.219s 0m0.090s)
-540. unixctl ovs-vswitchd list-commands - Python3 (unixctl-py.at:39): ok     (0m0.141s 0m0.079s)
-541. unixctl ovs-vswitchd arguments - Python2 (unixctl-py.at:84): ok     (0m0.599s 0m0.136s)
-542. unixctl ovs-vswitchd arguments - Python3 (unixctl-py.at:85): ok     (0m0.434s 0m0.093s)
-846. ovs-vswitchd detaches correctly with empty db (ovs-vswitchd.at:7): ok     (0m0.044s 0m0.021s)
-847. ovs-vswitchd -- stats-update-interval (ovs-vswitchd.at:36): ok     (0m0.179s 0m0.242s)
-848. ovs-vswitchd -- start additional ovs-vswitchd process (ovs-vswitchd.at:69): ok     (0m0.085s 0m0.082s)
-849. ovs-vswitchd -- switch over to another ovs-vswitchd process (ovs-vswitchd.at:94): ok     (0m0.092s 0m0.086s)
-850. ovs-vswitchd -- invalid database path (ovs-vswitchd.at:134): ok     (0m0.021s 0m0.005s)
-851. ovs-vswitchd -- set service controller (ovs-vswitchd.at:159): ok     (0m0.111s 0m0.047s)
-852. ovs-vswitchd -- Compatible with OVSDB server - w/o monitor_cond (ovs-vswitchd.at:176): ok     (0m0.097s 0m0.069s)
-853. ovs-vswitchd - do not create sockets with unsafe names (ovs-vswitchd.at:197): ok     (0m0.062s 0m0.032s)
-854. ovs-vswitchd - set datapath IDs (ovs-vswitchd.at:230): ok     (0m0.147s 0m0.082s)
-2454. ovn -- ovs-vswitchd restart (ovn.at:5297): ok     (0m0.404s 0m0.302s)
-testsuite: ending at: Sat Oct 13 16:59:12 +07 2018
-testsuite: test suite duration: 0h 0m 47s
+testsuite: starting at: Mon Oct 15 05:05:30 +07 2018
+2454. ovn -- ovs-vswitchd restart (ovn.at:5297): ok     (0m0.438s 0m0.396s)
+testsuite: ending at: Mon Oct 15 05:05:38 +07 2018
+testsuite: test suite duration: 0h 0m 8s
 
 ## ------------- ##
 ## Test results. ##
 ## ------------- ##
 
-All 16 tests were successful.
+1 test was successful.
