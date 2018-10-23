@@ -46,7 +46,7 @@ Thư viện librados cung cấp các API để chúng ta có thể thực hiện
     - *rados_completion_t cb*: rados_completion_t biểu diễn trạng thái của một asynchronous operation nó bao gồm các giá trị trả về khi các operations được hoàn thành. Có thể được sử dụng để block cho đến khi operation complete hoặc safe.
     - *void *arg*: một tham số được applications định nghĩa để lấy dữ liệu khi opration hoàn thành. 
     
-![](./Image/w7-rados-completion.png)
+![](./Image/w7-aio-completion.png)
 
     Tại đây chúng ta sẽ định nghĩa hàm callback để truyền cho tham số này các thời gian ack_end và commit_end như sau:
 
