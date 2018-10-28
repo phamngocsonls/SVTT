@@ -96,10 +96,8 @@ for key, value in data.iteritems():
 	count = count + value
 
 print(count)
-sorted_data = sorted(data.items(), key=operator.itemgetter(1))
-print(sorted_data.reverse())
+sorted_data = sorted(data.items(), key=operator.itemgetter(1), reverse=True)
+#print(sorted_data.reverse())
 
 df = pd.DataFrame(sorted_data, columns=['app', 'num'])
 df.to_csv('result.csv', encoding = 'utf-8')
-
-
