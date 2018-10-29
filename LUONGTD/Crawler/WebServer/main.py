@@ -5,6 +5,8 @@ import requests
 import sqlite3
 import ssl
 from detection import *
+import operator
+import pandas as pd
 
 # Ignore SSL certificate errors
 ctx = ssl.create_default_context()
@@ -27,8 +29,8 @@ with open('top-1m.csv', 'r') as csv_file:
 		i = i + 1
 		url = line[1]
 		urls.append(url)
-		if i == 100000:
-			break
+		#if i == 10000:
+		#	break
 
 ### Functions
 def create_jobs():
@@ -77,6 +79,7 @@ print(data)
 
 ### SQLite
 conn = sqlite3.connect('spider.splite')
+conn.text_factory = str
 cur = conn.cursor()
 
 cur.execute('''CREATE TABLE IF NOT EXISTS WebServer
@@ -93,3 +96,8 @@ for key, value in data.iteritems():
 	count = count + value
 
 print(count)
+sorted_data = sorted(data.items(), key=operator.itemgetter(1), reverse=True)
+#print(sorted_data.reverse())
+
+df = pd.DataFrame(sorted_data, columns=['app', 'num'])
+df.to_csv('result.csv', encoding = 'utf-8')
