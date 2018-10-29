@@ -1,6 +1,6 @@
 # Lab phân giải tên meienf sử dụng Bind9
 
-##Mục lục
+## Mục lục
 
 - [1. Cấu hình trên Primary DNS server](#1)
 - [2. Cấu hình trên Secondary DNS server](#2)
