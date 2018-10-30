@@ -12,6 +12,9 @@ else:
 import signal
 import requests
 
+from bs4 import BeautifulSoup
+import ast
+import ssl
 ### Request
 
 def request_do(hostname):
@@ -167,3 +170,25 @@ def ErrorServer_detect(hostname):
             if x != -1:
             	return x
     return -1
+
+
+def IP_detect(url):
+	out = commands.getoutput("host " + url)
+	regexp = re.compile('\\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\\b')
+	addresses = regexp.finditer(out)    
+	for addr in addresses:
+	    x = addr.group()
+	    print(x)
+	    hostname = "https://ipinfo.io/" + x
+	    #url = "https://ipinfo.io/220.242.131.60"
+	    print(hostname)
+	    req = requests.get(hostname)
+	    soup = BeautifulSoup(req.text, "lxml")
+	    tag = soup.p.string
+	    dic =   ast.literal_eval(tag)
+	    print(dic["org"])
+	    x = find(dic["org"].lower())
+	    if x != -1:
+	    	return x
+	return -1
+	    

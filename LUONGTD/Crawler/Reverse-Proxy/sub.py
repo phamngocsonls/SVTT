@@ -15,8 +15,47 @@ if sys.version_info >= (3, 0):
     import urllib.parse as urlparse
 else:
     import urlparse
+from bs4 import BeautifulSoup
+import ast
+import ssl
+
+# Ignore SSL certificate errors
+ctx = ssl.create_default_context()
+ctx.check_hostname = False
+ctx.verify_mode = ssl.CERT_NONE
+
+def sanitizeURL(hostname):
+    components = urlparse.urlparse(hostname)
+    hostname = "http://" + hostname if components.scheme == '' else hostname
+    return hostname
 
 
+url = "dosarrest.com"
+#"pokemon.com" 
+hostname = sanitizeURL(url)
+print(hostname)
+hostname = urlparse.urlparse(hostname).netloc
+print(hostname)
+out = commands.getoutput("host " + url)
+print(out)
+regexp = re.compile('\\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\\b')
+print(regexp)
+addresses = regexp.finditer(out)    
+print(addresses)
+for addr in addresses:
+    x = addr.group()
+    print(x)
+    hostname = "https://ipinfo.io/" + x
+    #url = "https://ipinfo.io/220.242.131.60"
+    print(hostname)
+    req = requests.get(hostname)
+    soup = BeautifulSoup(req.text, "lxml")
+    tag = soup.p.string
+    dic =   ast.literal_eval(tag)
+    print(dic["org"])
+
+
+"""
 
 ## Defines
 NUM_SPIDERS = 50
@@ -35,11 +74,6 @@ with open('top-1m.csv', 'r') as csv_file:
         #if i == 100000:
         #   break
 
-def sanitizeURL(hostname):
-    components = urlparse.urlparse(hostname)
-    #print(components)
-    hostname = "http://www." + hostname if components.scheme == '' else hostname
-    return hostname
 
 ### Functions
 url = "panda.tv"
@@ -77,3 +111,4 @@ else:
 
 print(data)
 
+"""

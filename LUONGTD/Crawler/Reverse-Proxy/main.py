@@ -14,6 +14,13 @@ else:
     import urlparse
     import Queue
 
+import sqlite3
+import ssl
+
+# Ignore SSL certificate errors
+ctx = ssl.create_default_context()
+ctx.check_hostname = False
+ctx.verify_mode = ssl.CERT_NONE
 
 ## Defines
 NUM_SPIDERS = 50
@@ -31,8 +38,8 @@ with open('top-1m.csv', 'r') as csv_file:
         i = i + 1
         url = line[1]
         urls.append(url)
-        #if i == 1000:
-        #   break
+        if i == 500000:
+           break
 
 def sanitizeURL(hostname):
     components = urlparse.urlparse(hostname)
@@ -76,6 +83,16 @@ def spider(url):
             if subdomain != -1:
                 ans = subdomain
             else:
+                err = ErrorServer_detect(hostname)
+                if err != -1:
+                    ans = err
+
+                """
+                ip = IP_detect(url)
+                if ip != -1:
+                    ans = ip
+                else:
+
                 whois = Whois_detect(hostname)
                 if whois != -1:
                     ans = whois
@@ -83,6 +100,7 @@ def spider(url):
                     err = ErrorServer_detect(hostname)
                     if err != -1:
                         ans = err
+"""
 
     if ans == -1:
         print("No Reverse Proxy!!")
