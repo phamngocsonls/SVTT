@@ -18,6 +18,7 @@
     - [3.7 Share types](#37)
     - [3.8 Share servers](#38)
     - [3.9 Share replication](#39)
+    - [3.10 Share access control](#310)
 - [4. Networking](#4)
 
 
@@ -254,6 +255,26 @@ A share server là một thực thể nhằm quản lý các chia sẻ trên m�
 ## 3.9 Share replication
 
 ////
+
+<A name="310"></a>
+
+## 3.10 Share access control
+
+Share access control nhằm chỉ định việc ai đó, một client nào đó có thể truy cập vào share file. Nó thiết lập quyền hạn khi người dùng muốn truy cập tới file share, người đó có thể chỉ có quyền `rw` hoặc chỉ có quyền `ro` hoặc có thể có cả hai
+
+Trong khi khởi tạo một share, từ khóa `--public` dùng để share public đố với các projects khác. Việc sử dụng các command `manila access-allow`, `manila access-deny` và `manila access-list` để thực hiện việc kiểm sóa truy cập.
+
+Sử dụng manila, có thể cấp quyền hoặc từ chối truy cập share theo các mực độ như sau:
+- `rw` - Read and write access. Default is `rw`
+- `ro` - Read-only access
+
+Một vài phương thức hỗ trợ việc xác thực truy cập share file như sau:
+- `ip` - Sử dụng IP để xác thực xem client nào được phép truy cập. 
+- `cert` - Sử dụng TLS certificates xác thực qua `IDENTIKEY`. Một cert hợp lệ có độ dài 64 kí tự, chú ý tới `CN` bên trong mỗi certificate
+- `user` - Xác thực qua user hoặc user group. Một giá trị hợp lệ có độ dài từ 4-32 kí tự
+
+
+
 
 
 <a name="4"></a>
