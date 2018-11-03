@@ -1,22 +1,20 @@
 #!/usr/bin/env python
 
 from __future__ import print_function
-import argparse
-import signal
-import sys
 from Detection import *
 import pandas as pd
 import csv
 import threading
-import Queue
 import operator
 
 if sys.version_info >= (3, 0):
     import urllib.parse as urlparse
+    import queue as Queue
 else:
     import urlparse
-from bs4 import BeautifulSoup
-import ast
+    import Queue
+
+import sqlite3
 import ssl
 
 # Ignore SSL certificate errors
@@ -24,45 +22,21 @@ ctx = ssl.create_default_context()
 ctx.check_hostname = False
 ctx.verify_mode = ssl.CERT_NONE
 
-def sanitizeURL(hostname):
-    components = urlparse.urlparse(hostname)
-    hostname = "http://" + hostname if components.scheme == '' else hostname
-    return hostname
+## SQLite
+conn = sqlite3.connect('report.sqlite')
+cur = conn.cursor()
 
-
-url = "dosarrest.com"
-#"pokemon.com" 
-hostname = sanitizeURL(url)
-print(hostname)
-hostname = urlparse.urlparse(hostname).netloc
-print(hostname)
-out = commands.getoutput("host " + url)
-print(out)
-regexp = re.compile('\\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\\b')
-print(regexp)
-addresses = regexp.finditer(out)    
-print(addresses)
-for addr in addresses:
-    x = addr.group()
-    print(x)
-    hostname = "https://ipinfo.io/" + x
-    #url = "https://ipinfo.io/220.242.131.60"
-    print(hostname)
-    req = requests.get(hostname)
-    soup = BeautifulSoup(req.text, "lxml")
-    tag = soup.p.string
-    dic =   ast.literal_eval(tag)
-    print(dic["org"])
-
-
-"""
+cur.execute('''CREATE TABLE IF NOT EXISTS ReverseProxy
+    (Provider TEXT UNIQUE, Num INTEGER)''')
 
 ## Defines
-NUM_SPIDERS = 50
+NUM_SPIDERS = 1
 q = Queue.Queue()
 urls = []
 data = {}
+company = {}
 Do_not_use = 0
+
 ### read top-1m urls
 with open('top-1m.csv', 'r') as csv_file:
     csv_reader = csv.reader(csv_file)
@@ -71,26 +45,93 @@ with open('top-1m.csv', 'r') as csv_file:
         i = i + 1
         url = line[1]
         urls.append(url)
-        #if i == 100000:
-        #   break
+        if i == 1:
+           break
 
+def sanitizeURL(hostname):
+    components = urlparse.urlparse(hostname)
+    #print(components)
+    hostname = "http://www." + hostname if components.scheme == '' else hostname
+    return hostname
 
 ### Functions
-url = "panda.tv"
-hostname = sanitizeURL(url)
-ans = -1
-dns = DNS_detect(hostname)
-if dns != -1:
-    ans = dns
-else:    
-    cdn = HTTP_detect(hostname)
-    if cdn != -1:
-        ans = cdn
+def create_jobs():
+    for url in urls:
+        q.put(url)
+    q.join()
+
+# crawl the next url
+def work():
+    while True:
+        url = q.get()
+        spider(url)
+        q.task_done()
+
+# Create spider threads (will be terminated when main exits)
+def create_spiders():
+    for x in range(NUM_SPIDERS):
+        t = threading.Thread(target=work)
+        t.daemon = True
+        t.start()
+
+# Spider definition
+def spider(url):
+    hostname = sanitizeURL(url)
+    ans = -1
+    dns = DNS_detect(hostname)
+    if dns != -1:
+        ans = dns
     else:    
-        subdomain = Subdomain_detect(hostname)
-        if subdomain != -1:
-            ans = subdomain
-        else:
+        cdn = HTTP_detect(hostname)
+        if cdn != -1:
+            ans = cdn
+        else:    
+            subdomain = Subdomain_detect(hostname)
+            if subdomain != -1:
+                ans = subdomain
+            else:
+                ip = IP_detect(url)
+                if ip != -1:
+                    ans = ip
+                else:
+                    err = ErrorServer_detect(hostname)
+                    if err != -1:
+                        ans = err
+    if ans == -1:
+        print("No Reverse Proxy!!")
+    else:
+        if ans != None:             
+            if data.get(ans) != None:
+                data[ans] = data[ans] + 1
+                cur.execute('UPDATE ReverseProxy SET Num=Num+1 WHERE Provider=(?)',(ans, ))
+            else:
+                data[ans] = 1
+                cur.execute('INSERT OR IGNORE INTO ReverseProxy (Provider, Num) VALUES (?, ?)', (ans, 1))
+            print(ans)
+            company[url] = ans
+            conn.commit()
+"""
+                whois = Whois_detect(hostname)
+                if whois != -1:
+                    ans = whois
+                else:
+                    err = ErrorServer_detect(hostname)
+                    if err != -1:
+                        ans = err
+"""
+
+### Main
+#create_spiders()
+#create_jobs()
+for url in urls:
+    print(url)
+    ip = IP_detect(url)
+    print(ip)
+
+ip = IP_detect("pokemon.com")
+print(ip)
+
+"""
             whois = Whois_detect(hostname)
             if whois != -1:
                 ans = whois
@@ -99,16 +140,26 @@ else:
                 if err != -1:
                     ans = err
 
-if ans == -1:
-    print("No Reverse Proxy!!")
-else:
-    if ans != None:             
-        if data.get(ans) != None:
-            data[ans] = data[ans] + 1
-        else:
-            data[ans] = 1
-        print(ans)
+### Evaluation:
+print("\n\nEVALUATION:")
+count = 0
+for key, value in data.iteritems():
+    count = count + value
 
-print(data)
+print("\nTOTAL SITES:  {}".format(count))
+#print(company)
+sorted_data = sorted(data.items(), key=operator.itemgetter(1), reverse=True)
+#print(sorted_data.reverse())
 
+df = pd.DataFrame(sorted_data, columns=['Reverse-Proxy-Services', 'Sites'])
+df.to_csv('result.csv', encoding = 'utf-8')
+
+companies = []
+
+for key, value in company.iteritems():
+    temp = [key, value]
+    companies.append(temp)
+
+hf = pd.DataFrame(companies, columns=['websites', 'CDN'])
+hf.to_csv('companies.csv', encoding = 'utf-8')
 """

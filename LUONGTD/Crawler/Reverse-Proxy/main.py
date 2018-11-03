@@ -22,8 +22,16 @@ ctx = ssl.create_default_context()
 ctx.check_hostname = False
 ctx.verify_mode = ssl.CERT_NONE
 
+## SQLite
+conn = sqlite3.connect('report.sqlite', check_same_thread=False)
+cur = conn.cursor()
+
+cur.execute('''CREATE TABLE IF NOT EXISTS ReverseProxy
+    (Provider TEXT UNIQUE, Num INTEGER)''')
+cur.close()
+
 ## Defines
-NUM_SPIDERS = 50
+NUM_SPIDERS = 20
 q = Queue.Queue()
 urls = []
 data = {}
@@ -38,7 +46,7 @@ with open('top-1m.csv', 'r') as csv_file:
         i = i + 1
         url = line[1]
         urls.append(url)
-        if i == 500000:
+        if i == 25:
            break
 
 def sanitizeURL(hostname):
@@ -86,33 +94,31 @@ def spider(url):
                 err = ErrorServer_detect(hostname)
                 if err != -1:
                     ans = err
-
-                """
-                ip = IP_detect(url)
-                if ip != -1:
-                    ans = ip
-                else:
-
-                whois = Whois_detect(hostname)
-                if whois != -1:
-                    ans = whois
-                else:
-                    err = ErrorServer_detect(hostname)
-                    if err != -1:
-                        ans = err
-"""
-
     if ans == -1:
         print("No Reverse Proxy!!")
     else:
-        if ans != None:             
-            if data.get(ans) != None:
-                data[ans] = data[ans] + 1
-            else:
+        if ans != None:     
+            cur = conn.cursor()        
+            if data.get(ans) == None:
                 data[ans] = 1
+                try:
+                    cur.execute('INSERT OR IGNORE INTO ReverseProxy (Provider, Num) VALUES (?, ?)', (ans, 1))
+                except:
+                    print("{}-> SQLite: <INSERT> Operation error!!".format(ans))
+            else:
+                data[ans] = data[ans] + 1
+                try:
+                    cur.execute('UPDATE ReverseProxy SET Num=Num+1 WHERE Provider=?',(ans, ))
+                except:
+                    print("{}-> SQLite: <UPDATE> Operation error!!".format(ans))
             print(ans)
             company[url] = ans
-
+            try:
+                conn.commit()
+            except:
+                print("{}-> SQLite: Nothing to commit".format(ans))
+            #conn.commit()
+            cur.close()
 
 ### Main
 create_spiders()
@@ -141,3 +147,4 @@ for key, value in company.iteritems():
 
 hf = pd.DataFrame(companies, columns=['websites', 'CDN'])
 hf.to_csv('companies.csv', encoding = 'utf-8')
+

@@ -33,7 +33,7 @@ def request_do(hostname):
 CDN = {
     'CloudFlare': 'Cloudflare',
     'Incapsula': 'Incapsula',
-    'Cloudfront': 'Cloudfront',
+    'Cloudfront': 'Amazon Cloudfront',
     'Akamai': 'Akamai',
     'Airee': 'Airee',
     'CacheFly': 'CacheFly',
@@ -66,9 +66,15 @@ CDN = {
 	'Turbobyte': 'Turbobyte',
 	'Sucuri': 'Sucuri',
 	'Dosarrest': 'Dosarrest',
+	'github': 'Github Pages',
 	'Greywizard': 'Greywizard',
 	'BitGravity': 'BitGravity',
-	'Instartlogic': 'Instartlogic'
+	'Instartlogic': 'Instartlogic',
+	'google': 'Google Cloud',
+	'Netlify': 'Netlify',
+	'Backtory': 'Backtory',
+	'CFS': 'CacheFly',
+	'fbs': 'Fireblade'
 }
 
 
@@ -171,24 +177,22 @@ def ErrorServer_detect(hostname):
             	return x
     return -1
 
-
 def IP_detect(url):
 	out = commands.getoutput("host " + url)
 	regexp = re.compile('\\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\\b')
-	addresses = regexp.finditer(out)    
+	addresses = regexp.finditer(out)
 	for addr in addresses:
-	    x = addr.group()
-	    print(x)
-	    hostname = "https://ipinfo.io/" + x
-	    #url = "https://ipinfo.io/220.242.131.60"
-	    print(hostname)
-	    req = requests.get(hostname)
-	    soup = BeautifulSoup(req.text, "lxml")
-	    tag = soup.p.string
-	    dic =   ast.literal_eval(tag)
-	    print(dic["org"])
-	    x = find(dic["org"].lower())
-	    if x != -1:
-	    	return x
+		x = addr.group()
+		hostname = "http://ipinfo.io/" + x
+		#print(hostname)
+		try:
+			req = requests.get(hostname)
+			soup = BeautifulSoup(req.text, "lxml")
+			dic = ast.literal_eval(soup.p.string)
+			x = find(dic["org"].lower())
+			print(x)
+			if x != -1:
+				return x
+		except:
+			print("SLL Error!!")
 	return -1
-	    
