@@ -13,11 +13,10 @@ with open('top-1m.csv', 'r') as csv_file:
     i = 0
     for line in csv_reader:
         i = i + 1
-        urls.append(line[1])
-        if i == 500000:
-           break
+        if i > 500000:
+           urls.append(line[1])
 
 print(urls)
 
 hf =pd.DataFrame(urls, columns=['site'])
-hf.to_csv('top-500k1.csv', encoding='utf-8')
+hf.to_csv('top-500k2.csv', encoding='utf-8')

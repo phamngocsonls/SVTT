@@ -33,12 +33,12 @@ def request_do(hostname):
 CDN = {
     'CloudFlare': 'Cloudflare',
     'Incapsula': 'Incapsula',
-    'Cloudfront': 'Amazon Cloudfront',
+    'Cloudfront': 'Amazon CloudFront',
     'Akamai': 'Akamai',
     'Airee': 'Airee',
     'CacheFly': 'CacheFly',
     'EdgeCast': 'EdgeCast',
-    'stackpath': 'Stack Path',
+    'stack.*path': 'Stack Path',
     'NetDNA': 'Stack Path',
     'MaxCDN': 'Stack Path',
     'Beluga': 'BelugaCDN',
@@ -51,7 +51,8 @@ CDN = {
     'ArvanCloud': 'ArvanCloud',
     'Beluga': 'Beluga',
 	'DN77': 'DN77',
-	'CDNetwork': 'CDNetwork',
+	'CDNetwork': 'CDNetworks',
+	#'h0-': 'CDNetworks',
 	'CDNsun': 'CDNsun',
 	'CDNvideo': 'CDNvideo',
 	'ChinaCache': 'ChinaCache',
@@ -61,16 +62,19 @@ CDN = {
 	'centurylink': 'Level3',
 	'NGENIX': 'NGENIX',
 	'Quantil': 'Quantil',
+	'MileWeb': 'Quantil',
+	'yn[0-9]': 'Quantil',
 	'SkyparkCDN': 'SkyparkCDN',
-	'VerizonDigitalMedia': 'Verizon Digital Media services',
+	'VerizonDigitalMedia': 'Verizon Digital Media',
+	'EdgeCast': 'Verizon Digital Media',
 	'Turbobyte': 'Turbobyte',
 	'Sucuri': 'Sucuri',
 	'Dosarrest': 'Dosarrest',
-	'github': 'Github Pages',
-	'Greywizard': 'Greywizard',
+	#'github': 'Github Pages',
+	'Greywizard': 'Grey Wizard',
 	'BitGravity': 'BitGravity',
-	'Instartlogic': 'Instartlogic',
-	'google': 'Google Cloud',
+	'Instart.*logic': 'Instart Logic',
+	#'google.*cloud': 'Google Cloud',
 	'Netlify': 'Netlify',
 	'Backtory': 'Backtory',
 	'CFS': 'CacheFly',
@@ -80,36 +84,34 @@ CDN = {
 
 ###Detect functions
 def find(data):
-	#data = data.lower()
     for keyword, description in CDN.items():		
-        if data.find(keyword.lower()) != -1:
-            return description
+        if re.findall(keyword.lower(), data) != []:
+        	return description
     return -1
 
-def DNS_detect(hostname):
+def DNS_detect(hostname, result):
 	hostname = urlparse.urlparse(hostname).netloc
-
+	result = []
 	regexp = re.compile('\\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\\b')
 
 	out = commands.getoutput("host " + hostname)
 	
 	finder = find(out)
 	if finder != -1:
-		return finder
+		result.append(finder)
 
 	addresses = regexp.finditer(out)
-
 	for addr in addresses:
 		x = find(commands.getoutput('nslookup ' + addr.group()))
 		if x != -1:
-			return x
+			if x not in result:
+				result.append(x)
+	return result
 
-	return -1
 
-
-def HTTP_detect(hostname):
+def HTTP_detect(hostname, result):
     #print('[+] HTTP detection\n')
-
+	result = []
 	hostname = urlparse.urlparse(hostname).scheme + '://' + urlparse.urlparse(hostname).netloc
 
 	fields = {
@@ -117,48 +119,74 @@ def HTTP_detect(hostname):
 		'X-CDN': True,
 		'x-cache': True,
 		'X-CDN-Forward': True,
+		'X-Via': True,
+		'Via': True,
+		'X-Px':True,
 		'Fastly-Debug-Digest': False
 	}
 
 	req = request_do(hostname)
-
 	if req is None:
-		return
+		return result
+	#print(req.headers)
+	if req.headers.get('X-Instart-Request-ID'):
+		result.append('Instart Logic')
+
+	if req.headers.get('Powered-By-ChinaCache'):
+		result.append('ChinaCache')
 
 	for field, state in fields.items():
 		value = req.headers.get(field)
 		if state and value is not None:
 			x = find(value.lower())
 			if x != -1:
-				return x
+				if x not in result:
+					result.append(x)
 		elif not state and value is not None:
 			x = find(field.lower())
 			if x != -1:
-				return x
+				if x not in result:
+					result.append(x)
+	return result
 
-	return -1
 
-
-def Subdomain_detect(hostname):
+def Subdomain_detect(hostname, result):
 	hostname = "cdn." + urlparse.urlparse(hostname).netloc
-
 	out = commands.getoutput("host -a " + hostname)
 
 	x = find(out.lower())
 	if x != -1:
-		return x
-	return -1
+		if x not in result:
+			result.append(x)
+	return result
 
 
-def Whois_detect(hostname):
-	hostname = urlparse.urlparse(hostname).netloc
-
-	out = commands.getoutput("whois " + hostname)
-
-	x = find(out.lower())
-	if x != -1:
-		return x
-	return -1
+def Whois_detect(url, result):
+	hostname = url.split('www.')[1]
+	out1 = commands.getoutput("host " + hostname)
+	if out1 != '':
+		regexp = re.compile('\\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\\b')
+		addresses = regexp.finditer(out1)
+		for addr in addresses:	
+			out2 = commands.getoutput("whois " + addr.group())
+			x = find(out2.lower())
+			if x != -1:
+				if x not in result:
+					result.append(x)
+	else:
+		hostname = urlparse.urlparse(url).netloc
+		out1 = commands.getoutput("host " + hostname)
+		if out1 != '':
+			regexp = re.compile('\\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\\b')
+			addresses = regexp.finditer(out1)
+			for addr in addresses:	
+				print(addr.group())
+				out2 = commands.getoutput("whois " + addr.group())
+				x = find(out2.lower())
+				if x != -1:
+					if x not in result:
+						result.append(x)
+	return result
 
 
 def ErrorServer_detect(hostname):
@@ -172,10 +200,13 @@ def ErrorServer_detect(hostname):
     for addr in addresses:
         res = request_do("http://" + addr.group())
         if res is not None and res.status_code == 500:
-            x = find(res.text.lower())
-            if x != -1:
-            	return x
-    return -1
+        	print("@@@@@@@@@@@@@@@@@@@@@@@@")
+        	x = find(res.text.lower())
+        	if x != -1:
+        		print("!!!!!!!!!!!!!!!!!!!!!!!!!!")
+        		print(x)
+        		return x
+	return -1
 
 def IP_detect(url):
 	out = commands.getoutput("host " + url)
@@ -184,13 +215,11 @@ def IP_detect(url):
 	for addr in addresses:
 		x = addr.group()
 		hostname = "http://ipinfo.io/" + x
-		#print(hostname)
 		try:
 			req = requests.get(hostname)
 			soup = BeautifulSoup(req.text, "lxml")
 			dic = ast.literal_eval(soup.p.string)
 			x = find(dic["org"].lower())
-			print(x)
 			if x != -1:
 				return x
 		except:

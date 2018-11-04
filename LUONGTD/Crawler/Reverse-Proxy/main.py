@@ -31,7 +31,7 @@ cur.execute('''CREATE TABLE IF NOT EXISTS ReverseProxy
 cur.close()
 
 ## Defines
-NUM_SPIDERS = 20
+NUM_SPIDERS = 50
 q = Queue.Queue()
 urls = []
 data = {}
@@ -39,14 +39,14 @@ company = {}
 Do_not_use = 0
 
 ### read top-1m urls
-with open('top-1m.csv', 'r') as csv_file:
+with open('top-500k2.csv', 'r') as csv_file:
     csv_reader = csv.reader(csv_file)
     i = 0
     for line in csv_reader:
         i = i + 1
         url = line[1]
         urls.append(url)
-        if i == 25:
+        if i == 10000:
            break
 
 def sanitizeURL(hostname):
@@ -78,47 +78,38 @@ def create_spiders():
 # Spider definition
 def spider(url):
     hostname = sanitizeURL(url)
-    ans = -1
-    dns = DNS_detect(hostname)
-    if dns != -1:
-        ans = dns
-    else:    
-        cdn = HTTP_detect(hostname)
-        if cdn != -1:
-            ans = cdn
-        else:    
-            subdomain = Subdomain_detect(hostname)
-            if subdomain != -1:
-                ans = subdomain
-            else:
-                err = ErrorServer_detect(hostname)
-                if err != -1:
-                    ans = err
-    if ans == -1:
+    result = []
+    result = HTTP_detect(hostname, result)
+    result = DNS_detect(hostname, result)  
+    result = Subdomain_detect(hostname, result)
+    result = Whois_detect(hostname, result)
+    if result == []:
         print("No Reverse Proxy!!")
     else:
-        if ans != None:     
-            cur = conn.cursor()        
-            if data.get(ans) == None:
-                data[ans] = 1
+        for an in result:
+            if an != None:
+                company[url] = []     
+                cur = conn.cursor()        
+                if data.get(an) == None:
+                    data[an] = 1
+                    try:
+                        cur.execute('INSERT OR IGNORE INTO ReverseProxy (Provider, Num) VALUES (?, ?)', (an, 1))
+                    except:
+                        print("{}-> SQLite: <INSERT> Operation error!!".format(an))
+                else:
+                    data[an] = data[an] + 1
+                    try:
+                        cur.execute('UPDATE ReverseProxy SET Num=Num+1 WHERE Provider=?',(an, ))
+                    except:
+                        print("{}-> SQLite: <UPDATE> Operation error!!".format(an))
+                print(an)
+                company[url].append(an)
                 try:
-                    cur.execute('INSERT OR IGNORE INTO ReverseProxy (Provider, Num) VALUES (?, ?)', (ans, 1))
+                    conn.commit()
                 except:
-                    print("{}-> SQLite: <INSERT> Operation error!!".format(ans))
-            else:
-                data[ans] = data[ans] + 1
-                try:
-                    cur.execute('UPDATE ReverseProxy SET Num=Num+1 WHERE Provider=?',(ans, ))
-                except:
-                    print("{}-> SQLite: <UPDATE> Operation error!!".format(ans))
-            print(ans)
-            company[url] = ans
-            try:
-                conn.commit()
-            except:
-                print("{}-> SQLite: Nothing to commit".format(ans))
-            #conn.commit()
-            cur.close()
+                    print("{}-> SQLite: Nothing to commit".format(an))
+                #conn.commit()
+                cur.close()
 
 ### Main
 create_spiders()

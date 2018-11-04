@@ -16,120 +16,24 @@ else:
 
 import sqlite3
 import ssl
-
+import re
 # Ignore SSL certificate errors
 ctx = ssl.create_default_context()
 ctx.check_hostname = False
 ctx.verify_mode = ssl.CERT_NONE
 
-## SQLite
-conn = sqlite3.connect('report.sqlite')
-cur = conn.cursor()
 
-cur.execute('''CREATE TABLE IF NOT EXISTS ReverseProxy
-    (Provider TEXT UNIQUE, Num INTEGER)''')
+url = "http://www.Tianjinecocity.gov.sg"
+hostname = url
+result = []
+result = HTTP_detect(hostname, result)   
+result = DNS_detect(hostname, result)   
+result = Subdomain_detect(hostname, result)
+result = Whois_detect(hostname, result)
+if result == []:
+    print("No Reverse Proxy!!")
+print(result)
 
-## Defines
-NUM_SPIDERS = 1
-q = Queue.Queue()
-urls = []
-data = {}
-company = {}
-Do_not_use = 0
-
-### read top-1m urls
-with open('top-1m.csv', 'r') as csv_file:
-    csv_reader = csv.reader(csv_file)
-    i = 0
-    for line in csv_reader:
-        i = i + 1
-        url = line[1]
-        urls.append(url)
-        if i == 1:
-           break
-
-def sanitizeURL(hostname):
-    components = urlparse.urlparse(hostname)
-    #print(components)
-    hostname = "http://www." + hostname if components.scheme == '' else hostname
-    return hostname
-
-### Functions
-def create_jobs():
-    for url in urls:
-        q.put(url)
-    q.join()
-
-# crawl the next url
-def work():
-    while True:
-        url = q.get()
-        spider(url)
-        q.task_done()
-
-# Create spider threads (will be terminated when main exits)
-def create_spiders():
-    for x in range(NUM_SPIDERS):
-        t = threading.Thread(target=work)
-        t.daemon = True
-        t.start()
-
-# Spider definition
-def spider(url):
-    hostname = sanitizeURL(url)
-    ans = -1
-    dns = DNS_detect(hostname)
-    if dns != -1:
-        ans = dns
-    else:    
-        cdn = HTTP_detect(hostname)
-        if cdn != -1:
-            ans = cdn
-        else:    
-            subdomain = Subdomain_detect(hostname)
-            if subdomain != -1:
-                ans = subdomain
-            else:
-                ip = IP_detect(url)
-                if ip != -1:
-                    ans = ip
-                else:
-                    err = ErrorServer_detect(hostname)
-                    if err != -1:
-                        ans = err
-    if ans == -1:
-        print("No Reverse Proxy!!")
-    else:
-        if ans != None:             
-            if data.get(ans) != None:
-                data[ans] = data[ans] + 1
-                cur.execute('UPDATE ReverseProxy SET Num=Num+1 WHERE Provider=(?)',(ans, ))
-            else:
-                data[ans] = 1
-                cur.execute('INSERT OR IGNORE INTO ReverseProxy (Provider, Num) VALUES (?, ?)', (ans, 1))
-            print(ans)
-            company[url] = ans
-            conn.commit()
-"""
-                whois = Whois_detect(hostname)
-                if whois != -1:
-                    ans = whois
-                else:
-                    err = ErrorServer_detect(hostname)
-                    if err != -1:
-                        ans = err
-"""
-
-### Main
-#create_spiders()
-#create_jobs()
-for url in urls:
-    print(url)
-    ip = IP_detect(url)
-    print(ip)
-
-ip = IP_detect("pokemon.com")
-print(ip)
 
 """
             whois = Whois_detect(hostname)
