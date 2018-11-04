@@ -30,9 +30,9 @@ DNS Server (Domain Name System) là 1 hệ thống phân giải tên được ph
 
 ## 2. Chức năng của DNS
 
-Mỗi Website có một tên (là tên miền hay đường dẫn ỦL: Universal Resource Locator) và một địa chỉ IP. Địa chỉ IP gồm 4 nhóm cách nhua bằng dấu chấm. Khi mở một trình duyệt Web và nhập tên Website, trình duyệt sẽ đến thẳng website mà không cần phải thông qua việc nhập địa chỉ IP của trang web. Qúa trình `dịch` tên miền thành địa chỉ IP để cho trình duyệt hiểu và truy cập được vào website là công việc của một DNS server. Các DNS trợ giúp qua lại với nhau để dịch địa chỉ `IP` thành `tên` và ngược lại. Người sử dụng chỉ cần nhớ tên, không cần nhớ địa chỉ IP vì nó rất khó nhớ 
+Mỗi Website có một tên (là tên miền hay đường dẫn URL: Universal Resource Locator) và một địa chỉ IP. Địa chỉ IP gồm 4 nhóm cách nhua bằng dấu chấm. Khi mở một trình duyệt Web và nhập tên Website, trình duyệt sẽ đến thẳng website mà không cần phải thông qua việc nhập địa chỉ IP của trang web. Qúa trình `dịch` tên miền thành địa chỉ IP để cho trình duyệt hiểu và truy cập được vào website là công việc của một DNS server. Các DNS trợ giúp qua lại với nhau để dịch địa chỉ `IP` thành `tên` và ngược lại. Người sử dụng chỉ cần nhớ tên, không cần nhớ địa chỉ IP vì nó rất khó nhớ 
 
-<a name=="3"></a>
+<a name="3"></a>
 
 ## 3. Nguyên tắc làm việc của DNS
 
