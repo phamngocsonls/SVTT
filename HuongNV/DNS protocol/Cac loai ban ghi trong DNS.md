@@ -7,6 +7,8 @@
     - [2.1 2.1 SOA (Start of Authority)](#21)
     - [2.2 NS (Name Server)](#22)
     - [2.3 A (Address) và CNAME(Canonical Name)](#23)
+        - [2.3.1 Bản ghi kiểu A](#231)
+        - [2.3.2 Bản ghi CNAME](#232)
     - [2.4 AAAA](#24)
     - [2.5 SRV](#25)
     - [2.6 Mail Exchange](#26)
@@ -38,7 +40,7 @@
 ```
 - tên miền: Là tên mà DNS quản lý
 - tên server dns: Tên server quản lý miền
-- Refresh: Chỉ ra khoảng thời gian máy chủ Secondary kiểm tra dữ liệu zone trên máy Primary để cập nhật nếu cần
+- Refresh number: Chỉ ra khoảng thời gian máy chủ Secondary kiểm tra dữ liệu zone trên máy Primary để cập nhật nếu cần
 - TTL: Gía trị này áp dụng cho mọi record trong zone và được đính kèm thông tin trả lười một truy vấn. Mục đích của nó là chỉ ra thời gian mà các máy chủ name server khác cache lại thông tin trả lời
 ```
 
@@ -46,7 +48,7 @@
 
 ## 2.2 NS (Name Server)
 
-- Mỗi name server cho zone sẽ có một NS record, nó chứa địa chỉ IP của DNS server cùng với các thông tin về domain đó
+Bản ghi NS dùng để khai báo máy chủ tên miền cho một tên miền. Nó cho biết các thông tin về tên miền quản lý, do đó yêu ccaauf có tối thiểu hai bản ghi NS cho mỗi tên miền
 
 - Cú pháp:
 
@@ -57,19 +59,49 @@
 - Ví dụ:
 
 ```
-matbao.com. IN NS ns1.matbao.com.
-matbao.com. IN NS ns2.matbao.com.
+vnnic.net.vn       IN      NS      dns1.vnnic.net.vn
+vnnic.net.vn       IN      NS      dns2.vnic.net.vn
 ```
+
+Với khai báo trên, tên miền vnnic.net.vn sẽ do máy chủ tên miền có tên dns.vnnic.net.vn quản lý.
 
 <a name="23"></a>
 
 ## 2.3 A (Address) và CNAME(Canonical Name)
 
-- A record - Address record: Dùng để phân giải host ra một địa chỉ IPv4, dùng để trỏ tên website như www.domain.com đến một server hosting website đó
-- Record CNAME: Tạo tên bí danh (alias) trỏ vào Server Hosting website đó.Thông thường thì máy tính trên Internet có nhiều dịch vụ như Web Server, FTP Server, Chat Server, …. Để lọc hay nói nôm na là kiểm soát, CNAME Records đã được sử dụng.
-- Ví dụ:
-    - matbao.com. IN CNAME www.matbao.com
-    - matbao.com. IN A 112.78.2.100
+Record A ánh xạ tên vào địa chỉ. Record CNAME tạo tên bí danh alias trỏ vào một tên canonical. Tên canonical là tên host trong record A hoặc trỏ vào 1 tên canonical khác.
+
+<a name="231"></a>
+
+### 2.3.1 Bản ghi kiểu A
+
+A record - Address record: Dùng để phân giải host ra một địa chỉ IPv4, dùng để trỏ tên website như www.domain.com đến một server hosting website đó
+
+Bản ghi kiểu A có cú pháp như sau:
+
+```
+[Domain]       IN       A      <dịa chỉ IP của máy>
+
+home.vnn.vn    IN       A        203.162.0.12
+```
+
+Teho ví dụ trên, tên miền `home.vnn.vn` được khai với bản ghi kiểu A trỏ đến địa chỉ 203.162.0.12 sẽ là tên của máy tính này. Một tên miền có thể được khai báo nhiều bản ghi kiểu A khác nhau để trỏ đến các địa chỉ IP khác nhau. Như vậy có thể có nhiều máy tính có cùng tên trên mạng. Ngược lại một máy tính có một địa chỉ IP có thể có nhiều tên miền trỏ đến, truy nhiên chỉ có duy nhất một tên miền được xác định là tên của máy, đó chính là tên miền được khai với bản ghi kiểu A trỏ đến địa chỉ của máy. 
+
+<a name="232"></a>
+
+### 2.3.2 Bản ghi CNAME
+
+Record CNAME: Tạo tên bí danh (alias) trỏ vào Server Hosting website đó.Thông thường thì máy tính trên Internet có nhiều dịch vụ như Web Server, FTP Server, Chat Server, …. Để lọc hay nói nôm na là kiểm soát, CNAME Records đã được sử dụng.
+
+Bản ghi CNAME có cú pháp như sau:
+
+```
+alias-domain    IN         CNAME       canonical domain
+
+www.vnn.vn      IN         CNAME       home.vnn.vn
+```
+
+Tên miền `www.vnn.vn` sẽ là tên bí danh của tên miền `home.vnn.vn`, cả 2 tên này đều trỏ đến địa chỉ IP 203.16.0.12
 
 <a name="24"></a>
 
@@ -124,8 +156,10 @@ Phân giải địa chỉ IP sang host name
 
 - Ví dụ:
 ```
-record PTR cho host: 112.2.78.100.in-addr.arpa. IN PTR matbao.com.
+112.2.78.100.in-addr.arpa. IN PTR matbao.com.
 ```
+Bản ghi PTR trên cho phép tìm tên miền `matbao.vn` khi biết địa chỉ IP 112.2.78.100 mà tên miền trỏ tới
+
 
 # Tài liệu tham khảo
 - https://wiki.matbao.net/kb/mot-so-dinh-nghia-ve-cac-dns-record/
