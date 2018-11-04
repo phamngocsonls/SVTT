@@ -11,6 +11,12 @@
     - [5.2 DNS server](#52)
     - [5.3 Zone](#53)
 - [6. Phân loại DNS server](#6)
+    - [6.1 Primary server](#61)
+    - [6.2 Secondary server](#62)
+    - [6.3 Caching Name server](#63)
+- [7. Đồng bộ dữ liệu giữa các DNS server](#7)
+    - [7.1 Truyền toàn bộ zone](#71)
+    - [7.2 Truyền phần thay đổi](#72)
 
 <a name="1"></a>
 
@@ -26,7 +32,7 @@ DNS Server (Domain Name System) là 1 hệ thống phân giải tên được ph
 
 Mỗi Website có một tên (là tên miền hay đường dẫn ỦL: Universal Resource Locator) và một địa chỉ IP. Địa chỉ IP gồm 4 nhóm cách nhua bằng dấu chấm. Khi mở một trình duyệt Web và nhập tên Website, trình duyệt sẽ đến thẳng website mà không cần phải thông qua việc nhập địa chỉ IP của trang web. Qúa trình `dịch` tên miền thành địa chỉ IP để cho trình duyệt hiểu và truy cập được vào website là công việc của một DNS server. Các DNS trợ giúp qua lại với nhau để dịch địa chỉ `IP` thành `tên` và ngược lại. Người sử dụng chỉ cần nhớ tên, không cần nhớ địa chỉ IP vì nó rất khó nhớ 
 
-<a name="3"></a>
+<a name=="3"></a>
 
 ## 3. Nguyên tắc làm việc của DNS
 
@@ -99,14 +105,82 @@ Có 2 loại DNS server như sau:
 - Primary server
 - Secondary server
 
+<a name="61"></a>
+
 ### 6.1 Primary server
 
-- Nguồn xác thực thông tin chính thức cho các domain mà nó được phép quản lý
-- Thông tin về tên miền được phân cấp quản lý thì được lưu trữ tại đây và sau đó có thể được chuyển sang cho các secondary server
-- Primary server nên đặt gần các client để có thể phục vụ truy vấn tên miền một cách dễ dàng và nhanh hơn
+- Nguồn xác thực thông tin chính thức cho các domain mà nó được phép quản lý.
+- Thông tin về tên miền được phân cấp quản lý thì được lưu trữ tại đây và sau đó có thể chuyển cho các secondary server
+- Các tên miền do primary server quản lý thì được tạo ra và sửa đổi tại primary server và được cập nhật đến các secondary server
+- Primary server nên đặt gần các client để có thể phục vụ truy vấn tên miền một cách dễ dàng và nhanh hơn.
+
+<a name="62"></a>
 
 ### 6.2 Secondary server
 
-DNS được khuyến nghị nên sử dụng ít nhất là hai DNS server để lưu cho mỗi một zone. Primary DNS server quản lý các zone và secondary server sử dụng để lưu trữ dự phòng cho primary server.
+DNS được khuyến nghị nên sử dụng ít nhất là 2 DNS server để lưu cho mỗi một zone. Primary DNS server quản lý các zone và secondary sử dụng để lưu trữ dự phòng cho primary server. Secondary server được khuyến nghị dùng nhưng không nhất thiết phải có. Secondary server được phép quản lý domain, secondary không tạo ra các bản ghi về tên miền mà nó lấy từ primary server.
 
-Khi lượng truy vấn zone tăng cao tại primary thì nó sẽ chuyển bớt tải sang cho secondary server hoặc khi primary server gặp lỗi thì secondary đứng lên hoạt động thay thế
+Khi lượng truy vấn zone tăng cao tại primary server thì nó sẽ chuyển bớt tải sang cho secondary server. Hoặc khi primary server gặp sự cố không hoạt động được thì secondary server sẽ hoạt động thay thế cho đến khi primary server hoạt động trở lại.
+
+Secondary server nên được đặt gần với primary server và client để có thể phục vụ cho việc truy vấn tên miền dễ dàng hơn. Nhưng không nên cài đặt secondary server trên cùng một mạng con hoặc cùng một kết nối với primary server. Mục đích là để khi primary gặp sự cố thì sẽ không ảnh hưởng tới secondary server.
+
+Primary server thường xuyên thay đổi hoặc thêm vào các zone mới nên DNS server sử dụng cơ chế cho phép secondary lấy thông tin từ primary server và lưu trữ nó. Có 2 giải pháp lấy thông tin về các zone mới là lấy toàn bộ hoặc chỉ lấy phần thay đổi.
+
+Khi secondayr server được khởi động, nó sẽ tìm primary server nào mà nó đươc phép lấy dữ liệu về máy. Nó sẽ copy lại toàn bộ cơ sở dữ liệu của primary server mà nó được phép transfer. theo 1 chu kì nào đó người quản trị quy định thì secondary server sẽ sao chép và cập nhật CSDL từ primary server. Qúa trình zone transfer được minh họa bằng hình dưới đây:
+
+
+![Imgur](https://i.imgur.com/YXpMg2b.png)
+
+
+<a name="63"></a>
+
+### 6.3 Caching Name server
+
+Tất cả các DNS server đều có khả năng lưu trữ dữ liệu trên bộ nhớ cache của một máy để trả lời truy vấn một cách nhanh chóng. Nhưng hệ thống DNS còn có một loại caching-only server. Loại này chỉ sử dụng cho việc truy vấn, lưu trữ câu trả lời dựa trên thông tin có trên cache của máy và cho kết quả truy vấn. Chúng không hề quản lý một domain nào và thông tin mà nó chỉ giới hạn những gì được lưu trên cache của server.
+
+Lúc ban đầu khi server bắt đầu chạy thì nó không lưu thông tin nào trong cache. Thông tin sẽ được cập nhật theo thời gian khi các client server truy vấn dịch vụ DNS. Nếu bạn sử dụng kết nối mạng WAN tốc độ thấp thì việc sử dụng caching-only server là giải pháp hữu hiệu cho phép giảm lưu lượng thông tin truy vấn trên đường truyền.
+
+Caching-only có khả năng trả lời các câu truy vấn đến client. Nhưng không chứa zone nào và cũng không có quyền quản lý bất kì domain nào. Nó sử dụng bộ cache của mình để lưu các truy vấn của DNS của client. Thông tin sẽ được lưu trong cache để trả lời các tủy vấn đến client để làm tăng tốc độ phân giải và giảm gánh nặng phân giải tên máy.
+
+<a name="7"></a>
+
+## 7. Đồng bộ dữ liệu giữa các DNS server
+
+Do đề phòng rủi ro khi DNS server không hoạt động hoặc kết nối bị đứt, người ta khuyến nghị nên dùng hơn một DNS server để quản lý một zone nhằm tránh trục trặc đường truyền. Do vậy ta phải có cơ chế chuyển dữ liệu giữa các zone và đông bộ dữ liệu giữa chúng với nhau. Có 2 cách để đồng bộ dữ liệu giữa các DNS server với nhau:
+- Truyền toàn bộ zone
+- Truyền phần thay đổi
+
+<a name="71"></a>
+
+### 7.1 Truyền toàn bộ zone
+
+Khi một DNS server mới được thêm vào mạng thì nó được cấu hình như một secondary server mới cho một zone đã tồn tại. Nó sẽ tiến hành nhân toàn bộ dữ liệu từ primary server. Đối với các DNS server phiên bản ddaauff tiên thường sử dụng giải pháp lấy toàn bộ các CSDL khi có các thay đổi trong zone.
+
+<a name="72"></a>
+
+### 7.2 Truyền phần thay đổi
+
+Giari pháp này chỉ là truyền những dữ liệu thay đổi của zone. Đồng bộ dữ liệu này được miêu tả chi tiết trong tiêu chuẩn RFC 1995. Nó cung cấp giải pháp hiệu quả cho việc đồng bộ những thay đổi thêm, bớt của 1 zone.
+
+## Cớ chế đồng bộ dữ liệu giữa các DNS server
+
+Với việc trao đổi IXFR zone thì sư khác nhau giữa số serial của nguồn dữ liệu và bản sao của nó. Nếu cả hai đều co cùng số serial thì việc truyền dữ liệu của zone sẽ không thực hiện.
+
+Nếu truy vấn IXFR thực hiện không thành công và các thay đổi được gửi lại thì tại DNS server nguồn của zone phải được lưu giữ các phần thay đổi để sử dụng truyền đến nơi yêu cầu truy vấn IXFR. Incremental sẽ cho phép lưu lượng truyền dữ liệu ít và nhanh hơn.
+
+Zone transfer sẽ xảy ra khi có những hành động sau xảy ra:
+- Khi quá trình làm mới của zone đã kết thúc
+- Khi secondary server được thông báo zone đã thay đổi tại nguồn quản lý zone
+- Khi thêm mới secondary server
+- Tại secondary server yêu cầu chueyenr zone
+
+Các bước yêu cầu chuyển dữ liệu từ secondary server đến DNS server chứa zone để yêu cầu lấy dữ liệu về zone mà nó quản lý:
+- Khi cấu hình DNS server mới thì nó sẽ gửi truy vân yêu cầu toàn bộ zone đến DNS server chính mà quản lý dữ liệu của zone.
+- DNS server chính trả lời và chuyển toàn bộ dữ liệu về zone cho secondary server mới cáu hình
+
+Để xác định có chuyển dữ liệu hay không thì nó dựa vào số serial được khai báo bằng bản ghi SOA.
+- Khi thời gian làm mới của zone đã hết, thì DNS server nhận dữ liệu sẽ truy vân yêu cầu làm mới zone tới DNS server chính chứa dữ liệu zone
+- DNS server chính trả lời truy vấn và gửi lại dữ liệu. Trả lời truy vấn dữ liệu gồm số serial của zone tại DNS server chính.
+- DNS server nhận dữ liệu về zone và sẽ kiểm tra số serial trong bản tin reply và quyết định xem có cần truyền dữ liệu không.
+    - Nếu giá trị số serial của Primary server bằng số serial lưu tại nó thì sẽ kết thúc luôn, và nó sẽ thiết lập lại với các thông số cũ lưu trong máy.
+    - Nếu giá trị số serial tại Primary server lớn hơn giá trị serial hiện tại DNS nhận dữ liệu thì nó kết luận zone cần được update và đồng bộ dữ liệu
