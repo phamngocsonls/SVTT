@@ -2,31 +2,21 @@ import threading
 import Queue
 import csv	
 import requests
-import sqlite3
-import ssl
-from detection import *
+import pandas as pd
 
 # Ignore SSL certificate errors
-ctx = ssl.create_default_context()
-ctx.check_hostname = False
-ctx.verify_mode = ssl.CERT_NONE	
 
-url = "apple.com"
+urls = []
+### read top-1m urls
+with open('top-1m.csv', 'r') as csv_file:
+    csv_reader = csv.reader(csv_file)
+    i = 0
+    for line in csv_reader:
+        i = i + 1
+        if i > 500000:
+           urls.append(line[1])
 
-hurl = "http://" + url
-print(hurl)
-try:		
-	req = requests.get(hurl, timeout=3)
-	try:
-		wsv = req.headers
-		print(wsv)
-		#ap = check_header(wsv, apps)
-		#print(ap)
-		#if data.get(ap) != None:
-		#	data[ap] = data[ap] + 1
-		#else:
-		#	data[ap] = 1
-	except:
-		print("Unable to retrive server information from request.headers")
-except:
-	print("Site is unreachable. Too bad!!")
+print(urls)
+
+hf =pd.DataFrame(urls, columns=['site'])
+hf.to_csv('top-500k2.csv', encoding='utf-8')

@@ -27,39 +27,30 @@ python main.py
 ```
 
 ## CDN supported
-
 * Cloudflare
 * Incapsula
 * Cloudfront
 * Akamai
 * Airee
 * CacheFly
-* EdgeCast
 * MaxCDN
 * Beluga
 * Limelight
 * Fastly
 * Myracloud
 * Microsft Azure
-
-## TODO
+* CDNetwork
+* Quantil
+* Sucuri
+* ChinaCache
+* ChinaCache
+* Grey Wizard
+* BitGravity
+* CacheFly
 * Dosarrest
 * Azion
 * ArvanCloud
-* Beluga
-* DN77
-* CDNetwork
-* CDNsun
-* CDNvideo
-* ChinaCache
-* ChinaNetCenter
-* Highwinds
-* KeyCDN
+* Verizon Digital Media
 * Level3
-* NGENIX
-* Quantil
-* SkyparkCDN
-* Verizon Digital Media services
-* Turbobyte
 
 ## Issues:
