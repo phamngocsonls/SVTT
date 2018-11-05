@@ -13,10 +13,12 @@
     - [3.3 Snapshot](#33)
     - [3.4 Share Networks](#34)
     - [3.5 Security Services](#35)
+        - [3.5.1 Security services management](#351)
     - [3.6 Storage Pool](#36)
     - [3.7 Share types](#37)
     - [3.8 Share servers](#38)
     - [3.9 Share replication](#39)
+    - [3.10 Share access control](#310)
 - [4. Networking](#4)
 
 
@@ -176,7 +178,7 @@ usage: manila security-service-list [--all-tenants [<0|1>]]
 -- name: Lọc theo tên của service
 ```
 
-Thêm 1 service security vào một share network cụ thể nào đó, sử dụng
+- Thêm 1 service security vào một share network cụ thể nào đó, sử dụng
 
 ```
 usage: manila share-network-security-service-add <share-network>
@@ -187,13 +189,36 @@ usage: manila share-network-security-service-add <share-network>
 - share-network: Tên của share network hoặc ID share network mà ta muốn gán
 - security-service: Tên của service security hoặc ID được sử dụng để gán vào share-network
 ```
-
-Trái ngược với việc add a security service with share network, ta có thể remove nó đi hoặc xóa đi, sử dụng command line
+- Remove một security services, sử dụng command line
 
 ```
 usage: manila security-service-delete <security-service>
                                       [<security-service> ...]
 ```
+
+<a name="351"></a>
+
+### 3.5.1 Security serrvices management
+
+Security services là một thực thể manila trừu tượng hóa một tập hợp các tùy chọn xác định vùng bảo mật cho giao thức hệ thống tệp được chia sẻ cụ thể, chẳng hạn như miền Active Directory hoặc miền Kerberos
+
+Sử dụng API, ta có thể khởi tạo, update, xem thông tin cũng như delete security service cụ thể nào đó. Security services được định nghĩa theo các giả định sau:
+
+- Projects cung cấp chi tiết các thông tin về security services
+- Administrators care about security services: they configure the server side of such security services.
+- Trên mỗi manila API, một `security services` được liên kết với một `share_networks`
+- Share drivers use data in the security service to configure newly created share servers
+
+Khi muốn khởi tạo một services security, có một vài lựa chọn sau:
+- **LDAP** - The Lightweight Directory Access Protocol: Một giao thức ứng dụng để truy cập và duy trì các dịch vụ thông tin thư mục phân tán qua một mạng IP
+- **Kerberos** - Là một giao thức mật mã dùng để xác thực trong các mạng máy tính hoạt động trên những đường truyền không an toàn
+- **Active Directory** - Là dịch vụ được phát triển cho Windows domain networks
+
+Admin và người dùng sở hữu share có thể quản lý việc truy cập bằng cách thiết lập các rules để xác thực thông qua địa chỉ IP, user, group hoặc TLS certificates. 
+
+Mỗi drivers lại hỗ trợ một kiểu dịch vụ security khác nhau, một vài drivers có thể lại không hỗ trợ. Ví dụ:
+- Generic Driver sử dụng NFS hoặc CIFS protocol chỉ hổ trợ việc xác thực qua địa chỉ IP
+- Driver support GLusterFS protocol có thể sử dụng TLS certificates cho việc xác thực
 
 <a name="36"></a>
 
@@ -230,6 +255,26 @@ A share server là một thực thể nhằm quản lý các chia sẻ trên m�
 ## 3.9 Share replication
 
 ////
+
+<A name="310"></a>
+
+## 3.10 Share access control
+
+Share access control nhằm chỉ định việc ai đó, một client nào đó có thể truy cập vào share file. Nó thiết lập quyền hạn khi người dùng muốn truy cập tới file share, người đó có thể chỉ có quyền `rw` hoặc chỉ có quyền `ro` hoặc có thể có cả hai
+
+Trong khi khởi tạo một share, từ khóa `--public` dùng để share public đố với các projects khác. Việc sử dụng các command `manila access-allow`, `manila access-deny` và `manila access-list` để thực hiện việc kiểm sóa truy cập.
+
+Sử dụng manila, có thể cấp quyền hoặc từ chối truy cập share theo các mực độ như sau:
+- `rw` - Read and write access. Default is `rw`
+- `ro` - Read-only access
+
+Một vài phương thức hỗ trợ việc xác thực truy cập share file như sau:
+- `ip` - Sử dụng IP để xác thực xem client nào được phép truy cập. 
+- `cert` - Sử dụng TLS certificates xác thực qua `IDENTIKEY`. Một cert hợp lệ có độ dài 64 kí tự, chú ý tới `CN` bên trong mỗi certificate
+- `user` - Xác thực qua user hoặc user group. Một giá trị hợp lệ có độ dài từ 4-32 kí tự
+
+
+
 
 
 <a name="4"></a>
