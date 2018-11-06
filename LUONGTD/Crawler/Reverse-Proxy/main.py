@@ -14,21 +14,12 @@ else:
     import urlparse
     import Queue
 
-import sqlite3
 import ssl
 
 # Ignore SSL certificate errors
 ctx = ssl.create_default_context()
 ctx.check_hostname = False
 ctx.verify_mode = ssl.CERT_NONE
-
-## SQLite
-conn = sqlite3.connect('report.sqlite', check_same_thread=False)
-cur = conn.cursor()
-
-cur.execute('''CREATE TABLE IF NOT EXISTS ReverseProxy
-    (Provider TEXT UNIQUE, Num INTEGER)''')
-cur.close()
 
 ## Defines
 NUM_SPIDERS = 50
@@ -46,8 +37,8 @@ with open('top-500k2.csv', 'r') as csv_file:
         i = i + 1
         url = line[1]
         urls.append(url)
-        if i == 10000:
-           break
+        #if i == 1000:
+        #   break
 
 def sanitizeURL(hostname):
     components = urlparse.urlparse(hostname)
@@ -88,29 +79,13 @@ def spider(url):
     else:
         for an in result:
             if an != None:
-                company[url] = []     
-                cur = conn.cursor()        
+                company[url] = []            
                 if data.get(an) == None:
                     data[an] = 1
-                    try:
-                        cur.execute('INSERT OR IGNORE INTO ReverseProxy (Provider, Num) VALUES (?, ?)', (an, 1))
-                    except:
-                        print("{}-> SQLite: <INSERT> Operation error!!".format(an))
                 else:
                     data[an] = data[an] + 1
-                    try:
-                        cur.execute('UPDATE ReverseProxy SET Num=Num+1 WHERE Provider=?',(an, ))
-                    except:
-                        print("{}-> SQLite: <UPDATE> Operation error!!".format(an))
                 print(an)
                 company[url].append(an)
-                try:
-                    conn.commit()
-                except:
-                    print("{}-> SQLite: Nothing to commit".format(an))
-                #conn.commit()
-                cur.close()
-
 ### Main
 create_spiders()
 create_jobs()

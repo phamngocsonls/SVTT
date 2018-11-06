@@ -69,7 +69,7 @@ CDN = {
 	'EdgeCast': 'Verizon Digital Media',
 	'Turbobyte': 'Turbobyte',
 	'Sucuri': 'Sucuri',
-	'Dosarrest': 'Dosarrest',
+	'Dosarrest': 'DOSarrest',
 	#'github': 'Github Pages',
 	'Greywizard': 'Grey Wizard',
 	'BitGravity': 'BitGravity',
@@ -180,7 +180,7 @@ def Whois_detect(url, result):
 			regexp = re.compile('\\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\\b')
 			addresses = regexp.finditer(out1)
 			for addr in addresses:	
-				print(addr.group())
+				#print(addr.group())
 				out2 = commands.getoutput("whois " + addr.group())
 				x = find(out2.lower())
 				if x != -1:
