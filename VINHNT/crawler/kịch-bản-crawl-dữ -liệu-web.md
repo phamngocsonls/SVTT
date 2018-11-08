@@ -15,4 +15,12 @@ Các url của từ mới sẽ được extract từ các ví dụ của từ tr
 
 ![](./images/w11-crawler.png)
 
-Sau khi crawl xong web từ điển dịch Anh việt tiến hành crawl web từ điển Anh-Anh là [https://en.oxforddictionaries.com/](https://en.oxforddictionaries.com/)
+Sau khi crawl xong web từ điển dịch Anh việt tiến hành crawl web từ điển Anh-Anh là [https://en.oxforddictionaries.com/](https://en.oxforddictionaries.com/).
+
+Dữ liệu sau khi được crawl sẽ được lưu dưới dạng file .csv như sau:
+
+- Mỗi từ sẽ có 1 id duy nhất 
+- Các trường như: nghĩa, từ loại(tính từ, động từ, trạng từ), ví dụ ... sẽ được lưu sang các file riêng biệt theo id của từ
+
+
+Khó khăn có thể gặp phải ở đây là hàng đợi sẽ rỗng khi chưa đạt số từ mong muốn, và khi loại bỏ các từ trùng lặp sẽ dẫn đến làm chậm tốc độ crawl khi số từ crawl được lớn.
