@@ -14,12 +14,16 @@ else:
     import urlparse
     import Queue
 
+"""
+#Optinal
 import ssl
-
+#Ubuntu:
+#$ apt-get install libssl-dev
 # Ignore SSL certificate errors
 ctx = ssl.create_default_context()
 ctx.check_hostname = False
 ctx.verify_mode = ssl.CERT_NONE
+"""
 
 ## Defines
 NUM_SPIDERS = 50
@@ -30,15 +34,15 @@ company = {}
 Do_not_use = 0
 
 ### read top-1m urls
-with open('top-500k2.csv', 'r') as csv_file:
+with open('top-1m.csv', 'r') as csv_file:
     csv_reader = csv.reader(csv_file)
     i = 0
     for line in csv_reader:
         i = i + 1
         url = line[1]
         urls.append(url)
-        #if i == 1000:
-        #   break
+        if i == 1000:
+           break
 
 def sanitizeURL(hostname):
     components = urlparse.urlparse(hostname)

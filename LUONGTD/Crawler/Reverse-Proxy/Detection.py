@@ -14,20 +14,19 @@ import requests
 
 from bs4 import BeautifulSoup
 import ast
-import ssl
 ### Request
 
 def request_do(hostname):
     try:
-        return requests.get(hostname, timeout=3)
+        return (requests.get(hostname, timeout=3))
 
     except requests.ConnectionError:
         print("\033[1;31mServer not found: test aborted\n\033[1;m")
-        return None
+        return(None)
 
     except:
         print("\033[1;31mRequest timeout: test aborted\n\033[1;m")
-        return None
+        return(None)
 
 
 CDN = {
@@ -86,8 +85,8 @@ CDN = {
 def find(data):
     for keyword, description in CDN.items():		
         if re.findall(keyword.lower(), data) != []:
-        	return description
-    return -1
+        	return (description)
+    return (-1)
 
 def DNS_detect(hostname, result):
 	hostname = urlparse.urlparse(hostname).netloc
@@ -127,7 +126,7 @@ def HTTP_detect(hostname, result):
 
 	req = request_do(hostname)
 	if req is None:
-		return result
+		return (result)
 	#print(req.headers)
 	if req.headers.get('X-Instart-Request-ID'):
 		result.append('Instart Logic')
@@ -147,7 +146,7 @@ def HTTP_detect(hostname, result):
 			if x != -1:
 				if x not in result:
 					result.append(x)
-	return result
+	return (result)
 
 
 def Subdomain_detect(hostname, result):
@@ -158,7 +157,7 @@ def Subdomain_detect(hostname, result):
 	if x != -1:
 		if x not in result:
 			result.append(x)
-	return result
+	return (result)
 
 
 def Whois_detect(url, result):
@@ -186,7 +185,7 @@ def Whois_detect(url, result):
 				if x != -1:
 					if x not in result:
 						result.append(x)
-	return result
+	return (result)
 
 
 def ErrorServer_detect(hostname):
@@ -205,8 +204,8 @@ def ErrorServer_detect(hostname):
         	if x != -1:
         		print("!!!!!!!!!!!!!!!!!!!!!!!!!!")
         		print(x)
-        		return x
-	return -1
+        		return (x)
+    return(-1)
 
 def IP_detect(url):
 	out = commands.getoutput("host " + url)
@@ -221,7 +220,7 @@ def IP_detect(url):
 			dic = ast.literal_eval(soup.p.string)
 			x = find(dic["org"].lower())
 			if x != -1:
-				return x
+				return (x)
 		except:
 			print("SLL Error!!")
-	return -1
+	return (-1)
