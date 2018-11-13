@@ -9,7 +9,18 @@
 
 ## Requirements
 - python >= 2.7.9
-- OpenSSL==1.0.2 (tested) 
+- OpenSSL==1.0.2o (tested)
+```
+wget https://www.openssl.org/source/openssl-1.0.2o.tar.gz
+tar xzvf openssl-1.0.2o.tar.gz
+cd openssl-1.0.2o
+./config -Wl,--enable-new-dtags,-rpath,'$(LIBRPATH)'
+make
+sudo make install
+
+openssl version -a
+```
+
 - Install pip:
 ```sh
 curl https://bootstrap.pypa.io/get-pip.py -o get-pip.python
