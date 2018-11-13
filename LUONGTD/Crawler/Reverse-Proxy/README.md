@@ -8,9 +8,11 @@
 - information disclosure from server error
 
 ## Requirements
+- python >= 2.7.9
+- OpenSSL==1.0.2 (tested) 
 - Install pip:
 ```sh
-curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
+curl https://bootstrap.pypa.io/get-pip.py -o get-pip.python
 python get-pip.py
 ```
 
