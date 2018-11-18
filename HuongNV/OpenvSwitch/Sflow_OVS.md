@@ -4,6 +4,8 @@
 - [1. Mô hình](#1)
 - [2. Cài đặt](#2)
     - [2.1 Trên host1](#21)
+    - [2.2 Trên host2](#22)
+- [3. Tài liệu tham khảo](#3)
 
 Bài hướng dẫn này mô tả cách sử dụng OpenvSwitch và sFlow collector để theo dõi lưu lượng mạng giữa các VM với nhau. Các máy ảo này được kết nối tới software bridge, là OpenvSwitch.
 
@@ -92,6 +94,7 @@ Trong đó
 bridge_name: bridge muốn remove đi sflow
 UUID: Là tên định danh cho sflow, có thể lấy UUID bằng cách liệt kê các sflow 
 ```
+<a name="22"></a>
 
 ### 2.2 Trên host2
 
@@ -129,6 +132,7 @@ Trên giao diện, có 1 tab gọi là `Circles`, tại đây thể hiện traff
 ![Imgur](https://i.imgur.com/GGH2Z6V.png)
 
 
+<a name="3"></a>
 
 # 3. Tài liệu tham khảo
 - https://adelnadjarantoosi.wordpress.com/2017/10/16/open-vswitch-network-monitoring-using-sflow-and-sflow-rt/
