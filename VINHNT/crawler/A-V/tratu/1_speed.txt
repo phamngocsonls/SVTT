@@ -1,0 +1,181 @@
+==================================================
+                      speed                       
+==================================================
+--------------------------------------------------
+ Thông dụng
+--------------------------------------------------
+[  Danh từ ]
+ Sự nhanh chóng, sự mau lẹ; tính nhanh chóng, tính mau lẹ (của các cử động..)
+he moves with great speed
+anh ấy di chuyển rất mau lẹ
+
+ Tốc độ; tốc lực, vận tốc
+at full speed
+hết tốc độ
+at top speed
+với tốc lực cao nhất
+
+ (từ cổ,nghĩa cổ) sự thành công, sự hưng thịnh, sự thịnh vượng
+ Độ bắt ánh sáng nhạy của phim ảnh; thời gian đóng mở của cửa chắn ánh sáng của máy ảnh
+a photograph taken at a speed of 1/250 of a second
+tấm hình chụp ở tốc độ 1 / 250 giây
+
+ Loại amphêtamin làm thuốc uống để tạo cảm giác khoẻ và hứng khởi
+ He's hooked on speed
+ Anh ta nghiện chất (ma túy) amphêtamin
+ (đặc biệt ở từ ghép) hộp số; bánh răng tốc độ
+a ten-speed bicycle
+chiếc xe đạp có mười bánh răng tốc độ
+
+[  Ngoại động từ .sped ]
+ Làm cho đi mau, làm cho vận động nhanh
+this medicine will help speed her recovery
+thứ thuốc này sẽ giúp cô ấy chóng bình phục
+
+ ( + up) làm tăng tốc độ, xúc tiến, đẩy mạnh
+to speed the collapse of imperialism
+đẩy mạnh quá trình sụp đổ của chủ nghĩa đế quốc
+
+ Điều chỉnh tốc độ; làm cho đi theo một tốc độ nhất định
+to speed an engine
+điều chỉnh tốc độ một cái máy
+
+ (từ cổ,nghĩa cổ) bắn mạnh
+to speed an arrow from the bow
+bắn mạnh mũi tên khỏi cung
+
+ (từ cổ,nghĩa cổ) giúp (ai) thành công
+God speed you!
+cầu trời giúp anh thành công
+
+[  Nội động từ ]
+ Vận động nhanh, đi nhanh, chạy nhanh
+the car speeds along the street
+chiếc xe ô tô lao nhanh trong phố
+
+ Quá tốc độ quy định; lái xe, đi nhanh hơn tốc độ được luật định
+ (từ cổ,nghĩa cổ) thành công, thịnh vượng
+[  Cấu trúc từ ]
+ more haste, less speed
+chậm mà chắc
+
+ at speed
+ở tốc độ cao; nhanh
+
+ with all speed/haste
+càng nhanh càng tốt
+
+ to speed the parting guest
+(từ cổ,nghĩa cổ) chúc cho khách ra đi bình yên vô sự
+
+  bust of speed
+nước rút
+
+ an honest tale speeds best, being plainly told
+nói gần nói xa chẳng qua nói thật
+
+--------------------------------------------------
+ Chuyên ngành
+--------------------------------------------------
+[  Toán & tin ]
+ tốc độ, vận tốc, số vòng quay // vội, chuyển động nhanh
+speed up
+tăng tốc
+speed of convergence
+tốc độ hội tụ
+speed of sound
+tốc độ âm thanh
+access speed
+tốc độ chọn
+angular speed
+vận tốc góc
+average speed
+vận tốc trung bình
+computatuon speed
+tốc độ tính toán
+constant speed
+(cơ học ) tốc độ không đổi
+critical speed
+tốc độ tới hạn
+ground speed
+vận tốc (máy bay) so với mặt đất
+instantaneous speed
+tốc độ tức thời
+reading speed
+tốc độ đọc
+state speed
+vận tốc pha
+submarime speed
+vận tốc dưới nước
+top speed
+(kỹ thuật ) vận tốc cực đại
+
+[  Cơ - Điện tử ]
+ Tốc độ, vận tốc, (v) điềuchỉnh tốc độ
+[   Xây dựng ]
+ độ nhanh
+[   Kỹ thuật chung  ]
+ điều chỉnh tốc độ
+speed control
+sự điều chỉnh tốc độ
+speed control device
+dụng cụ điều chỉnh tốc độ
+speed controller
+bộ điều chỉnh tốc độ
+speed governor
+bộ điều chỉnh tốc độ
+speed range
+khoảng điều chỉnh tốc độ
+speed regulator
+bộ điều chỉnh tốc độ
+variable speed control
+sự điều chỉnh tốc độ
+
+ độ nhạy sáng (của nhũ tương ảnh)
+ độ sáng (thấu kính)
+ số vòng quay
+load speed
+số vòng quay có tải
+machine speed
+số vòng quay máy
+no-load speed
+số vòng quay chạy không
+speed indicator
+thiết bị chỉ số vòng quay
+speed limit
+số vòng quay giới hạn
+thrashing speed
+số vòng quay tới hạn
+
+ tăng tốc
+accelerated speed
+tốc độ tăng tốc
+electrical speed increaser
+máy tăng tốc bằng điện
+electrical speed increaser
+máy tăng tốc dùng điện
+get up speed
+tăng tốc độ
+speed-up
+sự tăng tốc
+to increase speed (vs)
+tăng tốc độ
+
+ tỷ số truyền
+ vận tốc
+[   Kinh tế  ]
+ tốc độ
+--------------------------------------------------
+ Các từ liên quan
+--------------------------------------------------
+[  Từ đồng nghĩa ]
+ noun
+acceleration , activity , agility , alacrity , breeze , briskness , celerity , clip , dispatch , eagerness , expedition , fleetness , gait , haste , headway , hurry , hustle , legerity , lick , liveliness , momentum , pace , precipitancy , precipitation , promptitude , promptness , quickness , rapidity , rapidness , readiness , rush , rustle , snap , steam , swiftness , urgency , velocity , tempo , expeditiousness , speediness , deftness , impetuosity , posthaste , vector
+
+ verb
+advance , aid , assist , barrel , belt , bomb , boost , bowl over , career , cover ground * , cut along , dispatch , expedite , facilitate , flash , fly , further , gallop , gather momentum , gear up , get a move on , get moving , get under way , go all out , go fast , go like the wind , hasten , help , hightail , hurry , impel , lose no time , make haste , open up throttle , press on , promote , quicken , race , ride , run , rush , sail , spring , step on it , tear , urge , whiz , zoom , accelerate , hustle , step up , bolt , bucket , bustle , dart , dash , festinate , fleet , flit , haste , pelt , rocket , scoot , scour , shoot , sprint , trot , whirl , whisk , wing , zip , alacrity , briskness , celerity , clip , fare , favor , hie , informed , knot , pace , precipitate , propel , prosper , quickness , rapidity , rate , rip , swiftness , tempo , urgency , velocity
+
+[  Từ trái nghĩa ]
+ verb
+delay , halt , slow
+

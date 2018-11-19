@@ -1,0 +1,154 @@
+==================================================
+                      moves                       
+==================================================
+--------------------------------------------------
+ Thông dụng
+--------------------------------------------------
+[  Danh từ ]
+ Sự chuyển động, sự di chuyển, sự xê dịch
+to make a move
+di chuyển, đổi chuyển, sự xê dịch
+to make a move
+di chuyển đổi chỗ, đứng dạy đi chỗ khác
+on the move
+di chuyển, hoạt động; tiến triển
+to get a move on
+(từ lóng) hoạt động lên; làm gấp, tiến hành gấp rút
+
+ (đánh cờ) nước
+that was a good move
+đó là một nước hay
+
+ Lượt, lần, phiên (trong một trò chơi)
+It's your move
+đến lượt anh
+
+ Biện pháp; bước
+[  Ngoại động từ ]
+ Chuyển, di chuyển, chuyển dịch, xê dịch, đổi chỗ, dời chỗ
+to move troops from one place to another
+chuyển quân từ chỗ này sang chỗ khác
+
+ Lắc, lay, khuấy, quấy, làm chuyển động; nhấc
+he can't move his arm
+nó không thể nhắc được cánh tay
+to move heaven and earth
+khuấy đảo trời đất, dùng đủ mọi biện pháp, xoay xở đủ trò
+
+ Làm nhuận (tràng)
+ Kích thích, kích động, gây ra, làm cho, xúi giục, gợi
+it moved them to anger
+cái đó làm cho chúng nó nổi giận
+
+ Làm cảm động, làm xúc động, làm mũi lòng, gợi mối thương cảm
+to be moved to tears
+cảm động đến ứa nước mắt
+
+ Đề nghị
+I move the adjournment of the meeting
+tôi đề nghị hoãn buổi họp
+
+[  Nội động từ ]
+ Chuyển động, cử động, động đậy, cựa quậy, lay động
+it was calm and not a leaf moved
+trời lặng gió, không một chiếc lá lay động
+
+ Đi, di chuyển, xê dịch, chuyển dịch
+it is about time we should move
+đã đến giờ chúng ta phải đi
+
+ Hành động, hoạt động
+[  Cấu trúc từ ]
+ to move about
+đi đi lại lại, đi quanh, chuyển quanh
+Hay dọn nhà, hay thay đổi chỗ ở
+
+ to move along
+tiến lên
+
+ to move away
+dọn đi, cất đi
+
+ to move back
+lùi; kéo lùi lại, chuyển về phía sau
+
+ to move forward
+tiến; cho tiến lên, chuyển về phía trước
+
+ to move in
+dọn nhà (đến chỗ ở mới)
+
+ to move off
+ra đi, đi xa
+
+ to move on
+cho đi tiếp; tiến lên
+
+ move on
+đề nghị đi đi, đừng đứng ùn lại (lệnh của công an (giao thông))
+
+ to move out
+dọn nhà đi, di chuyển đi
+
+ to move up
+chuyển lên; trèo lên, tiến lên
+
+[  hình thái từ ]
+--------------------------------------------------
+ Chuyên ngành
+--------------------------------------------------
+[  Toán & tin ]
+ chuyển động; đi; (lý thuyết trò chơi ) nước đi (bài)
+chane move
+(lý thuyết trò chơi ) nước đi ngẫu nhiên
+opening move
+(lý thuyết trò chơi ) nước đi đầu tiên
+
+[  Cơ - Điện tử ]
+ Sự chuyển động, sự dịchchuyển, (v) chuyển động, di chuyển
+[   Xây dựng ]
+ dời
+ rời chỗ
+[   Kỹ thuật chung  ]
+ chuyển dịch
+ đi
+ di chuyển
+block move
+di chuyển khối
+Conditional Move (CMOV)
+di chuyển có điều kiện
+data move instruction
+lệnh di chuyển dữ liệu
+move operation
+sự thao tác di chuyển
+move the center line
+di chuyển đường tâm
+
+ di động
+ dịch chuyển
+move mode
+chế độ dịch chuyển
+
+ điều khiển
+ dời chỗ
+ đổi vị trí
+ nước đi (bài)
+[   Kinh tế  ]
+ đề nghị
+--------------------------------------------------
+ Các từ liên quan
+--------------------------------------------------
+[  Từ đồng nghĩa ]
+ noun
+act , action , alteration , change , maneuver , measure , modification , motion , movement , ploy , procedure , proceeding , shift , step , stir , stirring , stratagem , stroke , turn , variation , dislocation , disturbance , rearrangement , relocation , remotion , evolution , tactic , activity , advancement , automation , demarche , dynamism , emigration , flexibility , impetus , locomotion , maneuverability , migration , mobility , momentum , motility , procession , transition , transplantation , velocity
+
+ verb
+actuate , advance , blow , budge , bustle , carry , change , climb , crawl , cross , depart , dislocate , disturb , drift , drive , exit , flow , fly , get away , get going , get off , glide , go , go away , head for , hurry , impel , jump , leap , leave , locomote , march , migrate , off-load , position , proceed , progress , propel , pull out , push , quit , relocate , remove , roll , run , scram , shift , ship , shove , skip out , split , stir , switch , take off , transfer , transport , transpose , travel , traverse , walk , withdraw , activate , advocate , affect , agitate , bring , bring up , cause , convert , draw up , excite , give rise to , impress , incite , induce , inspire , inspirit , instigate , introduce , lead , operate , persuade , play on , prevail upon , prompt , propose , put forward , quicken , recommend , rouse , start , stimulate , strike , submit , suggest , sway , touch , tug at , turn , urge , work on , maneuver , displace , shake , get along , egg on , foment , galvanize , goad , inflame , motivate , pique , prick , prod , set off , spur , touch off , trigger , work up , mobilize , get , act , action , alpestrine , alpine , amble , animate , arouse , bounce , coast , converge , deed , emigrate , evacuate , gravitate , huge , immigrate , influence , kindle , lope , meander , mosey , motion , mountainous , romp , rove , rugged , saunter , scud , scurry , step , stratagem
+
+[  Từ trái nghĩa ]
+ noun
+idleness , inaction , inactivity , regression , stagnation
+
+ verb
+fix , pause , remain , stay , stop , discourage , dishearten , dissuade
+
