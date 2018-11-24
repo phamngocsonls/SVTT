@@ -1,0 +1,605 @@
+==================================================
+                        go                        
+==================================================
+--------------------------------------------------
+ Thông dụng
+--------------------------------------------------
+[  Danh từ,  số nhiều goes ]
+ Sự đi
+ Sức sống; nhiệt tình, sự hăng hái
+full of go
+đầy sức sống; đầy nhiệt tình
+
+ Sự làm thử
+to have a go to do something
+thử làm việc gì
+
+ Lần, hơi, cú
+at one go
+một lần, một hơi, một cú
+to succeed at the first go
+làm lần đầu đã thành công ngay
+to blow out all the candles at one go
+thổi một cái tắt hết các cây nến
+
+ Khẩu phần, suất (đồ ăn); cốc, chén, hớp (rượu)
+to have another go
+lấy thêm một suất ăn nữa, uống thêm một chén rượu nữa
+
+ (thông tục) việc khó xử việc rắc rối
+what a go!
+sao mà rắc rối thế!
+
+ (thông tục) sự thành công, sự thắng lợi
+to make a go of it
+thành công (trong công việc gì...)
+
+ (thông tục) sự bận rộn, sự hoạt đông, sự tích cực
+a near go
+sự suýt chết
+all (quite) the go
+(thông tục) hợp thời trang
+
+ It's no go
+ (thông tục) việc ấy không xong đâu; không làm ăn gì được
+to be on the go
+bận rộn hoạt động
+
+ Đang xuống dốc, đang suy
+[  Nội động từ ( .went,  .gone) ]
+ Đi, đi đến, đi tới
+to go to Saigon
+đi Sàigòn
+to go on a journey
+đi du lịch
+to go bathing
+đi tắm
+to go shopping
+đi mua hàng
+
+ Thành, thành ra, hoá thành
+to go mad
+phát điên, hoá điên
+to go to sea
+trở thành thuỷ thủ
+to go on the stage
+trở thành diễn viên
+to go on the streets
+làm đi
+to go native
+trở thành như người địa phương
+to go to the bar
+trở thành luật sư
+
+ Trôi qua, trôi đi (thời gian)
+how quickly time goes!
+sao mà thơì gian trôi nhanh thế!
+
+ Chết, tiêu tan, chấm dứt, mất hết, yếu đi
+all hope is gone
+mọi hy vọng đều tiêu tan
+my sight is going
+mắt tôi yếu đi
+
+ Bắt đầu (làm gì...)
+one, two, three go!
+một, hai, ba bắt đầu một, hai, ba chạy! (chạy thi)
+here goes!
+nào bắt đầu nhé!
+
+ Chặy (máy móc)
+does your watch go well?
+đồng hồ của anh chặy có tốt không?
+the machine goes by electricity
+máy chạy bằng điện
+to set an engine going
+cho máy chạy
+
+ Điểm đánh (đồng hồ, chuông, kẻng); nổ (súng, pháo...)
+the clock has just gone three
+đồng hồ vừa điểm ba giờ
+
+ ở vào tình trạng, sống trong tình trạng...
+to go hungry
+sống đói khổ
+to go with young
+có chửa (súc vật)
+to be going with child
+có mang (người)
+to go bankrupt
+bị phá sản, rơi vào tình cảnh sạt nghiệp
+
+ Làm theo, hành động theo, hành động phù hợp với, xét theo
+to go on appearances
+xét bề ngoài, xét hình thức
+to go by certain principles
+hành động theo một số nguyên tắc nhất định
+to go with the tide (times)
+làm như mọi người, theo thời
+
+ Đổ, sụp, gãy, vỡ nợ, phá sản
+the bridge might go under such a weight
+nặng như vậy cầu có thể  gãy
+bank goes
+ngân hàng vỡ nợ
+
+ Diễn ra, xaỷ ra, tiếp diễn, tiến hành, diễn biến; kết quả
+how does the affair go?
+công việc tiến hành ra sao?
+the play went well
+vở kijch thành công tốt đẹp
+
+ Đang lưu hành (tiền bạc)
+ Đặt để, kê; để vừa vào, vừa với, có chỗ, đủ chỗ
+where is this table to go?
+kê cả cái bàn này vào đâu?
+your clothes can't go into this small suitcase
+áo quần của anh không để vừa vào chiếc va li nhỏ này đâu
+six into twelve goes twice
+mười hai chia cho sáu vừa đúng được hai
+
+ Hợp với, xứng với, thích hợp với
+red goes well with brown
+màu đỏ rất hợp với màu nâu
+
+ Nói năng, cư xử, làm đến mức là
+to have gone too far
+đã đi quá xa rồi, đã nói quá rồi
+to go so far to say...
+nói đến mức là...
+what he says is true as far as it goes
+trong chừng mực nào đó thì điều anh nói là đúng
+
+ Trả (giá...); tiêu vào (tiền...); bán
+to go as far as 100 d
+đã trả tới 100 đồng
+all her pocket-money goes in books
+có bao nhiêu tiền tiêu vặt là cô ta mua sách hết
+to go cheap
+bán rẻ
+this goes for one shilling
+cái này giá một silinh
+
+ Thuộc về
+the house went to the elder son
+cái nhà thuộc về người con lớn
+the price went to the winner
+giải thưởng thuộc về người thắng cuộc
+
+ Được biết, được thừa nhận; truyền đi, nói, truyền miệng
+as the story goes
+như ngùơi ta nói, có chuyện rằng
+it goes without saying
+khỏi phải nói, tất nhiên là có, cố nhiên là
+
+ Hợp nhịp điệu; phổ theo (thơ, nhạc...)
+to go to the tune of...
+phổ theo điệu...
+
+[  Ngoại động từ ]
+ (đánh bài) đi, đánh, ra (quân bài), đặt (tiền)
+to go "two spades"
+đánh quân bài "hai bích"
+
+[  Cấu trúc từ ]
+ to go about
+đi đây đi đó, đi chỗ này, chỗ nọ; đi khắp nơi
+to go about the country
+đi chơi khắp xứ
+
+Truyền đi, lan truyền, truyền khắp (lời dẫn, câu chuyện)
+a rumour is going about that...
+có tin đồn rằng...
+
+
+ to go abroad
+đi ra nước ngoài; đi ra ngoài; đi ra khỏi nhà
+Truyền đi, lan di (câu chuyện...)
+
+ to go across
+đi qua, băng qua, vượt qua; vượt (biển), qua (cầu)
+
+ to go after
+theo sau; theo sau tán tỉnh, tán, ve vãn (con gái)
+Xin (việc làm); tìm kiếm (cái gì)
+
+ to go against
+đi ngược
+to go against the stream (tide)
+đi ngược dòng, không theo thói
+
+Làm trái ý muốn (của ai)
+
+ to go ahead
+tiến lên, thăng tiến
+
+ to go along
+tiến triển; tiếp tục
+you may meet with difficulties at first, but you'll find it easier as you go along
+có thể là lúc đầu anh sẽ gặp khó khăn đây nhưng cứ  tiếp tục anh sẽ thấy dễ dàng hơn
+
+
+ to go among
+đi giữa (đám đông, đoàn biểu tình...)
+
+ to go at
+(thông tục) cố  lại, chống lại, đánh lại, xông vào dánh
+to go at the enemy
+xông vào đánh kẻ thù
+they went at it tooth and nail
+họ chống lại kịch liệt điều đó
+
+Làm việc hăng hái
+he went at it with all his heart
+nó chuyên tâm làm việc đó, nó dốc hết tâm trí vào việc đó
+
+
+ to go away
+đi nơi khác; đi khỏi, ra đi, rời (nơi nào)
+to go away with something
+lấy vật gì đi, mang vật gì đi
+
+
+ to go back
+trở về, về, trở lại
+to go back to one's homeland
+về quê quán, trở về quê hương
+
+Lui
+to go back two paces
+lui hai bước, bước lùi hai bước
+
+Xem xét lại, làm lại, trở lại
+to go back to a beginning
+làm lại từ đầu
+to go back to a subject
+trở lại vấn đề
+
+Đi ngược lại, truy nguyên
+to go back to the past
+nhớ lại những việc đã qua, nhớ lại dĩ vãng.
+
+Không giữ (lời hứa)
+to go back on (upon) one's word
+không giữ lời hứa
+
+ Thay đổi
+There is no going back
+Không thể thay đổi ý định
+
+
+ to go before
+đi trước, đi lên trước
+vượt lên trên (người nào)
+
+ to go behind
+xét lại, nhận định lại, nghiên cứu, tìm hiểu (vấn đề gì)
+to go behind a decision
+xét lại một quyết định
+
+Soát lại, kiểm tra lại
+to go behind the returns of an election
+kiểm tra lại kết quả một cuộc bầu cử
+
+
+ to go between
+làm môi giới, làm mối, vượt quá (giới hạn)
+
+ to go by
+đi qua; trôi qua (thời gian)
+to see somebody go by
+trông thấy ai đi qua
+time goes by quickly
+thời gian trôi nhanh
+
+Làm theo, xét theo
+to go by someone's advice
+làm theo lời khuyên của ai
+to go by appearances
+xét người theo bề ngoài
+
+
+ to go down
+xuống, đi xuống
+chìm (tàu thuỷ); lặn (mặt trời, mặt trăng...)
+trôi (thức ăn, thức uống...)
+this pill won't go down
+viên thuốc ấy không nuốt trôi được
+
+
+ to go for
+đi mời, đi gọi
+to go for a doctor
+đi mời bác sĩ
+
+
+ to go forward
+tiến tới, tiến triển
+the work is going forward well
+công việc đang tiến triển tốt
+
+
+ to go in
+vào, đi vào
+
+ to go in for
+tham gia, chơi; mê; ham; ưa chuộng, chuộng
+to go in for sports
+chơi thể thao
+to go in for stamps
+mê chơi tem
+to go in for somebody
+cầu hôn ai, theo sau ai tán tỉnh
+
+
+ to go in with
+cùng chung với (ai), liên kết với (ai)
+to go in with somebody in an undertaking
+cùng chung với ai làm công việc gì
+
+
+ to go into
+vào
+to go into the room
+vào phòng
+to go into business
+đi vào con đường kinh doanh
+to go into society
+hoà mình với mọi người, giao thiệp với đời
+to go into the army
+vào quân đội, nhập ngũ
+
+
+ to go off
+đi ra, ra đi, đi mất, đi biến, chuồn, bỏ đi
+(sân khấu) vào (diễn viên)
+nổ (súng)
+the gun went off
+súng nổ
+the pistol did not go off
+súng lục bắn không nổ
+
+
+ to go on
+đi tiếp, tiếp tục, làm tiếp
+go on!
+cứ làm tiếp đi!
+to go on with one's work
+tiếp tục làm công việc của mình
+it will go on raining
+trời còn mưa nữa
+we go on to the next item of the agenda
+chúng ta tiếp tục qua mục sau của chương trình nghị sự
+
+
+ to be going on for
+gần tới, xấp xỉ
+it is going on for lunch-time
+Gần đến giờ ăn trưa rồi
+to be going on for fifty
+gần năm mươi tuổi
+
+
+ to go on at
+chửi mắng, mắng nhiếc
+to go on at somebody
+mắng nhiếc ai
+
+
+ go on with you!
+(thông tục) đừng có nói vớ vẩn!
+
+ to go out
+ra, đi ra, đi ra ngoài
+go out
+
+anh đi ra đi!
+he went out to dinner
+anh ấy đi ăn ở ngoài, anh ấy đi ăn cơm khách
+
+
+ to go over
+đi qua, vượt
+đổi (chính kiến); sang (đảng khác, hàng ngũ bên kia)
+xét từng chi tiết, kiểm tra, xem xét kỹ lưỡng
+to go over an engine
+kiểm tra máy, điều chỉnh máy
+
+
+ to go round
+đi vòng, đi quanh
+to go a long way round
+ đi một vòng lớn
+to go round the world
+đi vòng quanh thế giới
+
+
+ to go through
+đi qua
+thảo luận chi tiết; kiểm tra kỹ lưỡng, xem xét tỉ mỉ
+được thông qua, được chấp nhận
+
+ to go through with
+hoàn thành, làm đến cùng
+to go through with some work
+hoàn thành công việc gì (không bỏ dở, làm cho đến cùng)
+
+
+ to go together
+đi cùng với nhau; đến cùng một lúc (tai hoạ)
+hợp vị, hợp món (thức ăn)
+
+ to go under
+chìm nghỉm
+
+ to go up
+lên, leo lên, đi lên
+to go up a ladder
+lên thang gác
+to go up a river
+đi ngược dòng sông
+to go up to town
+ra tỉnh, lên tỉnh
+the curtain goes up
+màn kéo lên
+
+
+ to go with
+ đi cùng, đi theo
+
+ to go without
+nhịn, chịu thiếu, chịu không có
+to go without food
+nhịn ăn, chịu đói
+
+
+ to be gone on somebody
+mê ai, phải lòng ai
+to go begging
+không ai cần đến, không ai cầu đến
+
+ to go all lengths
+dùng đủ mọi cách
+
+ to go all out
+rán hết sức, đem hết sức mình
+
+ to go a long way
+đi xa
+có tác dụng lớn, có ảnh hưởng lớn
+để được lâu (đồ ăn); bền (quần áo...)
+tiêu được lâu (tiền...)
+
+ to go astray
+ to go bail for someone
+ to go beyond the veil
+ to go hence
+ to go to a better word
+ to go out of this word
+ to go heaven
+ to go to one's account
+ to go to one's long rest
+ to go to one's own place
+ to go the way of all the earth
+ to go the way of all flesh
+ to go the way of nature
+ to go to one's last (long) home
+ to go over to the great majority
+ to go off the books
+Chết
+
+ to go west
+(từ lóng) chết
+
+ to go up the flume
+(từ Mỹ,nghĩa Mỹ) (từ  lóng) chết
+
+ to go down hill
+xuống dốc (đen & bóng)
+
+ to go far
+sự làm nên, có tiến độ
+
+ to go flop
+ to go hard with somebody
+làm lôi thôi cho ai, gây chuyện bực mình khó chịu cho ai, làm khó khăn cho ai
+
+ to go hot and cold
+lên con sốt lúc nóng lúc lạnh
+thẹn lúc đỏ bừng lúc tái đi
+
+ to go it (lóng)
+làm mạnh, làm hăng
+sống bừa bãi, sống phóng đãng
+
+ to go it alone
+làm một mình không nhờ cậy vào ai; một mình chịu hết trách nhiệm
+
+ to go off one's head (nut)
+mất trí, hoá điên
+
+ to go over big
+(từ Mỹ,nghĩa Mỹ),  (thông tục) thành công lớn, đạt kết quả lớn, tiến bộ nhiều
+
+ to go one better
+trội hơn, vuợt hơn (ai)
+
+ to go phut
+ to go share and share alike
+chia đều (với ai)
+
+ to go sick
+(quân sự) báo cáo ốm
+
+ to go to the country
+ to go to great trouble (expense)
+lo lắng nhiều, bỏ nhiều công sức
+
+ go to hell (jericho, bath, blazes...)!
+ đồ chết tiệt! quỷ tha ma bắt mày đi!
+
+ to go to seed
+ to go to war
+dùng biện pháp chiến tranh, đi đến chỗ đánh nhau
+
+ to go to whole length of if
+ to go to the whole way
+Làm đến nơi đến chốn, không bỏ nửa chừng
+
+[  Hình thái từ ]
+--------------------------------------------------
+ Chuyên ngành
+--------------------------------------------------
+[   Kỹ thuật chung  ]
+ đi
+ tiến hành
+ vận hành
+[   Đồng nghĩa Tiếng Anh  ]
+ V.
+ Move (ahead or forward or onwards), proceed, advance,pass, make headway, travel, voyage, set off, tour, trek, wend,stir, budge:  Would you go to the market for me?
+ Leave,depart, go out, move (out or away), decamp, make off, withdraw,repair, retire, retreat, Colloq take off:  I wish he would go atonce. She went to her country cottage for the weekend. 3function, operate, work, run, perform:  I cannot get the engineto go properly.
+ Lead, open to, give access to, communicate toor with, connect with or to:  Where does this door go?
+ Lead,communicate with, run:  Does this road go to Oxford?
+ Fit,belong (together), agree or conform (with each other),harmonize, blend, match, be appropriate or suitable (for or to),complement each other:  These colours don't go.
+ Become:  Hewent mad when he learnt about the accident.
+ Fit, extend,reach, span, stretch:  My belt would never go round your waist!9 be disposed of or discarded or thrown away, be dismissed, begot rid of or abolished, be given up, be cast or set or putaside, be done with:  That out-dated computer has to go.
+ Disappear (without a trace), vanish (into thin air), evaporate:Where has all the money gone?
+ Pass, elapse, slip or tickaway, fly:  Time goes quickly when you're having fun.
+ Fail,fade, decline, flag, weaken, degenerate, wear out, give (out);give way, collapse, fall or come or go to pieces, disintegrate,crack:  I'm afraid the tyres are going. When that last supportgoes, the roof will come down. 13 die, expire, be gone, meetone's Maker, pass on or away, shuffle off this mortal coil, goto one's reward, go to the happy hunting-grounds, go to thatgreat cricket-pitch in the sky, Slang kick the bucket, snuff it:By the time the doctor arrived, Graham had gone.
+ Sound,pronounce, enunciate, articulate, say, utter:  And this littlepig goes 'Wee, wee, wee', all the way home.
+ Survive, last(out), endure, live, continue:  How long can we go withoutwater?
+ Be used up or consumed or finished:  The last of ourfood was gone.
+ Go to the toilet or the lavatory or thebathroom, move (one's) bowels, urinate, defecate, Slang pee,take a leak or a crap, Chiefly Brit go to the loo, Chiefly US goto the john, Taboo slang (take a) piss or shit:  We stopped at amotorway filling station because Jane had to go.
+ Go about.approach, tackle, set about, undertake, begin, start:  I don'tlike the way she goes about her work. How does one go aboutestablishing a business? 19 go ahead. proceed, continue, move orgo forward, advance, progress, go on:  She told me I could goahead with the scheme. The policeman motioned to go ahead. 20 goalong (with).  a escort, accompany:  We asked if we could goalong with them to the cinema.  b agree (to), concur (with),acquiesce (to), assent (to), support:  Beverly would never goalong with a plan like yours.
+ Go around or about or round(with).  a move or go around, circulate:  I wish he'd stop goinground telling everyone about me. There's a lot of flu goingaround. b socialize (with), frequent or seek the company of,spend time with, associate with, Colloq hang around or about(with), hang out (with):  The boy is going around with thatCollins girl.  c wander or move around:  He goes about pickingthrough rubbish bins.
+ Go at. attack, assault, assail:  Wewent at the enemy with all the fire power we could muster.
+ Go away. go (off), leave, depart, withdraw, exit; retreat,recede, decamp:  The clouds went away and the sun came out. Weare going away for the weekend. 24 go back (to).  a return (to);revert (to), change back (to):  He went back to his old jobafter the war. Can we go back to the way things were before wewere married? b originate (in), begin or start (with), date back(to):  Our friendship goes back to our childhood.
+ Go backon. renege (on), break, retract, repudiate, forsake:  She's goneback on our agreement.
+ Go by.  a pass (by), go past, moveby; elapse:  We used to watch the goods trains go by. The monthswent by quickly since our last meeting. b rely or count ordepend or bank on, put faith in(to), be guided by, judge from:You cannot go by what Atherton tells you.
+ Go down.  a sink,go under, founder, submerge:  The ship went down within minutesof striking the mine.  b decrease, decline, drop, sink, drop:The Nikkei Index went down 200 points.  c fall, be defeated orbeaten, suffer defeat, lose, collapse:  Our forces went downunder an onslaught from the attacking armies.  d be rememberedor memorialized, or recalled or commemorated or recorded:  Thatday of infamy will go down in history.  e find favour oracceptance or approval, be accepted:  His ideas have not gonedown well with the council.
+ Go for.  a fetch, obtain, get:Please go for help.  b apply or relate to, concern, involve:The rule against smoking goes for you, too, Smedley.  c fancy,favour, like, admire, be attracted to, prefer, choose, Slangdig:  I can tell that Peter really goes for Maria. I could gofor a pint of beer right now. d attack, assault, assail, setupon:  The dog went for him as soon as he opened the gate.  eset one's sights on, aim for, focus attention or effort(s) on:I decided to risk all and go for Drogheda Boy at 100-8.
+ Goin for.  a enter, enrol, start, begin, embark on, pursue, takeup, embrace, espouse, undertake, follow, adopt, go into, US goout for:  He is going in for a career in boxing.  b like, fancy,favour, practise, do, engage in:  I don't go in formountain-climbing.
+ Go into.  a See 28 (a), above.  b delveinto, examine, pursue, investigate, analyse, probe, scrutinize,inquire into, study:  I want to go into the subject of yourabsences with you, Fanshawe.  c touch on, discuss, mention:  Ishould avoid going into the subject of money with Pauline if Iwere you. 31 go off.  a go out, cease to function:  I saw thelights go off at nine.  b explode, blow up, detonate, erupt;fire, be discharged:  The bomb is set to go off in an hour. Thegun went off, killing the mouse. c occur, happen, take place:The conference went off as planned.  d depart, leave, go (away),set out, exit, decamp, quit:  She went off without another word.e Brit deteriorate, rot, moulder, go stale, go bad, spoil, sour,turn:  After two days the milk goes off.  f Usually, go offinto. start or break into or out in:  He goes off into gales oflaughter whenever I mention your name.
+ Go on.  a continue,proceed, keep on, carry on; persist, last, endure, persevere:He went on coughing all night long. The party went on into thesmall hours. b happen, occur, take place, come about, Colloqcome off:  I have always wondered what went on in there.  c comeon, begin or resume functioning:  The lights went on atmidnight.  d enter, make an entrance:  She doesn't go on tillthe third act.  e going on. approaching, nearing, nearly,almost, not quite:  He's six going on seven. It's going on eighto'clock.  f gabble, chatter, drone on, Brit natter, Colloq Britwitter (on), rabbit on:  He goes on endlessly about his cars.  grely or depend on, use:  The detective had very little to go on.33 go out.  a fade or die (out), expire, cease functioning, gooff, be extinguished:  The lights went out, throwing the roominto Stygian blackness.  b depart, leave, exit:  He went out atsix and has not been seen since.  c socialize, associate; court,go together, Brit walk out, US date:  Harry is going out withAnnabel.
+ Go over.  a review, skim (through or over), gothrough, scan, look at, read, study; inspect, examine,scrutinize, investigate:  I went over your report last night.They are going over everyone's luggage with a fine-tooth comb. bbe received:  The first song went over very well.  c clean, tidyor neaten (up):  I've just gone over the entire flat.  drehearse, repeat, reiterate, review, go through:  We keep goingover the same things, again and again.
+ Go round or US alsoaround.  a revolve, rotate, spin, whirl, twirl:  The earth takesa year to go round the sun.  b suffice, be sufficient oradequate or enough, satisfy:  Are there enough life jackets togo around?  c See 21, above.
+ Go through.  a experience,suffer, undergo, bear, take, stand, tolerate, put up with,brook, submit to, endure, live through, brave:  I don't think Icould go through another war.  b be accepted or approved, pass(muster):  The bill went through without a hitch.  c See 34 (a),above.
+ Go together.  a harmonize, accord, agree, fit, go,suit each other, belong (with each other):  I don't think thatpuce and vermilion go together.  b See 33 (c), above.
+ Gounder.  a See 27 (a), above.  b fail, collapse, subside, gobankrupt, succumb, Brit go to the wall, Colloq fold, US go bellyup:  Statistics show that more than 500 companies go under everyweek in the USA. 39 go up.  a rise, increase:  If inflation goesup, the Chancellor will raise interest rates.  b explode, blowup:  The munitions factory went up, showering debris over thewhole neighbourhood. 40 go with.  a go together with, harmonizewith, blend with, be suitable or suited for, fit (in) with,accord or agree with:  That scarf does not go with the dress.  bsocialize with, associate with, date, accompany, court,Old-fashioned Brit walk out with, US date:  I hear that Connieis going with Don.
+ Go without. do or manage or get bywithout, lack, be deprived of, need; abstain from, survive orlive or continue without:  In the old days, if you could notafford something, you went without.  She cannot go without acigarette for more than an hour.
+ N.
+ Chance, turn, opportunity, try, attempt, Colloq whack,crack, whirl, shot, stab:  I don't expect much, but I'll have ago anyway.
+--------------------------------------------------
+ Các từ liên quan
+--------------------------------------------------
+[  Từ đồng nghĩa ]
+ noun
+activity , animation , bang , birr , drive , energy , force , get-up-and-go , hardihood , life , moxie * , oomph * , pep , potency , push , snap * , starch * , tuck * , verve , vigor , vivacity , zest , bid , crack , effort , essay , fling , pop , shot , slap , stab , turn , whack , whirl
+
+ verb
+abscond , approach , beat it * , bug out , cruise , decamp , depart , escape , exit , fare , flee , fly , get away , get going , get lost , get off * , hie , hightail , hit the road * , journey , lam , leave , light out * , make a break for it , make for , make one’s way , mosey * , move , move out , near , pass , progress , pull out , push off , push on , quit , repair , retire , run along , run away , set off , shove off * , skip out , split * , take a hike , take a powder , take flight , take leave , take off * , travel , vamoose * , wend , withdraw , act , carry on , click * , continue , flourish , maintain , make out , pan out * , perform , persist , prosper , run , score , succeed , thrive , work , connect , cover , extend , fit , give access , lead , make , range , reach , spread , vary , avail , befall , chance , come , concur , conduce , develop , eventuate , fall out , happen , incline , lead to , occur , persevere , proceed , result , serve , tend , transpire , turn , turn out , wax * , work out , accord , be adapted for , be designed for , belong , blend , chime , complement , conform , correspond , dovetail * , enjoy , jibe * , like , match , mesh , relish , set , square , suit , bend , break , cave , conclude , consume , crumble , decease , decline , demise , deplete , devour , dissipate , drop , exhaust , expend , expire , fail , finish , fold up , fritter , give , pass away * , pass on , perish , run through * , spend , squander , succumb , terminate , use up , waste , weaken , worsen , yield , be spent , flow , lapse , pass away , slip away , waste away , abide , allow , bear , brook , consent to , let , permit , put up with , stand , stomach * , suffer , swallow * , take , tolerate , remove , head , set out , strike out , get off , go away , apply , refer , carry , stretch , function , operate , elapse
+
+[  Từ trái nghĩa ]
+ verb
+stay , stop , break , disagree , mismatch , be born , create , surrender
+

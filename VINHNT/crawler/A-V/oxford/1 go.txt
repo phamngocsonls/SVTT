@@ -1,0 +1,253 @@
+==================================================
+                        go                        
+==================================================
+[verb] Move from one place to another; travel.
+ex:
+ ‘he went out to the shops’
+ex:
+ ‘she longs to go back home’
+ex:
+ ‘we've a long way to go’
+MORE EXAMPLES
+ ‘I turned the shopping cart around, gathered up the kids, and we went home.’
+ ‘A car going in the opposite direction stopped and its occupants got out to see what had happened and to offer their services.’
+ ‘Clara, still with no idea where she was going, went to ask the boy for directions.’
+ ‘The two guys weren't there and had apparently gone out somewhere for lunch.’
+ ‘For the first time that year we went abroad on holiday.’
+ ‘We're going round to the hospital with some CDs and stuff.’
+ ‘Footsteps overhead startled her before she realized Daffyd must have gone upstairs by now.’
+ ‘The others went to get their coats and Douglas went outside.’
+ ‘Pheobe clicked the kitchen TV off and went upstairs to the bathroom to get ready.’
+ ‘I decided I was hungry, so I went downstairs in search of the kitchen.’
+ ‘Magistrates also barred him from going within two miles of any stadium where Colchester United or the England team are playing.’
+ ‘We said hi and then they went on their way, and I got on my bus and went home.’
+ ‘I had a two-hour break between classes and went to the pub - I drank three pints and went home and crashed on the couch.’
+ ‘I got up from the table, and went upstairs to the bathroom.’
+ ‘She never married, but enjoyed life to the full, regularly going abroad for holidays at a time when foreign travel was a rarity.’
+ ‘He went back to his car, switched on his phone and almost immediately it rang.’
+ ‘One of them waved at her and she waved back as she went past.’
+ ‘We told her we were thinking about going to France to visit my grandfather's grave.’
+ ‘It was an apartment by the railway track and every time a train went by the whole apartment would shake.’
+ ‘Some kids went up the stairs, and some waited for the elevator.’
+1.1
+Travel a specified distance.
+ex:
+ ‘you just have to go a few miles to get to the road’
+MORE EXAMPLES
+ ‘He had gone a little distance down this hall when he saw a door with an unfamiliar symbol on it.’
+ ‘Serves me right for going so far; I went so far I had to get the bus home.’
+ ‘The other kind of holiday I like is going 10 miles from where you live, so that you have hardly any travelling time.’
+ ‘We had gone a good distance on a dimly lit road when a strong, foul and suffocating odour swarmed into and around our car.’
+ ‘Heavy freight that goes long distances, from Auckland to Wellington, should travel by road.’
+ ‘At first she was just going to walk one kilometre but Mr Smith said she was going the whole 5km distance.’
+ ‘It would take over an hour to reach the fishing grounds but we had gone barely a mile before we saw one of the most magnificent sights in the world.’
+ ‘I know that I'm committed to going 500 miles, but I just don't know when it will happen.’
+ ‘I left the traps here this morning and went 8 miles on horseback to see what the country was like.’
+ ‘None the less, I had gone barely half a mile in my Scenic when a bus driver, alongside me at a junction, put his window down to express his admiration.’
+ ‘I have not heard of anyone in the USA going more than 100 miles earlier this year.’
+ ‘But they had only gone a few miles down the road when someone realised that the door to the luggage compartment on their bus had opened.’
+ ‘Are you interested in running a half-marathon, or even going the full distance, for charity?’
+ ‘ROGERR went about 20 yards, veered violently off, smashed into a kerb and put himself out of action.’
+ ‘They followed the road for a couple of hours, then, after they had gone about a dozen miles, they veered off of it and into the woods for another four or five miles.’
+ ‘So if you're going long distances this is a much better way of getting there.’
+ ‘Dozens of families boarded a vintage steam train and went the short distance up the track to see Santa in his grotto.’
+ ‘He took her across street upon street, only stopping when he felt that they had gone quite a safe distance.’
+1.2
+Travel or move in order to engage in a specified activity.
+ex:
+ ‘let's go and have a pint’
+ex:
+with infinitive ‘we went to see her’
+ex:
+with present participle ‘she used to go hunting’
+MORE EXAMPLES
+ ‘I had gone to visit my parents for the weekend, and my mother drove me to the Greyhound station for my return trip.’
+ ‘Despite this disappointment, Mr Jones, who has been going on cruises since 1970, said P & O treated him well.’
+ ‘I also have friends who hate going on trips with me, because they say I always make them feel guilty when they turn up with three suitcases to my one.’
+ ‘After taking Hallie home, Jordan decided to go for a drive.’
+ ‘Pam and I used to go and have a drink and watch the games.’
+ ‘For the last five years we have been going skydiving each weekend.’
+ ‘There are people going on protests now who were not even born when Chernobyl happened.’
+ ‘The couple stayed overnight in the hotel's bridal suite before going on their honeymoon.’
+ ‘They talked for a while longer and then went and had some dinner.’
+ ‘I used to go skiing in Switzerland with a friend.’
+ ‘‘We were looking forward to getting our lives back, to going on holidays and spending more quality time together,’ says Jennie.’
+ ‘Against her better judgment, Rachel decided to go for a walk.’
+ ‘At about six o'clock on most evenings I went for a run.’
+ ‘I was actually thinking of going to visit him this week.’
+ ‘I went to see him last Friday and he didn't look well.’
+ ‘After dumping our bags at the hotel, we decided to go for a meal and ended up at a pretty little restaurant.’
+ ‘But we're looking forward to going on trips to Europe during the school holidays.’
+ ‘Finally, I went for a long walk and sat down exhausted in a park.’
+ ‘In 1790 he went on a walking tour of France, the Alps, and Italy.’
+ ‘‘Let's go shopping tomorrow,’ she said, in between bites of her lunch.’
+1.3
+go to
+Attend or visit for a particular purpose.
+ex:
+ ‘we went to the cinema’
+ex:
+ ‘he went to Cambridge University’
+MORE EXAMPLES
+ ‘John used to go to the greyhound track every night before Denis was attacked, but he hasn't gone since.’
+ ‘He went to the Catherine Rural College for 12 months.’
+ ‘This isn't surprising, though, since attending church is like going to the theatre.’
+ ‘In Russia it is part of everyday life that one goes regularly to the theatre.’
+ ‘My ex-husband knew I wanted to go to law school but always told me he'd divorce me if I went.’
+ ‘Rock photographer Jill Furmanovsky has been going regularly to the festival for more than 10 years.’
+ ‘She asked me if I wanted to go to McDonald's for dinner.’
+ ‘My brother had already gone back to college.’
+ ‘We went back to the North African restaurant where I had gone with the cast the night before.’
+ ‘More often than not, she attends opening ceremonies, goes to parties, meets people and takes part in charity work for the local community.’
+ ‘She regularly goes to the movies and attends film festivals.’
+ ‘Soon you will be going off to college and I won't see you for four years.’
+ ‘From next month she is going to the institute to study for a master's degree.’
+ ‘He goes regularly to the Crunch Gym, a trendy health club for Hollywood's young and beautiful.’
+ ‘Passing exams and going to university will provide our youngsters with tremendous opportunities.’
+ ‘He will be going off to university soon, and as such, he is doing tons of research on the university he is supposed to be attending.’
+ ‘My oldest son, Alan, went to a public day school, and my daughter, Margaret, went away to board.’
+ ‘I took some time off to go down to Cambridge for a friend's wedding, and a good time was had by all.’
+ ‘I go to the brasserie underneath all the time, and that's fun, because you can sit on the pavement for lunch and see who's going past.’
+ ‘There are those who go to the sales wanting to buy something and there are others, like myself, who are forced into going.’
+1.4
+go to
+Be sold or awarded to.
+ex:
+ ‘the top prize went to a twenty-four-year-old sculptor’
+MORE EXAMPLES
+ ‘The remaining property went to the oldest son.’
+ ‘The best newcomer award went to the double act Noble and Silver.’
+ ‘That award went to Ruud van Nistelrooy, who scored both of United's other goals.’
+ ‘This annual fun event is attracting bigger crowds each year and, of course, all proceeds go to a very worthy cause.’
+ ‘The first award went to Manchester's Christie Hospital for its pioneering work in cancer treatment and research.’
+ ‘My thanks go to Richard Holt for providing invaluable information for my work.’
+ ‘The gold medal went to defending champions Romania, who pulled away after only 500m and soared to victory in a time of 7:06.56.’
+ ‘The award for best costume went to Hubert Keaney who was a werewolf for the night.’
+ ‘The man of the match award went to Tony Ruddy on left midfield who won every tackle and never gave the ball away.’
+ ‘On your spouse's death, this half goes to your children.’
+ ‘The best international group award went to the Red Hot Chili Peppers and Pink took home best international female title.’
+ ‘Indeed the main award of the night went to the young and talented Alan Betson of The Irish Times.’
+ ‘The money will, of course, go to the Yorkshire Dales and Harrogate Appeal at Airedale General Hospital.’
+ ‘Vet of the Year award went to Paul Harris, of Thirsk, who was nominated by Dalmatian breeder Chris Pickup.’
+ ‘One of the awards went to an army corporal who saved a colleague's life.’
+ ‘The Country Pub Of The Season award went to the fabulous New Inn in Cropton, making it a hat-trick for them too.’
+ ‘The $10,000 prize goes to emerging artists in the field of creative photography.’
+ ‘The physics prize went to three Americans who've explained something of what goes on within the nucleus of atoms.’
+ ‘Last year the award went to N.H. Dini, one of Indonesia's most famous female writers.’
+ ‘Of course the real credit goes to the books themselves.’
+ ‘The Young Player of the Year Award went to local-born defender Nicky Hunt.’
+1.5
+(of a thing) lie or extend in a certain direction.
+ex:
+ ‘the scar went all the way up her leg’
+MORE EXAMPLES
+ ‘At the moment it only goes three-quarters of the way around the city.’
+ ‘Are you saying that your understanding was that the driveway went down to the gatepost?’
+ ‘We embraced, and his lips found mine, a little jolt went down my spine sending a little shiver down it.’
+ ‘She had long strawberry blonde hair that went past her shoulders and sparkling blue eyes.’
+ ‘His body was found near the causeway going towards Railway Station.’
+ ‘Over his shirt he wore a long blue vest that went past his knees, covered in golden embroidery.’
+ ‘Sometimes, a strap is attached to the splint and goes around the neck to help hold the arm.’
+ ‘I also noticed another scar that goes around the side of his belly.’
+ ‘Her black hair went down to her shoulders and looked as though she had her own person stylist come in and do it every morning.’
+ ‘We opened the bridge that goes across the river so people can go back and forth.’
+ ‘The 58 zigzags across the arid Southern California desert, between mountains, with every few miles a turn. The 5 goes in one straight line for mile after mile.’
+ ‘There are beautiful deserted beaches that go for miles upon unending miles.’
+ ‘Selina swallowed hard as a slight shiver went down her spine.’
+ ‘She wore a black dress and black boots that went past her knees.’
+ ‘The beach is huge and goes on and on for miles.’
+ ‘There was a small track going off to the left, directly opposite the College sign directing me further down Spetchley Road.’
+ ‘At last the path goes over a rise and you get your first, quite wonderful view of Sandwood Bay.’
+ ‘The mirror went all the way up to the ceiling and was just as wide as it was tall.’
+ ‘It's a device that goes around the hose and attaches securely to the connection end.’
+ ‘He had a black cloak on his shoulders that went down to his ankles.’
+1.6
+Change in level, amount, or rank.
+ex:
+ ‘prices went up by 15 per cent’
+MORE EXAMPLES
+ ‘Remember, of course, that equity values can go down as well as up.’
+ ‘I only bring the subject up because of the news on the front page of last week's Daily Record that the price of a pint is to go up by 10p.’
+ ‘Prices have gone up because of an increase in demand for oil, particularly from China.’
+ ‘The chances of infection go down by about 90 per cent when the animal is dead.’
+ ‘The bank's share price also went up by 3.6 per cent to 1223 pence.’
+ ‘Funding for prisons has continued to increase in the past two decades, while the percentage of the state budget spent on higher education is going down, the study said.’
+ ‘Schools' costs have gone up because of the increase in national insurance and higher contributions to teachers' pension schemes.’
+ ‘In case you did not notice, postage rates went up for a second time this year on June 30.’
+ ‘If the Footsie fell by the same amount it would have gone below 3,000.’
+ ‘Investors should be aware of the risks involved and remember that the value of securities held may go down as well as up.’
+ ‘With today's base rates at historic lows, the chances of rates going down much further are pretty slim.’
+ ‘In addition, the life expectancy for women in 16 of the 27 countries studied has gone down.’
+ ‘Those subsidies cause the global market to be flooded with farm products, driving down prices and making it harder for Third World farmers to make a living.’
+ ‘The wholesale cost of electricity has gone up by 23 per cent since November.’
+ ‘We checked his temperature again which had now gone down to 38 celsius.’
+ ‘In 1922, voter turnout in Australia went down to fifty-eight percent.’
+ ‘It went down to minus 20 degrees celsius last night.’
+ ‘They now face the prospect of having to clear up their home for a second time when the floods eventually go down.’
+ ‘The reason the price went down is because the Saudis are now talking about increasing production.’
+ ‘It was also one of the very few countries whose defence budget began to go up, rather than down, in the 1990s.’
+1.7
+informal 
+Said in various expressions when angrily or contemptuously dismissing someone.
+ex:
+ ‘go and get stuffed’
+MORE EXAMPLES
+ ‘‘Go to hell,’ Isabelle muttered, but even she wasn't brave enough to say that loud enough for him to hear.’
+ ‘I told her to go to hell, and she screamed several things back at me, but I really didn't care.’
+ ‘My husband and I still disagree, but I just tell him to go and get stuffed.’
+1.8
+informal 
+no object
+Used to emphasize the speaker's annoyance at someone's action.
+ex:
+ ‘then he goes and spoils it all’
+ex:
+with present participle ‘don't go poking your nose where you shouldn't’
+MORE EXAMPLES
+ ‘Just as I've got used to living without her she goes and does that to me.’
+ ‘Why the hell do you have to go and spoil it for the rest of us?’
+ ‘Honestly, the one decent Christmas-related idea I've ever had, and somebody's only gone and stolen it.’
+ ‘After predicting that Clark would be the eventual nominee he goes and ruins my career as a political prognosticator by dropping out of the race.’
+ ‘It is important to note that James won't see this until this Saturday at his birthday, unless one of you rotten bastards reading this goes and tells him.’
+ ‘You've got no goddamned right to go poking around in that computer.’
+ ‘So don't go trying to tell me what to do.’
+ ‘You tell her one thing but out of spite, she goes and does the exact opposite.’
+ ‘It's only a matter of time before she goes and spoils it all with an act of self-destructive petulance or a complete misreading of a perfectly innocent situation.’
+ ‘What a surprise - just when you thought Weller would never do it again, he goes and does it.’
+ ‘And then she goes and spoils it all by doing something stupid like releasing an album.’
+ ‘Just when he thinks things can't get any worse, he goes and does exactly what he does best - make an eejit of himself.’
+ ‘I know he's madly in love with her and she goes and shatters his heart in tiny little pieces by using that age old excuse of hers that she doesn't have the time.’
+ ‘I was mentioning the dangerously addictive nature of blogs yesterday and now the New York Times goes and does a feature on it.’
+1.9
+in imperative
+Begin motion (used in a starter's order to begin a race)
+ex:
+ ‘ready, steady, go!’
+MORE EXAMPLES
+ ‘When I say go, run as fast as you can to that rock on your right and hide behind it.’
+ ‘‘On your marks, get set, go!’ Coach Henderson blew the whistle.’
+ ‘All right: ready, steady, go!’
+[noun] An attempt or trial at something.
+ex:
+ ‘have a go at answering the questions yourself’
+MORE EXAMPLES
+ ‘Coming from a swimming background and with a keen interest in running, she decided to take the advice of friends late last year and give triathlon a go.’
+ ‘Unfortunately, it's the only theorem I remember from school. That may be why it took me two goes to get my maths O level.’
+ ‘We hope to see all our regulars and maybe some people who have always wanted to have a go at playing snooker but never tried.’
+ ‘It is something I have always wanted to have a go at and the noise it makes is fantastic.’
+ ‘It would be devastation for me if we were relegated because it's taken us umpteen goes to get in in the Premiership.’
+ ‘I was reluctant at first as the staff were nearly all youngsters in their teens and early twenties, but I decided to give it a go.’
+ ‘I will be having a go at doing one of the flower arrangements myself.’
+ ‘What with it being a double roll-over on Saturday I had had a couple of goes and when I checked my numbers on Sunday I realised my lucky dip line had won me ten pounds.’
+ ‘The machine is supposed to take up to eight attempts to hit the spot, so I'll give it another couple of goes before writing it off.’
+ ‘I worked for a while as a deputy manager of a leisure centre, but then I decided to have a go at what I always wanted to do, becoming a police officer.’
+[adjective] Functioning properly.
+ex:
+ ‘all systems go’
+MORE EXAMPLES
+ ‘It is all systems go here in Dublin. We have moved into new premises and are commencing our advertising and marketing campaign.’
+ ‘Eat less than 1,200 calories a day - the minimum amount most women need to keep all systems go - and you will likely burn lean muscle mass instead of fat.’
+[noun] A Japanese board game of territorial possession and capture.
+MORE EXAMPLES
+ ‘Yet both superpowers thought of it as another territory to compete over in a global game of go.’
+ ‘The game that does seem to me to be superior to chess, in that it has both depth and simplicity, is the Japanese game of Go.’
