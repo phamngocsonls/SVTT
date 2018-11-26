@@ -1,0 +1,30 @@
+REQUIREMENT:
+
+1. ################### Setup Guide: #################
+
+-- Install pip for python3:
+
+sudo apt-get install python3-pip
+
+-- Install beautifulsoup4:	
+
+sudo apt-get install python3-bs4
+
+-- Install mongodb and pymongo:
+
+sudo apt-get install mongodb
+sudo apt-get install pymongo
+
+-- Start crawl data: changes folder into crawler
+
+python3 crawlerEV.py
+
+2.################### User Guide: ####################
+
+To find the data of a word: "actor"
+Open terminal:
+
+mongo localhost:27017/Dictionary_database
+>db.posts.find({"word_name": "actor"})
+
+	

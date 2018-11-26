@@ -19,7 +19,7 @@ os.system("mkdir A-V/tratu")
 
 NUM_OF_WORD = 1
 
-word = "speed"
+word = "go"
 queue_words = []
 list_word = []
 flag = 1
@@ -30,6 +30,7 @@ def has_href_no_name(tag):
 
 def has_no_style(tag):
     return not tag.has_attr('style')
+
 while num_words < 10 and flag == 1:
     list_word.append(word)
     num_words = len(list_word)
