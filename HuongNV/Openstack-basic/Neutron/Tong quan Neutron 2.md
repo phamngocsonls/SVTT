@@ -50,11 +50,33 @@ Dựa trên loại mạng như local, flat, VLAN, GRE hoặc VXLAN, TypeDrivers 
 <a name="32"></a>
 
 # 3.2 L2 Agents
-L2 agents chạy trên compute node. Nhiệm vụ chính của nó là cấu hình các virtual bridge trên mỗi node compute đó. Nó theo dõi việc thêm, bớt các device gán vào các virtual bridge đó. Ngoài ra nó cũng xử lý các nhóm quy tắc bảo mật security groups. 
+L2 agents chạy trên compute node. Nhiệm vụ chính của nó là cấu hình các virtual bridge trên mỗi node compute đó. Nó theo dõi việc thêm, bớt các device gán vào các virtual bridge đó. Trên mỗi nút compute thường có 2 bridge là: `br-int` và `br-tun` Ngoài ra nó cũng xử lý các nhóm quy tắc bảo mật security groups. 
+
+br-int là intergration bridge. Nó theo dõi tagging và untagging traffic đi tới VM hoặc từ VM đi ra bên ngoài. Để tag traffic, nó sử dụng VLAN tag trong mỗi packet.
+
+br-tun la tunneling bridge. Nó theo dõi quá trình biên dịch các traffic được tag. 
+
+## What happens when a VM is created
+
+![Imgur](https://i.imgur.com/0quUHCX.png)
+
+`vif driver` được nova sử dụng để add hoặc remove virtual interface tới intergration bridge. 
 
 Biểu đồ dưới đây giúp ta hiểu rõ hơn về L2 agents. Khi một instance được khởi tạo, nova compute sẽ add một tap interface(một card ảo) và gửi một request tới Neutron với yêu cầu cấp phát một địa chỉ IP.
 
 ![Imgur](https://i.imgur.com/q3WayWc.png)
+
+## L2 Agent Workflow
+
+L2 agent xuất hiện loop khi một trong các tiến trình sau xảy ra:
+- OVSDB monitor có sự thay đổi, OVSDB monitor được sử dụng đê theo dõi sự thay đổi trên compute node(ví dụ như port added/deleted)
+- Messages từ neutron-server, nội dung messgae đó có thể về update ports hoặc cập nhật sự thay đổi về security group
+- OVS restart
+
+### How ports changes detected?
+L2 agents theo dõi tất cả các port machine bằng cách sử dụng từ khóa có tên là `registered ports`.
+
+Khi có sự thay đổi xảy ra, OVSDB monitor sẽ lâp tức thu thập và so sánh với registered ports để xem thiết bị nào được added hoặc deleted.
 
 <a name="33"></a>
 
@@ -70,6 +92,21 @@ Các VM được khởi tạo với địa chỉ lần lượt là 10.10.10.5, 1
 Ví dụ, gửi một gói tin từ VM1 ra bên ngoài internet có destination address là `56.57.58.59`. Gói tin có địa chỉ nguồn là `10.10.10.5`, địa chỉ đích là `56.57.58.59` đi tới router ảo có tên là EXT_VR, tại đây EXT_VR sẽ thay đổi địa chỉ nguồn của gói tin thành `192.168.0.19` và gửi gói tin tới địa chỉ đích là 56.57.58.59
 
 Chiều ngược lại, gói tin từ bên ngoài với địa chỉ nguồn là IP public đi tới virtual router, dựa trên các thông tin của packets đó, virtual router không thể xác định được destination của gói tin đó đi tới VM nào và gói tin sẽ bị drop.
+
+## HA and DVR
+Từ bản Juno, xuất hiện thêm 1 tính năng là HA, HA cung cấp tính dự phòng, cho phép deploy router trên nhiều node network.
+
+DVR thì khác. Đối với mô hình multi node, thuần túy việc tạo ra tenant và Router để kết nối ra mạng ngoài, khi đó tất cả Router được tạo ra sẽ nằm trên node Network. Khi traffic từ VM đi ra mạng ngoài hoặc VM giữa các tenant với nhau sẽ phải đi qua Router nằm trên node Network.
+
+Vấn đề xảy ra khi có nhiều VM trên hệ thống thì tất cả các traffic của VM đều phải đi vào router trên node Network, lúc đó sẽ gây hiện tượng thắt cổ chai và node Network cũng phải xử lý rất nhiều traffic của các VM trong hệ thống. Để có thể giải quyết vấn đề này, có thêm tính năng là DVR(Distributed Virtual Router). Đây là tính năng thay vì tập trung Router trên node Network thì Router sẽ được phân bố ra các node Compute sseer các Router đó xử lý luồng traffic của những VM nằm chính trên node Compute đó.
+
+Biểu đồ sau mô tả về traffic flow giữa 2 VM nằm trên 2 node Compute khác nhau
+
+![Imgur](https://i.imgur.com/LmguXzU.png)
+
+VM-1 muốn gửi dữ liệu tới VM-2, các gói packet sẽ đi tới br-int và forward tới Router nằm trên Compute node. Gói tin sẽ đi qua bảng định tuyến và được forward tới đích mà nó cần tới.
+
+
 
 
 
