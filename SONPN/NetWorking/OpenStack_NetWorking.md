@@ -1,6 +1,7 @@
 # OpenStack Networking
 
 **Provider networks**
+
 Provider network cung cấp kết nối layer-2 cho các máy ảo với các phiên bản có hỗ trợ dịch vụ DHCP và metadat. Các mạng này kêt nối hoặc được map với các mạng layer-2 có trong data center, thường sử dụng VLAN (802.1q) để xác định và phân tách nhau.
 Provider networks cung cấp giải pháp đơn giản, hiệu quả và độ tin cậy với chi phí linh hoạt. Mặc định, chỉ có quản trị viên mới có thể tạo hoặc cập nhập provider networks vì nó yêu cầu cơ sở hạ tầng mạng vật lý. Bạn có thể thay đổi người dùng quản trị cho phép tạo tạo hoặc cập nhập provider network bằng cách thay đổi tham số cua fil epolicy.json:
 ``` sh
