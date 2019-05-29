@@ -21,7 +21,7 @@ Trong một số trường hợp, triển khai Openstack nằm trong môi trư�
 Routed provider networks cung cấp kết nối ở layer 3 cho các máy ảo. Các network này map với những networks layer 3 đã tồn tại. Cụ thể hơn, các layer-2 segments của provider network sẽ được gán các router gateway giúp chúng có thể được định tuyến ra bên ngoài chứ thực chất Networking service không cung cấp khả năng định tuyến. Routed provider networks tất nhiên sẽ có hiệu suất thấp hơn so với provider networks.
 **Self-service networks**
 Self-service networks chủ yếu sử dụng ở các project chung để quản lý mạng mà không liên quan đến quản trị viên. Các networks này đều là ảo và yêu cầu routers ảo để giao tiếp với provider và external networks. Self-service networks cũng cung cấp dịch vụ DHCP và metadata services cho máy ảo.
-<img src="http://i.imgur.com/He8ttC7.png">
+
 Trong hầu hết các trường hợp self-service networks sử dụng các giao thức như VXLAN hoặc GRE vì chúng hỗ trợ nhiều networks hơn là layer-2 segmentation sử dụng VLAN tagging (802.1q). Vlan thường yêu cầu cầu hình bổ sung ở tầng vật lý.
 Với IPv4, self-service networks thường sử dụng dải mạng riêng(RFC1918)  và tương tác với provider networks thông qua cơ chế NAT trên router ảo. Floating IP cho phép truy cập vào các máy ảo từ provider networks thông qua cơ chế NAT trên router ảo. IPv6 self-service networks luôn sử dụng dải public IP  và tương tác với provider networks bằng giao thức định tuyến tĩnh qua router ảo.
 
