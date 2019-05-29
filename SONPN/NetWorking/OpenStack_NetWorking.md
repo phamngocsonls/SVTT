@@ -9,6 +9,7 @@ create_network:provider:physical_network
 update_network:provider:physical_network
 ```
 **Warning**
+
 Việc tạo và sửa đổi provider networks cho phép sử dụng các tài nguyên mạng vật lý (Vd: Vlan-s). Cho phép những thay đổi trên chỉ dành cho những người thuê đáng tin cậy.
 
 Ngoài ra, provider networks chỉ xử lý kết nối ở layer-2 cho các máy ảo, do đó không hỗ trợ cho các tính năng của bộ đinh tuyến và floating IP.
@@ -19,8 +20,10 @@ Vì các thành phần chịu trách nhiệm cho việc vận hành kết nối 
 Trong một số trường hợp, triển khai Openstack nằm trong môi trường gồm các máy chủ ảo hóa và bare-metal hosts, thường sử dụng cơ sở hạ tầng mạng vật lý khác lớn. Các ứng dụng chạy bên trong OpenStack deployment có thể yêu cầu truy cập trực tiếp layer-2, thường là dùng Vlans.
 <img src="https://camo.githubusercontent.com/bd61ac32e5ef2ebd5c557271c7c129aa30ea5e20/687474703a2f2f692e696d6775722e636f6d2f514d67786171642e706e67">
 **Routed provider networks**
+
 Routed provider networks cung cấp kết nối ở layer 3 cho các máy ảo. Các network này map với những networks layer 3 đã tồn tại. Cụ thể hơn, các layer-2 segments của provider network sẽ được gán các router gateway giúp chúng có thể được định tuyến ra bên ngoài chứ thực chất Networking service không cung cấp khả năng định tuyến. Routed provider networks tất nhiên sẽ có hiệu suất thấp hơn so với provider networks.
 **Self-service networks**
+
 Self-service networks chủ yếu sử dụng ở các project chung để quản lý mạng mà không liên quan đến quản trị viên. Các networks này đều là ảo và yêu cầu routers ảo để giao tiếp với provider và external networks. Self-service networks cũng cung cấp dịch vụ DHCP và metadata services cho máy ảo.
 
 Trong hầu hết các trường hợp self-service networks sử dụng các giao thức như VXLAN hoặc GRE vì chúng hỗ trợ nhiều networks hơn là layer-2 segmentation sử dụng VLAN tagging (802.1q). Vlan thường yêu cầu cầu hình bổ sung ở tầng vật lý.
@@ -30,10 +33,13 @@ Trái ngược lại với provider networks, self-service networks buộc phả
 
 Các user có thể tạo các project networks cho các kết nối bên trong project. Mặc định thì các kết nối này là riêng biệt và không được chia sẻ giữa các project. OpenStack Networking hỗ trợ các công nghệ dưới đây cho project network:
 - **Flat** 
+
 Tất cả các instances nằm trong cùng một mạng, và có thể chia sẻ với hosts. Không hề sử dụng VLAN tagging hay hình thức tách biệt về network khác.
 - **VLAN**
+
 Kiểu này cho phép các users tạo nhiều provider hoặc project network sử dụng VLAN IDs(chuẩn 802.1Q tagged) tương ứng với VLANs trong mạng vật lý. Điều này cho phép các instances giao tiếp với nhau trong môi trường cloud. Chúng có thể giao tiếp với servers, firewalls, load balancers vật lý và các hạ tầng network khác trên cùng một VLAN layer 2.
 - **GRE and VXLAN**
+
 VXLAN và GRE là các giao thức đóng gói tạo nên overlay networks để kích hoạt và kiểm soát việc truyền thông giữa các máy ảo (instances). Một router được yêu cầu để cho phép lưu lượng đi ra luồng bên ngoài tenant network GRE hoặc VXLAN. Router cũng có thể yêu cầu để kết nối một tenant network với mạng bên ngoài (ví dụ Internet). Router cung cấp khả năng kết nối tới instances trực tiếp từ mạng bên ngoài sử dụng các địa chỉ floating IP
 <img src="http://i.imgur.com/He8ttC7.png">
 
