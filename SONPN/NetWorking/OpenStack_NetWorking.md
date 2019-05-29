@@ -18,7 +18,9 @@ Trong nhiều trường hợp, các đơn vị khai thác đã quen thuộc vớ
 
 Vì các thành phần chịu trách nhiệm cho việc vận hành kết nối layer 3 sẽ ảnh hưởng tới hiệu năng và tính tin cậy nên provider networks chuyển các kết nối này xuống tầng vật lí.
 Trong một số trường hợp, triển khai Openstack nằm trong môi trường gồm các máy chủ ảo hóa và bare-metal hosts, thường sử dụng cơ sở hạ tầng mạng vật lý khác lớn. Các ứng dụng chạy bên trong OpenStack deployment có thể yêu cầu truy cập trực tiếp layer-2, thường là dùng Vlans.
+
 <img src="https://camo.githubusercontent.com/bd61ac32e5ef2ebd5c557271c7c129aa30ea5e20/687474703a2f2f692e696d6775722e636f6d2f514d67786171642e706e67">
+
 **Routed provider networks**
 
 Routed provider networks cung cấp kết nối ở layer 3 cho các máy ảo. Các network này map với những networks layer 3 đã tồn tại. Cụ thể hơn, các layer-2 segments của provider network sẽ được gán các router gateway giúp chúng có thể được định tuyến ra bên ngoài chứ thực chất Networking service không cung cấp khả năng định tuyến. Routed provider networks tất nhiên sẽ có hiệu suất thấp hơn so với provider networks.
@@ -41,6 +43,7 @@ Kiểu này cho phép các users tạo nhiều provider hoặc project network s
 - **GRE and VXLAN**
 
 VXLAN và GRE là các giao thức đóng gói tạo nên overlay networks để kích hoạt và kiểm soát việc truyền thông giữa các máy ảo (instances). Một router được yêu cầu để cho phép lưu lượng đi ra luồng bên ngoài tenant network GRE hoặc VXLAN. Router cũng có thể yêu cầu để kết nối một tenant network với mạng bên ngoài (ví dụ Internet). Router cung cấp khả năng kết nối tới instances trực tiếp từ mạng bên ngoài sử dụng các địa chỉ floating IP
+
 <img src="http://i.imgur.com/He8ttC7.png">
 
 component and connectivity:
