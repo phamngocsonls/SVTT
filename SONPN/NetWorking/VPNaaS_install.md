@@ -59,3 +59,6 @@ Tạo site-to-site connection, nếu muốn tạo kêt nối 2 chiều thì tạ
 <img src="https://github.com/phamngocsonls/SVTT/blob/phamngocsonls/SONPN/image/site-connection.png?raw=true">
 
 Hiện tại đang bị lỗi về phần lab, sẽ update sau.
+
+<img src="https://github.com/phamngocsonls/SVTT/blob/phamngocsonls/SONPN/image/down.png?raw=true">
+
