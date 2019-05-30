@@ -38,7 +38,7 @@ Subnet : 20.20.20.0/24
 Gateway of External network: 200.200.128.151
 
 Mô hình mạng:
-<network_topology.png>
+<img src="https://github.com/phamngocsonls/SVTT/blob/phamngocsonls/SONPN/image/network_topology.png?raw=true">
 
 Tạo ike policy
 ```
@@ -53,9 +53,9 @@ Tạo vpn-service service
 neutron vpn-service-create ROUTER SUBNET
 ```
 Tạo 2 vpn-service cho 2 router và subnet như hình
-<vpn-service.png>
+<img src="https://github.com/phamngocsonls/SVTT/blob/phamngocsonls/SONPN/image/vpn-service.png?raw=true">
 
 Tạo site-to-site connection, nếu muốn tạo kêt nối 2 chiều thì tạo 2 site-to-site, như hình tạo kết nối từ vm1 đến vm2.
-<site-connection.png>
+<img src="https://github.com/phamngocsonls/SVTT/blob/phamngocsonls/SONPN/image/site-connection.png?raw=true">
 
 Hiện tại đang bị lỗi về phần lab, sẽ update sau.
