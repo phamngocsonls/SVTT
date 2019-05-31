@@ -30,6 +30,7 @@ enable_plugin neutron-vpnaas-dashboard https://github.com/openstack/neutron-vpna
 IPSEC_PACKAGE="strongswan"
 ```
 **Lab1: Sử dụng VPNaaS đê truy cập vào mạng nội bộ của nhau**
+
 Mục tiêu: Kết nối 2 vùng mạng riêng với nhau bằng VPN site-to-site
 
 Launch  instance vmE kết nối với net_east và vmW kết nối với net_west. Lưu ý rằng security group của 2  instance này phải cho phép ping.
