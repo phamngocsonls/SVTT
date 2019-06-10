@@ -56,9 +56,11 @@ Tiêp tục cấu hình mạng Wan. Đây là mạng đầu vào của pfSense, 
 ![13](https://github.com/phamngocsonls/SVTT/blob/phamngocsonls/SONPN/pfSense/image/13.png?raw=true)
 
 Cấu hình như hình:
+
 ![14](https://github.com/phamngocsonls/SVTT/blob/phamngocsonls/SONPN/pfSense/image/14.png?raw=true)
 
 Tiếp tuc kiểm tra địa chỉ mạng của card host only là 192.168.56.1. Chọn địa chỉ ip của LAN là 192.168.56.101. Có tùy chọn DHCP nếu muốn
+
 ![15](https://github.com/phamngocsonls/SVTT/blob/phamngocsonls/SONPN/pfSense/image/15.png?raw=true)
 
 Cài đặt các tham số như hình:
