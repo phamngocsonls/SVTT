@@ -74,3 +74,4 @@ Sau khi cài đặt thành công, truy cập vào địa chỉ 192.168.56.101 đ
 > password: pfsense
 
 ![18](https://github.com/phamngocsonls/SVTT/blob/phamngocsonls/SONPN/pfSense/image/18.png?raw=true)
+
