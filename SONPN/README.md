@@ -1,3 +1,1 @@
-SONPN
-test
-abc
+Git thực tâp của SONPN 
