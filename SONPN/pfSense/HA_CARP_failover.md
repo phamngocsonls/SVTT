@@ -63,3 +63,6 @@ Vào Firewall / Virtual IPs tạo mạng ảo cho WAN mới với thiết lập 
 ![mw-ad-net.png](https://github.com/phamngocsonls/SVTT/blob/phamngocsonls/SONPN/pfSense/image/a10.png?raw=true)
 
 
+
+
+Source: https://www.youtube.com/watch?v=FnZOT-7CKvQ&t=713s
